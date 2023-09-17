@@ -18,6 +18,7 @@ add_executable(
 
 	${INCLUDE_DIR}/CpuRV.h
 	${INCLUDE_DIR}/Memory.h
+	${INCLUDE_DIR}/Common.h
 )
 
 target_link_libraries(risc-v.exe PUBLIC ${LINK_OPT})
