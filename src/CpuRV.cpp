@@ -474,6 +474,69 @@ void CpuRV::execute(const DecodedInstruction& decInstr) {
             regs_[decInstr.rd].value = tmp;
             break;
         }
+
+
+        case InstructionType::LB: {
+            uint8_t tmp;
+            mmu_.load8(regs_[decInstr.rs1].value + signExtend(decInstr.imm, decInstr.immSignBitNum), &tmp);
+            regs_[decInstr.rd].value = signExtend(tmp, 7);
+            break;
+        }
+        case InstructionType::LH: {
+            uint16_t tmp;
+            mmu_.load16(regs_[decInstr.rs1].value + signExtend(decInstr.imm, decInstr.immSignBitNum), &tmp);
+            regs_[decInstr.rd].value = signExtend(tmp, 15);
+            break;
+        }
+        case InstructionType::LW: {
+            uint32_t tmp;
+            mmu_.load32(regs_[decInstr.rs1].value + signExtend(decInstr.imm, decInstr.immSignBitNum), &tmp);
+            regs_[decInstr.rd].value = signExtend(tmp, 31);
+            break;
+        }
+        case InstructionType::LD: {
+            mmu_.load64(regs_[decInstr.rs1].value + signExtend(decInstr.imm, decInstr.immSignBitNum), &regs_[decInstr.rd].value);
+            break;
+        }
+        case InstructionType::LBU: {
+            uint8_t tmp;
+            mmu_.load8(regs_[decInstr.rs1].value + signExtend(decInstr.imm, decInstr.immSignBitNum), &tmp);
+            regs_[decInstr.rd].value = tmp;
+            break;
+        }
+        case InstructionType::LHU: {
+            uint16_t tmp;
+            mmu_.load16(regs_[decInstr.rs1].value + signExtend(decInstr.imm, decInstr.immSignBitNum), &tmp);
+            regs_[decInstr.rd].value = tmp;
+            break;
+        }
+        case InstructionType::LWU: {
+            uint32_t tmp;
+            mmu_.load32(regs_[decInstr.rs1].value + signExtend(decInstr.imm, decInstr.immSignBitNum), &tmp);
+            regs_[decInstr.rd].value = tmp;
+            break;
+        }
+        case InstructionType::SB: {
+            mmu_.store8(regs_[decInstr.rs1].value + signExtend(decInstr.imm, decInstr.immSignBitNum), regs_[decInstr.rs2].value & 0xFF);
+            break;
+        }
+        case InstructionType::SH: {
+            mmu_.store16(regs_[decInstr.rs1].value + signExtend(decInstr.imm, decInstr.immSignBitNum), regs_[decInstr.rs2].value & 0xFFFF);
+            break;
+        }
+        case InstructionType::SW: {
+            mmu_.store32(regs_[decInstr.rs1].value + signExtend(decInstr.imm, decInstr.immSignBitNum), regs_[decInstr.rs2].value & 0xFFFFFFFF);
+            break;
+        }
+        case InstructionType::SD: {
+            mmu_.store64(regs_[decInstr.rs1].value + signExtend(decInstr.imm, decInstr.immSignBitNum), regs_[decInstr.rs2].value);
+            break;
+        }
+
+
+
+
+
     }
 
     pc_ = nextPc;

@@ -17,7 +17,7 @@ namespace RISCV {
 
 
 bool MMU::allocatePage(const uint32_t pageNum) {
-    if(allocatedPhysPages_.size() >= PHYS_PAGE_COUNT) {
+    if (allocatedPhysPages_.size() >= PHYS_PAGE_COUNT) {
         fprintf(stderr, "PAGE FAULT OCCURS\n");
         return false;
     }
@@ -27,10 +27,10 @@ bool MMU::allocatePage(const uint32_t pageNum) {
 }
 
 
-bool MMU::load(const uint64_t addr, uint8_t* value) const {
+bool MMU::load8(const uint64_t addr, uint8_t* value) const {
     uint32_t pageNum = addr >> ADDRESS_PAGE_NUM_SHIFT;
     
-    if(auto it = allocatedPhysPages_.find(pageNum); it != allocatedPhysPages_.end()) {
+    if (auto it = allocatedPhysPages_.find(pageNum); it != allocatedPhysPages_.end()) {
         uint32_t offset = addr & ADDRESS_PAGE_OFFSET_MASK;
 
         *value = it->second->memory[offset];
@@ -41,17 +41,57 @@ bool MMU::load(const uint64_t addr, uint8_t* value) const {
 }
 
 
-bool MMU::store(const uint64_t addr, uint8_t value) {
+bool MMU::load16(const uint64_t addr, uint16_t* value) const {
+    uint8_t part0;
+    uint8_t part1;
+
+    if (!load8(addr, &part0) || !load8(addr + 1, &part1)) {
+        return false;
+    }
+
+    *value = (part0 << 0) | (((uint16_t)part1) << 8);
+    return true;
+}
+
+
+bool MMU::load32(const uint64_t addr, uint32_t* value) const {
+    uint16_t part0;
+    uint16_t part1;
+
+    if (!load16(addr, &part0) || !load16(addr + 2, &part1)) {
+        return false;
+    }
+
+    *value = (part0 << 0) | (((uint32_t)part1) << 16);
+    return true;
+}
+
+
+bool MMU::load64(const uint64_t addr, uint64_t* value) const {
+    uint32_t part0;
+    uint32_t part1;
+
+    if (!load32(addr, &part0) || !load32(addr + 4, &part1)) {
+        return false;
+    }
+
+    *value = (part0 << 0) | (((uint64_t)part1) << 32);
+    return true;
+}
+
+
+
+bool MMU::store8(const uint64_t addr, uint8_t value) {
     uint32_t pageNum = addr >> ADDRESS_PAGE_NUM_SHIFT;
     uint32_t offset = addr & ADDRESS_PAGE_OFFSET_MASK;
-    
-    if(auto it = allocatedPhysPages_.find(pageNum); it != allocatedPhysPages_.end()) {
+
+    if (auto it = allocatedPhysPages_.find(pageNum); it != allocatedPhysPages_.end()) {
 
         it->second->memory[offset] = value;
         return true;
     }
 
-    if(!allocatePage(pageNum))
+    if (!allocatePage(pageNum))
         return false;
 
     allocatedPhysPages_[pageNum]->memory[offset] = value;
@@ -59,158 +99,29 @@ bool MMU::store(const uint64_t addr, uint8_t value) {
 }
 
 
-bool MMU::load32(const uint64_t addr, uint32_t* value) const {
-    uint32_t pageNumStart = addr >> ADDRESS_PAGE_NUM_SHIFT;
-    uint32_t pageNumEnd   = (addr + 3) >> ADDRESS_PAGE_NUM_SHIFT;
-
-    // On the same page 
-    // | <- .... -> |
-    if(pageNumStart == pageNumEnd) {
-        if(auto it = allocatedPhysPages_.find(pageNumStart); it != allocatedPhysPages_.end()) {
-            uint32_t offset = addr & ADDRESS_PAGE_OFFSET_MASK;
-
-            uint32_t part0 = it->second->memory[offset + 0];
-            uint32_t part1 = it->second->memory[offset + 1];
-            uint32_t part2 = it->second->memory[offset + 2];
-            uint32_t part3 = it->second->memory[offset + 3];
-
-            *value = (part0 << 0)
-                | (part1 << 8)
-                | (part2 << 16)
-                | (part3 << 24);
-            return true;
-        }
-
-        fprintf(stderr, "PAGE FAULT OCCURS\n");
+bool MMU::store16(const uint64_t addr, uint16_t value) {
+    if (!store8(addr, value & 0x00FF) || !store8(addr + 1, value << 8)) {
         return false;
     }
-
-    // This block if different pages
-
-    auto itStart = allocatedPhysPages_.find(pageNumStart),
-         itEnd = allocatedPhysPages_.find(pageNumEnd);
-
-    // If one of the pages does not exist, page fault
-    if(itStart == allocatedPhysPages_.end() || itEnd == allocatedPhysPages_.end()) {
-        fprintf(stderr, "PAGE FAULT OCCURS\n");
-        return false;
-    }
-
-    // If different pages but they both exist
-
-    uint32_t pageNum1 = (addr + 1) >> ADDRESS_PAGE_NUM_SHIFT;
-
-    // . | ...
-    if(pageNum1 == pageNumEnd) {
-        uint32_t part0 = itStart->second->memory[PAGE_SIZE - 1];
-        uint32_t part1 = itEnd->second->memory[0];
-        uint32_t part2 = itEnd->second->memory[1];
-        uint32_t part3 = itEnd->second->memory[2];
-
-        *value = (part0 << 0)
-            | (part1 << 8)
-            | (part2 << 16)
-            | (part3 << 24);
-        return true;
-    }
-
-    uint32_t pageNum2 = (addr + 2) >> ADDRESS_PAGE_NUM_SHIFT;
-
-    // ... | .
-    if(pageNum2 == pageNumStart) {
-        uint32_t part0 = itStart->second->memory[PAGE_SIZE - 3];
-        uint32_t part1 = itStart->second->memory[PAGE_SIZE - 2];
-        uint32_t part2 = itStart->second->memory[PAGE_SIZE - 1];
-        uint32_t part3 = itEnd->second->memory[0];
-
-        *value = (part0 << 0)
-            | (part1 << 8)
-            | (part2 << 16)
-            | (part3 << 24);
-        return true;
-    }
-
-    // .. | ..
-    uint32_t part0 = itStart->second->memory[PAGE_SIZE - 2];
-    uint32_t part1 = itStart->second->memory[PAGE_SIZE - 1];
-    uint32_t part2 = itEnd->second->memory[0];
-    uint32_t part3 = itEnd->second->memory[1];
-
-    *value = (part0 << 0)
-        | (part1 << 8)
-        | (part2 << 16)
-        | (part3 << 24);
     return true;
 }
 
 
 bool MMU::store32(const uint64_t addr, uint32_t value) {
-    uint32_t pageNumStart = addr >> ADDRESS_PAGE_NUM_SHIFT;
-    uint32_t pageNumEnd   = (addr + 3) >> ADDRESS_PAGE_NUM_SHIFT;
-    
-
-    // On the same page 
-    // | <- .... -> |
-    if(pageNumStart == pageNumEnd) {
-        if(auto it = allocatedPhysPages_.find(pageNumStart); it == allocatedPhysPages_.end()) {
-            if(!allocatePage(pageNumStart))
-                return false;
-        }
-        uint32_t offset = addr & ADDRESS_PAGE_OFFSET_MASK;
-
-        allocatedPhysPages_[pageNumStart]->memory[offset + 0] = value & 0x000000FF;
-        allocatedPhysPages_[pageNumStart]->memory[offset + 1] = value & 0x0000FF00;
-        allocatedPhysPages_[pageNumStart]->memory[offset + 2] = value & 0x00FF0000;
-        allocatedPhysPages_[pageNumStart]->memory[offset + 3] = value & 0xFF000000;
-        return true;
+    if (!store16(addr, value & 0x0000FFFF) || !store16(addr + 2, value << 16)) {
+        return false;
     }
-
-    // This block if different pages
-
-    auto itStart = allocatedPhysPages_.find(pageNumStart),
-         itEnd = allocatedPhysPages_.find(pageNumEnd);
-
-    // If one of the pages does not exist
-    if(itStart == allocatedPhysPages_.end()) {
-        if(!allocatePage(pageNumStart))
-            return false;
-    }
-    if(itEnd == allocatedPhysPages_.end()) {
-        if(!allocatePage(pageNumEnd))
-            return false;
-    }
-
-    // If different pages but they both exist
-
-    uint32_t pageNum1 = (addr + 1) >> ADDRESS_PAGE_NUM_SHIFT;
-
-    // . | ...
-    if(pageNum1 == pageNumEnd) {
-        allocatedPhysPages_[pageNumStart]->memory[PAGE_SIZE - 1] = value & 0x000000FF;
-        allocatedPhysPages_[pageNumEnd]->memory[0]               = value & 0x0000FF00;
-        allocatedPhysPages_[pageNumEnd]->memory[1]               = value & 0x00FF0000;
-        allocatedPhysPages_[pageNumEnd]->memory[2]               = value & 0xFF000000;
-        return true;
-    }
-
-    uint32_t pageNum2 = (addr + 2) >> ADDRESS_PAGE_NUM_SHIFT;
-
-    // ... | .
-    if(pageNum2 == pageNumStart) {
-        allocatedPhysPages_[pageNumStart]->memory[PAGE_SIZE - 3] = value & 0x000000FF;
-        allocatedPhysPages_[pageNumStart]->memory[PAGE_SIZE - 2] = value & 0x0000FF00;
-        allocatedPhysPages_[pageNumStart]->memory[PAGE_SIZE - 1] = value & 0x00FF0000;
-        allocatedPhysPages_[pageNumEnd]->memory[0]               = value & 0xFF000000;
-        return true;
-    }
-
-    // .. | ..
-    allocatedPhysPages_[pageNumStart]->memory[PAGE_SIZE - 2] = value & 0x000000FF;
-    allocatedPhysPages_[pageNumStart]->memory[PAGE_SIZE - 1] = value & 0x0000FF00;
-    allocatedPhysPages_[pageNumEnd]->memory[0]               = value & 0x00FF0000;
-    allocatedPhysPages_[pageNumEnd]->memory[1]               = value & 0xFF000000;
     return true;
 }
+
+
+bool MMU::store64(const uint64_t addr, uint64_t value) {
+    if (!store32(addr, value & 0x00000000FFFFFFFF) || !store32(addr + 4, value << 32)) {
+        return false;
+    }
+    return true;
+}
+
 
 
 bool MMU::loadElfFile(const std::string& filename, uint64_t* pc) {

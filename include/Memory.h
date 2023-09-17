@@ -29,11 +29,15 @@ private:
 	bool allocatePage(const uint32_t pageNum);
 
 public:
-    bool load(const uint64_t addr, uint8_t* value) const;
-    bool store(const uint64_t addr, uint8_t value);
-
+    bool load8 (const uint64_t addr,  uint8_t* value) const;
+    bool load16(const uint64_t addr, uint16_t* value) const;
     bool load32(const uint64_t addr, uint32_t* value) const;
+    bool load64(const uint64_t addr, uint64_t* value) const;
+
+    bool store8 (const uint64_t addr,  uint8_t value);
+    bool store16(const uint64_t addr, uint16_t value);
     bool store32(const uint64_t addr, uint32_t value);
+    bool store64(const uint64_t addr, uint64_t value);
 
     bool loadElfFile(const std::string& filename, uint64_t* pc);
 
