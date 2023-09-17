@@ -18,7 +18,10 @@ public:
 	void decode(const EncodedInstruction& encInstr, DecodedInstruction& decInstr) const;
 	void execute(const DecodedInstruction& decInstr);
 
+    uint64_t getPC() const { return pc_; };
     void loadElfFile(const std::string& filename) { mmu_.loadElfFile(filename, &pc_); }
+
+    CpuRV() { regs_[RegisterType::SP].value = mmu_.getStackAddress(); };
 };
 
 }

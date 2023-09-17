@@ -26,6 +26,10 @@ bool MMU::allocatePage(const uint32_t pageNum) {
     return true;
 }
 
+uint64_t MMU::getStackAddress() const {
+    return stackAddress_;
+}
+
 
 bool MMU::load8(const uint64_t addr, uint8_t* value) const {
     uint32_t pageNum = addr >> ADDRESS_PAGE_NUM_SHIFT;
@@ -158,14 +162,14 @@ bool MMU::loadElfFile(const std::string& filename, uint64_t* pc) {
         return -1;
     }
 
-    struct stat elf_file_stat;
-    if (fstat(fd, &elf_file_stat) == -1) {
+    struct stat fileStat;
+    if (fstat(fd, &fileStat) == -1) {
         fprintf(stderr, "Cannot stat %s\n", filename.c_str());
         return false;
     }
 
-    void *elf_file_buffer = mmap(NULL, elf_file_stat.st_size, PROT_READ, MAP_SHARED, fd, 0);
-    if (elf_file_buffer == NULL) {
+    void* fileBuffer = mmap(NULL, fileStat.st_size, PROT_READ, MAP_SHARED, fd, 0);
+    if (fileBuffer == NULL) {
         fprintf(stderr, "mmap() failed\n");
         return false;
     }
@@ -183,31 +187,61 @@ bool MMU::loadElfFile(const std::string& filename, uint64_t* pc) {
         const uint32_t pageNumStart = segmentStart >> ADDRESS_PAGE_NUM_SHIFT;
         const uint32_t pageNumEnd   = (segmentStart + segmentSize) >> ADDRESS_PAGE_NUM_SHIFT;
 
-
-        // Only one page of memory
+        // If segment occupies only one page of memory
         if (pageNumStart == pageNumEnd) {
-            if (allocatedPhysPages_.find(pageNumStart) == allocatedPhysPages_.end())
+            if (allocatedPhysPages_.find(pageNumStart) == allocatedPhysPages_.end()) {
                 if (!allocatePage(pageNumStart)) {
-                    munmap(elf_file_buffer, elf_file_stat.st_size);
+                    munmap(fileBuffer, fileStat.st_size);
                     elf_end(elf);
                     close(fd);
                     return false;
                 }
+            }
 
-            uint32_t offset = segmentStart & ADDRESS_PAGE_OFFSET_MASK;
-            memcpy(allocatedPhysPages_[pageNumStart]->memory + offset, (uint8_t*)elf_file_buffer + phdr.p_offset, phdr.p_filesz);
-
-            *pc = ehdr.e_entry;
-            break;
+            uint32_t pageOffset = segmentStart & ADDRESS_PAGE_OFFSET_MASK;
+            memcpy(allocatedPhysPages_[pageNumStart]->memory + pageOffset, (uint8_t*)fileBuffer + phdr.p_offset, phdr.p_filesz);
+            continue;
         }
 
-        // TODO: Make allocation and copying for multiple pages
+        // If segment occupies two or more pages of memory
+        uint32_t pageOffset = segmentStart & ADDRESS_PAGE_OFFSET_MASK;
+        uint32_t copyBytesize = PAGE_BYTESIZE - pageOffset;
+        uint32_t leftBytesize = phdr.p_filesz;
+        uint32_t fileOffset = phdr.p_offset;
+
+        for (uint32_t currentPage = pageNumStart; currentPage <= pageNumEnd; ++currentPage) {
+            if (allocatedPhysPages_.find(currentPage) == allocatedPhysPages_.end()) {
+                if (!allocatePage(currentPage)) {
+                    munmap(fileBuffer, fileStat.st_size);
+                    elf_end(elf);
+                    close(fd);
+                    return false;
+                }
+            }
+
+            memcpy(allocatedPhysPages_[currentPage]->memory + pageOffset, (uint8_t*)fileBuffer + fileOffset, copyBytesize);
+
+            fileOffset += copyBytesize;
+            leftBytesize -= copyBytesize;
+
+            pageOffset = 0;
+            copyBytesize = std::min((uint32_t)PAGE_BYTESIZE, leftBytesize);
+        }
     }
 
-    munmap(elf_file_buffer, elf_file_stat.st_size);
+    munmap(fileBuffer, fileStat.st_size);
     elf_end(elf);
     close(fd);
+
+    *pc = ehdr.e_entry;
+
+    printf("Loaded ELF file: %s\n\n", filename.c_str());
     return true;
+}
+
+
+MMU::MMU() {
+    allocatePage(stackAddress_ >> ADDRESS_PAGE_NUM_SHIFT);
 }
 
 

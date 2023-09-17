@@ -16,15 +16,16 @@ int main(int argc, char *argv[])
     RISCV::EncodedInstruction encInstr;
     RISCV::DecodedInstruction decInstr;
 
-    while(true) {
-        CPU.fetch(encInstr);
-        CPU.decode(encInstr, decInstr);
-
-        if(decInstr.type == RISCV::InstructionType::INSTRUCTION_INVALID)
+    while (true) {
+        if (CPU.getPC() == 0)
             break;
 
+        CPU.fetch(encInstr);
+        CPU.decode(encInstr, decInstr);
         CPU.execute(decInstr);
     }
+
+    printf("\nInterpreting ELF file %s has finished\n", argv[1]);
 
     return 0;
 }
