@@ -5,194 +5,138 @@
 
 #define INSTRUCTION_BYTESIZE 4
 
-
 namespace RISCV {
 
 enum RegisterType : uint8_t {
-    X0 = 0,
-    X1,
-    X2,
-    X3,
-    X4,
-    X5,
-    X6,
-    X7,
-    X8,
-    X9,
-    X10,
-    X11,
-    X12,
-    X13,
-    X14,
-    X15,
-    X16, 
-    X17,
-    X18, 
-    X19,
-    X20, 
-    X21,
-    X22, 
-    X23,
-    X24, 
-    X25,
-    X26, 
-    X27,
-    X28, 
-    X29,
-    X30, 
-    X31,
+  X0 = 0,
+  X1,
+  X2,
+  X3,
+  X4,
+  X5,
+  X6,
+  X7,
+  X8,
+  X9,
+  X10,
+  X11,
+  X12,
+  X13,
+  X14,
+  X15,
+  X16,
+  X17,
+  X18,
+  X19,
+  X20,
+  X21,
+  X22,
+  X23,
+  X24,
+  X25,
+  X26,
+  X27,
+  X28,
+  X29,
+  X30,
+  X31,
 
-    REGISTER_COUNT,
+  REGISTER_COUNT,
 
-    ZERO = X0,
-    RA = X1,
-    SP = X2
+  ZERO = X0,
+  RA = X1,
+  SP = X2
 };
-
 
 enum InstructionType : uint16_t {
-	LUI = 0,
-	AUIPC,
-	JAL,
-	JALR,
-	BEQ,
-	BNE,
-	BLT,
-	BGE,
-	BLTU,
-	BGEU,
-	LB,
-	LH,
-	LW,
-	LBU,
-	LHU,
-	SB,
-	SH,
-	SW,
-	ADDI,
-	SLTI,
-	SLTIU,
-	XORI,
-	ORI,
-	ANDI,
-	SLLI,
-	SRLI,
-	SRAI,
-	ADD,
-	SUB,
-	SLL,
-	SLT,
-	SLTU,
-	XOR,
-	SRL,
-	SRA,
-	OR,
-	AND,
-	FENCE,
-	ECALL,
-	EBREAK,
-	LWU,
-	LD,
-	SD,
-	ADDIW,
-	SLLIW,
-	SRLIW,
-	SRAIW,
-	ADDW,
-	SUBW,
-	SLLW,
-	SRLW,
-	SRAW,
+  LUI = 0,
+  AUIPC,
+  JAL,
+  JALR,
+  BEQ,
+  BNE,
+  BLT,
+  BGE,
+  BLTU,
+  BGEU,
+  LB,
+  LH,
+  LW,
+  LBU,
+  LHU,
+  SB,
+  SH,
+  SW,
+  ADDI,
+  SLTI,
+  SLTIU,
+  XORI,
+  ORI,
+  ANDI,
+  SLLI,
+  SRLI,
+  SRAI,
+  ADD,
+  SUB,
+  SLL,
+  SLT,
+  SLTU,
+  XOR,
+  SRL,
+  SRA,
+  OR,
+  AND,
+  FENCE,
+  ECALL,
+  EBREAK,
+  LWU,
+  LD,
+  SD,
+  ADDIW,
+  SLLIW,
+  SRLIW,
+  SRAIW,
+  ADDW,
+  SUBW,
+  SLLW,
+  SRLW,
+  SRAW,
 
-	INSTRUCTION_COUNT,
+  INSTRUCTION_COUNT,
 
-	INSTRUCTION_INVALID
+  INSTRUCTION_INVALID
 };
-
 
 static inline constexpr const char* InstructionNames[InstructionType::INSTRUCTION_COUNT] = {
-	"lui",
-	"auipc",
-	"jal",
-	"jalr",
-	"beq",
-	"bne",
-	"blt",
-	"bge",
-	"bltu",
-	"bgeu",
-	"lb",
-	"lh",
-	"lw",
-	"lbu",
-	"lhu",
-	"sb",
-	"sh",
-	"sw",
-	"addi",
-	"slti",
-	"sltiu",
-	"xori",
-	"ori",
-	"andi",
-	"slli",
-	"srli",
-	"srai",
-	"add",
-	"sub",
-	"sll",
-	"slt",
-	"sltu",
-	"xor",
-	"srl",
-	"sra",
-	"or",
-	"and",
-	"fence",
-	"ecall",
-	"ebreak",
-	"lwu",
-	"ld",
-	"sd",
-	"addiw",
-	"slliw",
-	"srliw",
-	"sraiw",
-	"addw",
-	"subw",
-	"sllw",
-	"srlw",
-	"sraw"
-};
-
+    "lui",   "auipc", "jal",   "jalr", "beq",   "bne",   "blt",    "bge",  "bltu", "bgeu",  "lb",
+    "lh",    "lw",    "lbu",   "lhu",  "sb",    "sh",    "sw",     "addi", "slti", "sltiu", "xori",
+    "ori",   "andi",  "slli",  "srli", "srai",  "add",   "sub",    "sll",  "slt",  "sltu",  "xor",
+    "srl",   "sra",   "or",    "and",  "fence", "ecall", "ebreak", "lwu",  "ld",   "sd",    "addiw",
+    "slliw", "srliw", "sraiw", "addw", "subw",  "sllw",  "srlw",   "sraw"};
 
 struct Register {
-    uint64_t value;    
+  uint64_t value;
 };
-
 
 struct EncodedInstruction {
-    uint32_t instr;
+  uint32_t instr;
 };
-
 
 struct DecodedInstruction {
-	RegisterType rd;
-	RegisterType rs1;
-	RegisterType rs2;
+  RegisterType rd;
+  RegisterType rs1;
+  RegisterType rs2;
 
-	uint8_t immSignBitNum = 0;
+  uint8_t immSignBitNum = 0;
 
-	union {
-    	uint32_t imm = 0;
-		uint32_t shamt;
-	};
+  union {
+    uint32_t imm = 0;
+    uint32_t shamt;
+  };
 
-	InstructionType type = InstructionType::INSTRUCTION_INVALID;
+  InstructionType type = InstructionType::INSTRUCTION_INVALID;
 };
 
+}  // namespace RISCV
 
-
-}
-
-#endif // COMMON_H
+#endif  // COMMON_H
