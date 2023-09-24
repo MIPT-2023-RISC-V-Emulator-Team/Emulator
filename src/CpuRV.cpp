@@ -1,4 +1,6 @@
-#include "../include/CpuRV.h"
+#include "CpuRV.h"
+
+#include <iostream>
 
 namespace RISCV {
 
@@ -434,7 +436,7 @@ got_invalid_instruction:
 }
 
 void CpuRV::execute(const DecodedInstruction& decInstr) {
-  printf("%lx:        %s\n", pc_, InstructionNames[decInstr.type]);
+  std::cout << std::hex << pc_ << ": \t" << InstructionNames[decInstr.type] << std::endl;
 
   uint64_t nextPc = pc_ + INSTRUCTION_BYTESIZE;
 
