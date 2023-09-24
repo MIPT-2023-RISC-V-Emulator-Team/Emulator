@@ -1,4 +1,4 @@
-#include "../include/Memory.h"
+#include "Memory.h"
 
 #include <elf.h>
 #include <fcntl.h>
@@ -10,8 +10,11 @@
 #include <unistd.h>
 
 #include <cstring>
+#include <string>
 
-namespace RISCV {
+#include "constants.h"
+
+namespace RISCV::memory {
 
 bool MMU::allocatePage(const uint32_t pageNum) {
   if (allocatedPhysPages_.size() >= PHYS_PAGE_COUNT) {
@@ -184,7 +187,7 @@ bool MMU::loadElfFile(const std::string& filename, uint64_t* pc) {
       }
 
       uint32_t pageOffset = segmentStart & ADDRESS_PAGE_OFFSET_MASK;
-      memcpy(allocatedPhysPages_[pageNumStart]->memory + pageOffset,
+      memcpy(allocatedPhysPages_[pageNumStart]->memory.data() + pageOffset,
              (uint8_t*)fileBuffer + phdr.p_offset,
              phdr.p_filesz);
       continue;
@@ -206,7 +209,7 @@ bool MMU::loadElfFile(const std::string& filename, uint64_t* pc) {
         }
       }
 
-      memcpy(allocatedPhysPages_[currentPage]->memory + pageOffset,
+      memcpy(allocatedPhysPages_[currentPage]->memory.data() + pageOffset,
              (uint8_t*)fileBuffer + fileOffset,
              copyBytesize);
 
@@ -238,4 +241,4 @@ MMU::~MMU() {
   }
 }
 
-}  // namespace RISCV
+}  // namespace RISCV::memory

@@ -5,6 +5,8 @@ project(RISC-V VERSION 1.0 DESCRIPTION "RISC-V Emulator")
 set(CMAKE_CXX_STANDARD 17)
 set(COMPILE_OPT -std=c++17 -O2)
 set(LINK_OPT -lelf)
+set(SRC_DIR ./src)
+set(INCLUDE_DIR ./include)
 
 # Remove strings matching given regular expression from a list.
 # @param(in,out) aItems Reference of a list variable to filter.
@@ -26,19 +28,23 @@ filter_items(EMULATOR_FILES "CMakeFiles/*")
 
 find_program(CLANG_FORMAT "clang-format" REQUIRED)
 
-add_custom_target (
-    format
+add_custom_target(format
     COMMAND clang-format
     -i
     -style=file
     ${EMULATOR_FILES}
 )
 
-add_executable(
-	risc-v.exe 
-
-	${EMULATOR_FILES}
+add_executable(risc-v
+    ${SRC_DIR}/risc-v.cpp
+    ${SRC_DIR}/CpuRV.cpp
+    ${SRC_DIR}/Memory.cpp
 )
 
-target_link_libraries(risc-v.exe PUBLIC ${LINK_OPT})
-add_compile_options(risc-v.exe ${COMPILE_OPT})
+target_include_directories(risc-v
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+    PUBLIC ${INCLUDE_DIR}
+)
+
+target_link_libraries(risc-v PUBLIC ${LINK_OPT})
+add_compile_options(risc-v ${COMPILE_OPT})

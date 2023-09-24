@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include "../include/CpuRV.h"
+#include "CpuRV.h"
 
 int main(int argc, char* argv[]) {
   if (argc < 2) {

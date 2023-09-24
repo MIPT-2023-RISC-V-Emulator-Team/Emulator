@@ -1,35 +1,25 @@
-#ifndef MEMORY_H
-#define MEMORY_H
+#ifndef INCLUDE_MEMORY_H
+#define INCLUDE_MEMORY_H
 
-#include <inttypes.h>
-
+#include <array>
+#include <cstdint>
+#include <string>
 #include <unordered_map>
 
-#define PAGE_BYTESIZE 4096               // 4 KiB
-#define PHYS_MEMORY_BYTESIZE 8589934592  // 8 GiB
-#define VIRT_MEMORY_BYTESIZE 8589934592  // 8 GiB
-#define PHYS_PAGE_COUNT PHYS_MEMORY_BYTESIZE / PAGE_BYTESIZE
+#include "constants.h"
 
-#define ADDRESS_PAGE_NUM_SHIFT 12
-#define ADDRESS_PAGE_OFFSET_MASK 0xFFF
-
-#define STACK_BYTESIZE 1048576  // 1 MiB
-#define DEFAULT_STACK_ADDRESS VIRT_MEMORY_BYTESIZE - STACK_BYTESIZE
-
-namespace RISCV {
+namespace RISCV::memory {
 
 struct Page {
-  uint8_t memory[PAGE_BYTESIZE];
+  std::array<uint8_t, memory::PAGE_BYTESIZE> memory;
 };
 
 class MMU {
- private:
-  std::unordered_map<uint32_t, Page*> allocatedPhysPages_;
-  uint64_t stackAddress_ = DEFAULT_STACK_ADDRESS;
-
-  bool allocatePage(const uint32_t pageNum);
-
  public:
+  MMU();
+  ~MMU();
+
+  bool loadElfFile(const std::string& filename, uint64_t* pc);
   uint64_t getStackAddress() const;
 
   bool load8(const uint64_t addr, uint8_t* value) const;
@@ -42,12 +32,13 @@ class MMU {
   bool store32(const uint64_t addr, uint32_t value);
   bool store64(const uint64_t addr, uint64_t value);
 
-  bool loadElfFile(const std::string& filename, uint64_t* pc);
+ private:
+  bool allocatePage(const uint32_t pageNum);
 
-  MMU();
-  ~MMU();
+  std::unordered_map<uint32_t, Page*> allocatedPhysPages_;
+  uint64_t stackAddress_ = DEFAULT_STACK_ADDRESS;
 };
 
-}  // namespace RISCV
+}  // namespace RISCV::memory
 
-#endif  // MEMORY_H
+#endif  // INCLUDE_MEMORY_H
