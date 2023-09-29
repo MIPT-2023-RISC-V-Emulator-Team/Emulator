@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "Executor.h"
+
 namespace RISCV {
 
 static inline uint32_t getPartialBits(const uint32_t val,
@@ -11,29 +13,26 @@ static inline uint32_t getPartialBits(const uint32_t val,
   return (val & mask);
 }
 
-// signBitNum = 0, 1, 2, ..., 31 from right to left
-static inline uint64_t signExtend(const uint64_t val, const uint8_t signBitNum) {
-  return ~(((val & (1 << signBitNum)) - 1)) | val;
-}
-
 void Hart::fetch(EncodedInstruction& encInstr) {
-  if (!m_mmu.load32(m_pc, &encInstr)) {
+  if (!mmu_.load32(pc_, &encInstr)) {
     printf("Could not handle page fault\n");
     exit(EXIT_FAILURE);
   }
 }
 
 void Hart::decode(const EncodedInstruction encInstr, DecodedInstruction& decInstr) const {
+  // Initialize instruction to be invalid so every return will be either valid instruction or
+  // invalid one
+  decInstr.type = InstructionType::INSTRUCTION_INVALID;
+
   const uint32_t opcode = encInstr & 0b1111111;
 
   switch (opcode) {
-    case 0: {  // INVALID
-      goto got_invalid_instruction;
-    }
     case 0b0110111: {  // LUI
       decInstr.rd = static_cast<RegisterType>(getPartialBits(encInstr, 11, 7) >> 7);
       decInstr.imm = getPartialBits(encInstr, 31, 12);
       decInstr.immSignBitNum = 31;
+      decInstr.exec = ExecutorLUI::getInstance();
 
       decInstr.type = InstructionType::LUI;
       return;
@@ -42,6 +41,7 @@ void Hart::decode(const EncodedInstruction encInstr, DecodedInstruction& decInst
       decInstr.rd = static_cast<RegisterType>(getPartialBits(encInstr, 11, 7) >> 7);
       decInstr.imm = getPartialBits(encInstr, 31, 12);
       decInstr.immSignBitNum = 31;
+      decInstr.exec = ExecutorAUIPC::getInstance();
 
       decInstr.type = InstructionType::AUIPC;
       return;
@@ -51,11 +51,11 @@ void Hart::decode(const EncodedInstruction encInstr, DecodedInstruction& decInst
       decInstr.rd = static_cast<RegisterType>(getPartialBits(encInstr, 11, 7) >> 7);
 
       decInstr.imm = (getPartialBits(encInstr, 30, 21) >> 20) +
-                     (getPartialBits(encInstr, 20, 20) >> 9) +
-                     (getPartialBits(encInstr, 19, 12)) +
+                     (getPartialBits(encInstr, 20, 20) >> 9) + (getPartialBits(encInstr, 19, 12)) +
                      (getPartialBits(encInstr, 31, 31) >> 11);
 
       decInstr.immSignBitNum = 20;
+      decInstr.exec = ExecutorJAL::getInstance();
       return;
     }
     case 0b1100111: {  // JALR
@@ -66,49 +66,53 @@ void Hart::decode(const EncodedInstruction encInstr, DecodedInstruction& decInst
         decInstr.rs1 = static_cast<RegisterType>(getPartialBits(encInstr, 19, 15) >> 15);
         decInstr.imm = getPartialBits(encInstr, 31, 20) >> 20;
         decInstr.immSignBitNum = 11;
-        return;
-      } else {
-        goto got_invalid_instruction;
+        decInstr.exec = ExecutorJALR::getInstance();
       }
+      return;
     }
     case 0b1100011: {  // BEQ or BNE or BLT or BGE or BLTU or BGEU
       const uint32_t funct3 = getPartialBits(encInstr, 14, 12) >> 12;
       switch (funct3) {
         case 0b000: {  // BEQ
           decInstr.type = InstructionType::BEQ;
+          decInstr.exec = ExecutorBEQ::getInstance();
           break;
         }
         case 0b001: {  // BNE
           decInstr.type = InstructionType::BNE;
+          decInstr.exec = ExecutorBNE::getInstance();
           break;
         }
         case 0b100: {  // BLT
           decInstr.type = InstructionType::BLT;
+          decInstr.exec = ExecutorBLT::getInstance();
           break;
         }
         case 0b101: {  // BGE
           decInstr.type = InstructionType::BGE;
+          decInstr.exec = ExecutorBGE::getInstance();
           break;
         }
         case 0b110: {  // BLTU
           decInstr.type = InstructionType::BLTU;
+          decInstr.exec = ExecutorBLTU::getInstance();
           break;
         }
         case 0b111: {  // BGEU
           decInstr.type = InstructionType::BGEU;
+          decInstr.exec = ExecutorBGEU::getInstance();
           break;
         }
         default:
-          goto got_invalid_instruction;
+          return;
       }
 
       decInstr.rs1 = static_cast<RegisterType>(getPartialBits(encInstr, 19, 15) >> 15);
       decInstr.rs2 = static_cast<RegisterType>(getPartialBits(encInstr, 24, 20) >> 20);
 
-      decInstr.imm = (getPartialBits(encInstr, 11, 8) >> 7) +
-                     (getPartialBits(encInstr, 30, 25) >> 20) +
-                     (getPartialBits(encInstr, 7, 7) << 4) +
-                     (getPartialBits(encInstr, 31, 31) >> 19);
+      decInstr.imm =
+          (getPartialBits(encInstr, 11, 8) >> 7) + (getPartialBits(encInstr, 30, 25) >> 20) +
+          (getPartialBits(encInstr, 7, 7) << 4) + (getPartialBits(encInstr, 31, 31) >> 19);
 
       decInstr.immSignBitNum = 12;
       return;
@@ -118,34 +122,41 @@ void Hart::decode(const EncodedInstruction encInstr, DecodedInstruction& decInst
       switch (funct3) {
         case 0b000: {  // LB
           decInstr.type = InstructionType::LB;
+          decInstr.exec = ExecutorLB::getInstance();
           break;
         }
         case 0b001: {  // LH
           decInstr.type = InstructionType::LH;
+          decInstr.exec = ExecutorLH::getInstance();
           break;
         }
         case 0b010: {  // LW
           decInstr.type = InstructionType::LW;
+          decInstr.exec = ExecutorLW::getInstance();
           break;
         }
         case 0b011: {  // LD
           decInstr.type = InstructionType::LD;
+          decInstr.exec = ExecutorLD::getInstance();
           break;
         }
         case 0b100: {  // LBU
           decInstr.type = InstructionType::LBU;
+          decInstr.exec = ExecutorLBU::getInstance();
           break;
         }
         case 0b101: {  // LHU
           decInstr.type = InstructionType::LHU;
+          decInstr.exec = ExecutorLHU::getInstance();
           break;
         }
         case 0b110: {  // LWU
           decInstr.type = InstructionType::LWU;
+          decInstr.exec = ExecutorLWU::getInstance();
           break;
         }
         default:
-          goto got_invalid_instruction;
+          return;
       }
 
       decInstr.rd = static_cast<RegisterType>(getPartialBits(encInstr, 11, 7) >> 7);
@@ -159,28 +170,32 @@ void Hart::decode(const EncodedInstruction encInstr, DecodedInstruction& decInst
       switch (funct3) {
         case 0b000: {  // SB
           decInstr.type = InstructionType::SB;
+          decInstr.exec = ExecutorSB::getInstance();
           break;
         }
         case 0b001: {  // SH
           decInstr.type = InstructionType::SH;
+          decInstr.exec = ExecutorSH::getInstance();
           break;
         }
         case 0b010: {  // SW
           decInstr.type = InstructionType::SW;
+          decInstr.exec = ExecutorSW::getInstance();
           break;
         }
         case 0b011: {  // SD
           decInstr.type = InstructionType::SD;
+          decInstr.exec = ExecutorSD::getInstance();
           break;
         }
         default:
-          goto got_invalid_instruction;
+          return;
       }
 
       decInstr.rs1 = static_cast<RegisterType>(getPartialBits(encInstr, 19, 15) >> 15);
       decInstr.rs2 = static_cast<RegisterType>(getPartialBits(encInstr, 24, 20) >> 20);
-      decInstr.imm = (getPartialBits(encInstr, 11, 7) >> 7) +
-                     (getPartialBits(encInstr, 31, 25) >> 20);
+      decInstr.imm =
+          (getPartialBits(encInstr, 11, 7) >> 7) + (getPartialBits(encInstr, 31, 25) >> 20);
       decInstr.immSignBitNum = 11;
       return;
     }
@@ -192,62 +207,69 @@ void Hart::decode(const EncodedInstruction encInstr, DecodedInstruction& decInst
           decInstr.type = InstructionType::ADDI;
           decInstr.imm = getPartialBits(encInstr, 31, 20) >> 20;
           decInstr.immSignBitNum = 11;
+          decInstr.exec = ExecutorADDI::getInstance();
           break;
         }
         case 0b001: {  // SLLI
           if (funct7 == 0b0000000) {
             decInstr.type = InstructionType::SLLI;
             decInstr.shamt = getPartialBits(encInstr, 25, 20) >> 20;
+            decInstr.exec = ExecutorSLLI::getInstance();
             break;
-          } else {
-            goto got_invalid_instruction;
           }
+          return;
         }
         case 0b010: {  // SLTI
           decInstr.type = InstructionType::SLTI;
           decInstr.imm = getPartialBits(encInstr, 31, 20) >> 20;
           decInstr.immSignBitNum = 11;
+          decInstr.exec = ExecutorSLTI::getInstance();
           break;
         }
         case 0b011: {  // SLTIU
           decInstr.type = InstructionType::SLTIU;
           decInstr.imm = getPartialBits(encInstr, 31, 20) >> 20;
           decInstr.immSignBitNum = 11;
+          decInstr.exec = ExecutorSLTIU::getInstance();
           break;
         }
         case 0b100: {  // XORI
           decInstr.type = InstructionType::XORI;
           decInstr.imm = getPartialBits(encInstr, 31, 20) >> 20;
           decInstr.immSignBitNum = 11;
+          decInstr.exec = ExecutorXORI::getInstance();
           break;
         }
         case 0b101: {                 // SRLI or SRAI
           if (funct7 == 0b0000000) {  // SRLI
             decInstr.type = InstructionType::SRLI;
             decInstr.shamt = getPartialBits(encInstr, 25, 20) >> 20;
+            decInstr.exec = ExecutorSRLI::getInstance();
             break;
           } else if (funct7 == 0b0100000) {  // SRAI
             decInstr.type = InstructionType::SRAI;
             decInstr.shamt = getPartialBits(encInstr, 25, 20) >> 20;
+            decInstr.exec = ExecutorSRAI::getInstance();
             break;
-          } else {
-            goto got_invalid_instruction;
           }
+          return;
         }
         case 0b110: {  // ORI
           decInstr.type = InstructionType::ORI;
           decInstr.imm = getPartialBits(encInstr, 31, 20) >> 20;
           decInstr.immSignBitNum = 11;
+          decInstr.exec = ExecutorORI::getInstance();
           break;
         }
         case 0b111: {  // ANDI
           decInstr.type = InstructionType::ANDI;
           decInstr.imm = getPartialBits(encInstr, 31, 20) >> 20;
           decInstr.immSignBitNum = 11;
+          decInstr.exec = ExecutorANDI::getInstance();
           break;
         }
         default:
-          goto got_invalid_instruction;
+          return;
       }
 
       decInstr.rd = static_cast<RegisterType>(getPartialBits(encInstr, 11, 7) >> 7);
@@ -261,54 +283,64 @@ void Hart::decode(const EncodedInstruction encInstr, DecodedInstruction& decInst
         switch (funct3) {
           case 0b000: {  // ADD
             decInstr.type = InstructionType::ADD;
+            decInstr.exec = ExecutorADD::getInstance();
             break;
           }
           case 0b001: {  // SLL
             decInstr.type = InstructionType::SLL;
+            decInstr.exec = ExecutorSLL::getInstance();
             break;
           }
           case 0b010: {  // SLT
             decInstr.type = InstructionType::SLT;
+            decInstr.exec = ExecutorSLT::getInstance();
             break;
           }
           case 0b011: {  // SLTU
             decInstr.type = InstructionType::SLTU;
+            decInstr.exec = ExecutorSLTU::getInstance();
             break;
           }
           case 0b100: {  // XOR
             decInstr.type = InstructionType::XOR;
+            decInstr.exec = ExecutorXOR::getInstance();
             break;
           }
           case 0b101: {  // SRL
             decInstr.type = InstructionType::SRL;
+            decInstr.exec = ExecutorSRL::getInstance();
             break;
           }
           case 0b110: {  // OR
             decInstr.type = InstructionType::OR;
+            decInstr.exec = ExecutorOR::getInstance();
             break;
           }
           case 0b111: {  // AND
             decInstr.type = InstructionType::AND;
+            decInstr.exec = ExecutorAND::getInstance();
             break;
           }
           default:
-            goto got_invalid_instruction;
+            return;
         }
       } else if (funct7 == 0b0100000) {
         switch (funct3) {
           case 0b000: {  // SUB
             decInstr.type = InstructionType::SUB;
+            decInstr.exec = ExecutorSUB::getInstance();
             break;
           }
           case 0b101: {  // SRA
             decInstr.type = InstructionType::SRA;
+            decInstr.exec = ExecutorSRA::getInstance();
             break;
           }
           default:
-            goto got_invalid_instruction;
+            return;
         }
       } else {
-        goto got_invalid_instruction;
+        return;
       }
 
       decInstr.rd = static_cast<RegisterType>(getPartialBits(encInstr, 11, 7) >> 7);
@@ -325,19 +357,20 @@ void Hart::decode(const EncodedInstruction encInstr, DecodedInstruction& decInst
         decInstr.rs1 = static_cast<RegisterType>(getPartialBits(encInstr, 19, 15) >> 15);
         decInstr.imm = getPartialBits(encInstr, 31, 20) >> 20;
         decInstr.immSignBitNum = 11;
-        return;
-      } else {
-        goto got_invalid_instruction;
+        decInstr.exec = ExecutorFENCE::getInstance();
       }
+      return;
     }
     case 0b1110011: {  // ECALL or EBREAK
       const uint32_t funct12 = getPartialBits(encInstr, 31, 20) >> 20;
       if (funct12 == 0b000000000000) {  // ECALL
         decInstr.type = InstructionType::ECALL;
+        decInstr.exec = ExecutorECALL::getInstance();
       } else if (funct12 == 0b000000000001) {  // EBREAK
         decInstr.type = InstructionType::EBREAK;
+        decInstr.exec = ExecutorEBREAK::getInstance();
       } else {
-        goto got_invalid_instruction;
+        return;
       }
 
       decInstr.rd = static_cast<RegisterType>(getPartialBits(encInstr, 11, 7) >> 7);
@@ -352,6 +385,7 @@ void Hart::decode(const EncodedInstruction encInstr, DecodedInstruction& decInst
         decInstr.rs1 = static_cast<RegisterType>(getPartialBits(encInstr, 19, 15) >> 15);
         decInstr.imm = getPartialBits(encInstr, 31, 20) >> 20;
         decInstr.immSignBitNum = 11;
+        decInstr.exec = ExecutorADDIW::getInstance();
         return;
       }
 
@@ -360,20 +394,22 @@ void Hart::decode(const EncodedInstruction encInstr, DecodedInstruction& decInst
         switch (funct3) {
           case 0b001: {  // SLLIW
             decInstr.type = InstructionType::SLLIW;
+            decInstr.exec = ExecutorSLLIW::getInstance();
             break;
           }
           case 0b101: {  // SRLIW
             decInstr.type = InstructionType::SRLIW;
+            decInstr.exec = ExecutorSRLIW::getInstance();
             break;
           }
           default:
-            goto got_invalid_instruction;
-
-            decInstr.rd = static_cast<RegisterType>(getPartialBits(encInstr, 11, 7) >> 7);
-            decInstr.rs1 = static_cast<RegisterType>(getPartialBits(encInstr, 19, 15) >> 15);
-            decInstr.shamt = getPartialBits(encInstr, 24, 20) >> 20;
             return;
         }
+
+        decInstr.rd = static_cast<RegisterType>(getPartialBits(encInstr, 11, 7) >> 7);
+        decInstr.rs1 = static_cast<RegisterType>(getPartialBits(encInstr, 19, 15) >> 15);
+        decInstr.shamt = getPartialBits(encInstr, 24, 20) >> 20;
+        return;
       }
 
       const uint32_t funct7 = getPartialBits(encInstr, 31, 25) >> 25;
@@ -381,10 +417,9 @@ void Hart::decode(const EncodedInstruction encInstr, DecodedInstruction& decInst
         decInstr.rd = static_cast<RegisterType>(getPartialBits(encInstr, 11, 7) >> 7);
         decInstr.rs1 = static_cast<RegisterType>(getPartialBits(encInstr, 19, 15) >> 15);
         decInstr.shamt = getPartialBits(encInstr, 24, 20) >> 20;
-        return;
+        decInstr.exec = ExecutorSRAIW::getInstance();
       }
-
-      goto got_invalid_instruction;
+      return;
     }
     case 0b0111011: {  // ADDW or SUBW or SLLW or SRLW or SRAW
       const uint32_t funct3 = getPartialBits(encInstr, 14, 12) >> 12;
@@ -393,32 +428,37 @@ void Hart::decode(const EncodedInstruction encInstr, DecodedInstruction& decInst
         switch (funct7) {
           case 0b0000000: {  // ADDW
             decInstr.type = InstructionType::ADDW;
+            decInstr.exec = ExecutorADDW::getInstance();
             break;
           }
           case 0b0100000: {  // SUBW
             decInstr.type = InstructionType::SUBW;
+            decInstr.exec = ExecutorSUBW::getInstance();
             break;
           }
           default:
-            goto got_invalid_instruction;
+            return;
         }
       } else if (funct7 == 0b0000000) {
         switch (funct3) {
           case 0b001: {  // SLLW
             decInstr.type = InstructionType::SLLW;
+            decInstr.exec = ExecutorSLLW::getInstance();
             break;
           }
           case 0b101: {  // SRLW
             decInstr.type = InstructionType::SRLW;
+            decInstr.exec = ExecutorSRLW::getInstance();
             break;
           }
           default:
-            goto got_invalid_instruction;
+            return;
         }
       } else if (funct3 == 0b101 && funct7 == 0b0100000) {  // SRAW
         decInstr.type = InstructionType::SRAW;
+        decInstr.exec = ExecutorSRAW::getInstance();
       } else {
-        goto got_invalid_instruction;
+        return;
       }
 
       decInstr.rd = static_cast<RegisterType>(getPartialBits(encInstr, 11, 7) >> 7);
@@ -426,147 +466,14 @@ void Hart::decode(const EncodedInstruction encInstr, DecodedInstruction& decInst
       decInstr.rs2 = static_cast<RegisterType>(getPartialBits(encInstr, 24, 20) >> 20);
       return;
     }
-    default:
-      goto got_invalid_instruction;
+    default:;
   }
 
-got_invalid_instruction:
-  decInstr.type = InstructionType::INSTRUCTION_INVALID;
   return;
 }
 
 void Hart::execute(const DecodedInstruction& decInstr) {
-  std::cout << std::hex << m_pc << ": \t" << InstructionNames[decInstr.type] << std::endl;
-
-  uint64_t nextPc = m_pc + INSTRUCTION_BYTESIZE;
-
-  switch (decInstr.type) {
-    case InstructionType::LUI: {
-      m_regs[decInstr.rd] = signExtend(decInstr.imm, decInstr.immSignBitNum);
-      break;
-    }
-    case InstructionType::AUIPC: {
-      m_regs[decInstr.rd] = m_pc + signExtend(decInstr.imm, decInstr.immSignBitNum);
-      break;
-    }
-    case InstructionType::JAL: {
-      m_regs[decInstr.rd] = m_pc + INSTRUCTION_BYTESIZE;
-      nextPc = m_pc + signExtend(decInstr.imm, decInstr.immSignBitNum);
-      break;
-    }
-    case InstructionType::JALR: {
-      const uint64_t tmp = m_pc + INSTRUCTION_BYTESIZE;
-      nextPc =
-          (m_regs[decInstr.rs1] + signExtend(decInstr.imm, decInstr.immSignBitNum)) & (~1);
-      m_regs[decInstr.rd] = tmp;
-      break;
-    }
-    case InstructionType::LB: {
-      uint8_t tmp;
-      m_mmu.load8(m_regs[decInstr.rs1] + signExtend(decInstr.imm, decInstr.immSignBitNum),
-                 &tmp);
-      m_regs[decInstr.rd] = signExtend(tmp, 7);
-      break;
-    }
-    case InstructionType::LH: {
-      uint16_t tmp;
-      m_mmu.load16(m_regs[decInstr.rs1] + signExtend(decInstr.imm, decInstr.immSignBitNum),
-                  &tmp);
-      m_regs[decInstr.rd] = signExtend(tmp, 15);
-      break;
-    }
-    case InstructionType::LW: {
-      uint32_t tmp;
-      m_mmu.load32(m_regs[decInstr.rs1] + signExtend(decInstr.imm, decInstr.immSignBitNum),
-                  &tmp);
-      m_regs[decInstr.rd] = signExtend(tmp, 31);
-      break;
-    }
-    case InstructionType::LD: {
-      m_mmu.load64(m_regs[decInstr.rs1] + signExtend(decInstr.imm, decInstr.immSignBitNum),
-                  &m_regs[decInstr.rd]);
-      break;
-    }
-    case InstructionType::LBU: {
-      uint8_t tmp;
-      m_mmu.load8(m_regs[decInstr.rs1] + signExtend(decInstr.imm, decInstr.immSignBitNum),
-                 &tmp);
-      m_regs[decInstr.rd] = tmp;
-      break;
-    }
-    case InstructionType::LHU: {
-      uint16_t tmp;
-      m_mmu.load16(m_regs[decInstr.rs1] + signExtend(decInstr.imm, decInstr.immSignBitNum),
-                  &tmp);
-      m_regs[decInstr.rd] = tmp;
-      break;
-    }
-    case InstructionType::LWU: {
-      uint32_t tmp;
-      m_mmu.load32(m_regs[decInstr.rs1] + signExtend(decInstr.imm, decInstr.immSignBitNum),
-                  &tmp);
-      m_regs[decInstr.rd] = tmp;
-      break;
-    }
-    case InstructionType::SB: {
-      m_mmu.store8(m_regs[decInstr.rs1] + signExtend(decInstr.imm, decInstr.immSignBitNum),
-                  m_regs[decInstr.rs2] & 0xFF);
-      break;
-    }
-    case InstructionType::SH: {
-      m_mmu.store16(m_regs[decInstr.rs1] + signExtend(decInstr.imm, decInstr.immSignBitNum),
-                   m_regs[decInstr.rs2] & 0xFFFF);
-      break;
-    }
-    case InstructionType::SW: {
-      m_mmu.store32(m_regs[decInstr.rs1] + signExtend(decInstr.imm, decInstr.immSignBitNum),
-                   m_regs[decInstr.rs2] & 0xFFFFFFFF);
-      break;
-    }
-    case InstructionType::SD: {
-      m_mmu.store64(m_regs[decInstr.rs1] + signExtend(decInstr.imm, decInstr.immSignBitNum),
-                   m_regs[decInstr.rs2]);
-      break;
-    }
-    case InstructionType::BEQ: {
-      if (m_regs[decInstr.rs1] == m_regs[decInstr.rs2]) {
-        nextPc = m_pc + signExtend(decInstr.imm, decInstr.immSignBitNum);
-      }
-      break;
-    }
-    case InstructionType::BNE: {
-      if (m_regs[decInstr.rs1] != m_regs[decInstr.rs2]) {
-        nextPc = m_pc + signExtend(decInstr.imm, decInstr.immSignBitNum);
-      }
-      break;
-    }
-    case InstructionType::BLT: {
-      if (static_cast<SignedRegValue>(m_regs[decInstr.rs1]) < m_regs[decInstr.rs2]) {
-        nextPc = m_pc + signExtend(decInstr.imm, decInstr.immSignBitNum);
-      }
-      break;
-    }
-    case InstructionType::BGE: {
-      if (static_cast<SignedRegValue>(m_regs[decInstr.rs1]) >= m_regs[decInstr.rs2]) {
-        nextPc = m_pc + signExtend(decInstr.imm, decInstr.immSignBitNum);
-      }
-      break;
-    }
-    case InstructionType::BLTU: {
-      if (m_regs[decInstr.rs1] < m_regs[decInstr.rs2]) {
-        nextPc = m_pc + signExtend(decInstr.imm, decInstr.immSignBitNum);
-      }
-      break;
-    }
-    case InstructionType::BGEU: {
-      if (m_regs[decInstr.rs1] >= m_regs[decInstr.rs2]) {
-        nextPc = m_pc + signExtend(decInstr.imm, decInstr.immSignBitNum);
-      }
-      break;
-    }
-  }
-
-  m_pc = nextPc;
+  (*decInstr.exec)(this, decInstr);
 }
 
 }  // namespace RISCV

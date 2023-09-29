@@ -3,6 +3,7 @@
 
 #include <cstdint>
 
+#include "Executor.h"
 #include "constants.h"
 
 namespace RISCV {
@@ -17,12 +18,14 @@ struct DecodedInstruction {
   RegisterType rs1;
   RegisterType rs2;
 
-  uint8_t immSignBitNum = 0;
+  uint8_t immSignBitNum = 0;  // Helper to signExtend
 
   union {
     uint32_t imm = 0;
     uint32_t shamt;
   };
+
+  IExecutor* exec;
 
   InstructionType type = InstructionType::INSTRUCTION_INVALID;
 };

@@ -10,26 +10,45 @@ namespace RISCV {
 
 class Hart {
  public:
+  RegValue getReg(const RegisterType id) const {
+    return regs_[id];
+  }
+
+  void setReg(const RegisterType id, const RegValue val) {
+    regs_[id] = val;
+    regs_[RegisterType::ZERO] = 0;
+  }
+
+  void incrementPC() {
+    pc_ += INSTRUCTION_BYTESIZE;
+  }
+
+  uint64_t getPC() const {
+    return pc_;
+  }
+
+  void setPC(uint64_t newPC) {
+    pc_ = newPC;
+  }
+
   void fetch(EncodedInstruction& encInstr);
   void decode(const EncodedInstruction encInstr, DecodedInstruction& decInstr) const;
   void execute(const DecodedInstruction& decInstr);
 
   void loadElfFile(const std::string& filename) {
-    m_mmu.loadElfFile(filename, &m_pc);
+    mmu_.loadElfFile(filename, &pc_);
   }
 
-  uint64_t getPC() const {
-    return m_pc;
-  };
-
   Hart() {
-    m_regs[RegisterType::SP] = m_mmu.getStackAddress();
-  };
+    regs_[RegisterType::SP] = mmu_.getStackAddress();
+  }
+
+  // Temporary solution is to make MMU public. TODO: organize memory
+  memory::MMU mmu_;
 
  private:
-  memory::MMU m_mmu;
-  uint64_t m_pc;
-  std::array<RegValue, RegisterType::REGISTER_COUNT> m_regs = {};
+  uint64_t pc_;
+  std::array<RegValue, RegisterType::REGISTER_COUNT> regs_ = {};
 };
 
 }  // namespace RISCV
