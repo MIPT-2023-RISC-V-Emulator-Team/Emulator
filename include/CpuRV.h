@@ -29,7 +29,7 @@ class CpuRV {
  private:
   memory::MMU mmu_;
   uint64_t pc_;
-  std::array<Register, RegisterType::REGISTER_COUNT> regs_;
+  std::array<Register, RegisterType::REGISTER_COUNT> regs_ = {};
 };
 
 }  // namespace RISCV

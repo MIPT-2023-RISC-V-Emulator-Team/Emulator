@@ -461,7 +461,6 @@ void CpuRV::execute(const DecodedInstruction& decInstr) {
       regs_[decInstr.rd].value = tmp;
       break;
     }
-
     case InstructionType::LB: {
       uint8_t tmp;
       mmu_.load8(regs_[decInstr.rs1].value + signExtend(decInstr.imm, decInstr.immSignBitNum),
@@ -527,6 +526,42 @@ void CpuRV::execute(const DecodedInstruction& decInstr) {
     case InstructionType::SD: {
       mmu_.store64(regs_[decInstr.rs1].value + signExtend(decInstr.imm, decInstr.immSignBitNum),
                    regs_[decInstr.rs2].value);
+      break;
+    }
+    case InstructionType::BEQ: {
+      if (regs_[decInstr.rs1].value == regs_[decInstr.rs2].value) {
+        nextPc = pc_ + signExtend(decInstr.imm, decInstr.immSignBitNum);
+      }
+      break;
+    }
+    case InstructionType::BNE: {
+      if (regs_[decInstr.rs1].value != regs_[decInstr.rs2].value) {
+        nextPc = pc_ + signExtend(decInstr.imm, decInstr.immSignBitNum);
+      }
+      break;
+    }
+    case InstructionType::BLT: {
+      if (static_cast<int64_t>(regs_[decInstr.rs1].value) < regs_[decInstr.rs2].value) {
+        nextPc = pc_ + signExtend(decInstr.imm, decInstr.immSignBitNum);
+      }
+      break;
+    }
+    case InstructionType::BGE: {
+      if (static_cast<int64_t>(regs_[decInstr.rs1].value) >= regs_[decInstr.rs2].value) {
+        nextPc = pc_ + signExtend(decInstr.imm, decInstr.immSignBitNum);
+      }
+      break;
+    }
+    case InstructionType::BLTU: {
+      if (regs_[decInstr.rs1].value < regs_[decInstr.rs2].value) {
+        nextPc = pc_ + signExtend(decInstr.imm, decInstr.immSignBitNum);
+      }
+      break;
+    }
+    case InstructionType::BGEU: {
+      if (regs_[decInstr.rs1].value >= regs_[decInstr.rs2].value) {
+        nextPc = pc_ + signExtend(decInstr.imm, decInstr.immSignBitNum);
+      }
       break;
     }
   }
