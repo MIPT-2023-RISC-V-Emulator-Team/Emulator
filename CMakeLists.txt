@@ -37,7 +37,7 @@ add_custom_target(format
 
 add_executable(risc-v
     ${SRC_DIR}/risc-v.cpp
-    ${SRC_DIR}/CpuRV.cpp
+    ${SRC_DIR}/Hart.cpp
     ${SRC_DIR}/Memory.cpp
 )
 

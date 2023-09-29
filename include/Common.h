@@ -7,13 +7,10 @@
 
 namespace RISCV {
 
-struct Register {
-  uint64_t value;
-};
+using RegValue = uint64_t;
+using SignedRegValue = int64_t;
 
-struct EncodedInstruction {
-  uint32_t instr;
-};
+using EncodedInstruction = uint32_t;
 
 struct DecodedInstruction {
   RegisterType rd;

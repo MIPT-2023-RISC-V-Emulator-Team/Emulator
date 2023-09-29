@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include "CpuRV.h"
+#include "Hart.h"
 
 int main(int argc, char* argv[]) {
   if (argc < 2) {
@@ -8,7 +8,7 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 
-  RISCV::CpuRV CPU;
+  RISCV::Hart CPU;
   CPU.loadElfFile(argv[1]);
 
   RISCV::EncodedInstruction encInstr;
