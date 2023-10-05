@@ -3,29 +3,29 @@
 
 #include <cstdint>
 
+#include "Executor.h"
 #include "constants.h"
 
 namespace RISCV {
 
-struct Register {
-  uint64_t value;
-};
+using RegValue = uint64_t;
+using SignedRegValue = int64_t;
 
-struct EncodedInstruction {
-  uint32_t instr;
-};
+using EncodedInstruction = uint32_t;
 
 struct DecodedInstruction {
   RegisterType rd;
   RegisterType rs1;
   RegisterType rs2;
 
-  uint8_t immSignBitNum = 0;
+  uint8_t immSignBitNum = 0;  // Helper to signExtend
 
   union {
     uint32_t imm = 0;
     uint32_t shamt;
   };
+
+  IExecutor* exec;
 
   InstructionType type = InstructionType::INSTRUCTION_INVALID;
 };

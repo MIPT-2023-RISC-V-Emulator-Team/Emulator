@@ -96,21 +96,21 @@ bool MMU::store8(const uint64_t addr, uint8_t value) {
 }
 
 bool MMU::store16(const uint64_t addr, uint16_t value) {
-  if (!store8(addr, value & 0x00FF) || !store8(addr + 1, value << 8)) {
+  if (!store8(addr, value & 0x00FF) || !store8(addr + 1, value >> 8)) {
     return false;
   }
   return true;
 }
 
 bool MMU::store32(const uint64_t addr, uint32_t value) {
-  if (!store16(addr, value & 0x0000FFFF) || !store16(addr + 2, value << 16)) {
+  if (!store16(addr, value & 0x0000FFFF) || !store16(addr + 2, value >> 16)) {
     return false;
   }
   return true;
 }
 
 bool MMU::store64(const uint64_t addr, uint64_t value) {
-  if (!store32(addr, value & 0x00000000FFFFFFFF) || !store32(addr + 4, value << 32)) {
+  if (!store32(addr, value & 0x00000000FFFFFFFF) || !store32(addr + 4, value >> 32)) {
     return false;
   }
   return true;
