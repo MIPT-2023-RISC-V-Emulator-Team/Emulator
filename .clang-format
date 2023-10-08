@@ -9,6 +9,7 @@ AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
+AccessModifierOffset: -4
 BinPackArguments: false
 BinPackParameters: false
 BreakConstructorInitializers: BeforeColon
@@ -20,4 +21,5 @@ Cpp11BracedListStyle: true
 DerivePointerAlignment: false
 FixNamespaceComments: true
 PointerAlignment: Left
+IndentWidth: 4
 TabWidth: 4
