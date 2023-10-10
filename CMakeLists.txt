@@ -40,6 +40,7 @@ add_executable(risc-v
     ${SRC_DIR}/Hart.cpp
     ${SRC_DIR}/Memory.cpp
     ${SRC_DIR}/Executor.cpp
+    ${SRC_DIR}/Decoder.cpp
 )
 
 target_include_directories(risc-v

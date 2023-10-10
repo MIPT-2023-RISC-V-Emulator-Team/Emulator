@@ -11,23 +11,25 @@ namespace RISCV {
 using RegValue = uint64_t;
 using SignedRegValue = int64_t;
 
+using Executor = void (*)(Hart* hart, const DecodedInstruction& instr);
+
 using EncodedInstruction = uint32_t;
 
 struct DecodedInstruction {
-  RegisterType rd;
-  RegisterType rs1;
-  RegisterType rs2;
+    RegisterType rd;
+    RegisterType rs1;
+    RegisterType rs2;
 
-  uint8_t immSignBitNum = 0;  // Helper to signExtend
+    uint8_t immSignBitNum = 0;  // Helper to sext
 
-  union {
-    uint32_t imm = 0;
-    uint32_t shamt;
-  };
+    union {
+        uint32_t imm = 0;
+        uint32_t shamt;
+    };
 
-  IExecutor* exec;
+    Executor exec;
 
-  InstructionType type = InstructionType::INSTRUCTION_INVALID;
+    InstructionType type = InstructionType::INSTRUCTION_INVALID;
 };
 
 }  // namespace RISCV

@@ -6,112 +6,81 @@ namespace RISCV {
 class Hart;
 struct DecodedInstruction;
 
-// ========================= Generic IExecutor ========================= //
-
-class IExecutor {
- public:
-  virtual void operator()(Hart* hart, const DecodedInstruction& instr) = 0;
-};
-
-// Implement singleton
-#define MAKE_EXECUTOR_DECL(TYPE)                                           \
-  class Executor##TYPE final : public IExecutor {                          \
-   private:                                                                \
-    static Executor##TYPE* instancePtr;                                    \
-    Executor##TYPE(){};                                                    \
-                                                                           \
-   public:                                                                 \
-    Executor##TYPE(const Executor##TYPE& obj) = delete;                    \
-                                                                           \
-    static Executor##TYPE* getInstance() {                                 \
-      if (!instancePtr) {                                                  \
-        instancePtr = new Executor##TYPE();                                \
-      }                                                                    \
-                                                                           \
-      return instancePtr;                                                  \
-    }                                                                      \
-                                                                           \
-    void operator()(Hart* hart, const DecodedInstruction& instr) override; \
-  };
-
-// Used in .cpp file
-#define MAKE_EXECUTOR_INIT(TYPE) Executor##TYPE* Executor##TYPE::instancePtr = nullptr;
-
 // ================================ PC ================================= //
 
-MAKE_EXECUTOR_DECL(LUI)
-MAKE_EXECUTOR_DECL(AUIPC)
+void ExecutorLUI(Hart* hart, const DecodedInstruction& instr);
+void ExecutorAUIPC(Hart* hart, const DecodedInstruction& instr);
 
 // =============================== Jumps =============================== //
 
-MAKE_EXECUTOR_DECL(JAL)
-MAKE_EXECUTOR_DECL(JALR)
+void ExecutorJAL(Hart* hart, const DecodedInstruction& instr);
+void ExecutorJALR(Hart* hart, const DecodedInstruction& instr);
 
 // ============================= Branching ============================= //
 
-MAKE_EXECUTOR_DECL(BEQ)
-MAKE_EXECUTOR_DECL(BNE)
-MAKE_EXECUTOR_DECL(BLT)
-MAKE_EXECUTOR_DECL(BGE)
-MAKE_EXECUTOR_DECL(BLTU)
-MAKE_EXECUTOR_DECL(BGEU)
+void ExecutorBEQ(Hart* hart, const DecodedInstruction& instr);
+void ExecutorBNE(Hart* hart, const DecodedInstruction& instr);
+void ExecutorBLT(Hart* hart, const DecodedInstruction& instr);
+void ExecutorBGE(Hart* hart, const DecodedInstruction& instr);
+void ExecutorBLTU(Hart* hart, const DecodedInstruction& instr);
+void ExecutorBGEU(Hart* hart, const DecodedInstruction& instr);
 
 // =============================== Load ================================ //
 
-MAKE_EXECUTOR_DECL(LB)
-MAKE_EXECUTOR_DECL(LH)
-MAKE_EXECUTOR_DECL(LW)
-MAKE_EXECUTOR_DECL(LD)
-MAKE_EXECUTOR_DECL(LBU)
-MAKE_EXECUTOR_DECL(LHU)
-MAKE_EXECUTOR_DECL(LWU)
+void ExecutorLB(Hart* hart, const DecodedInstruction& instr);
+void ExecutorLH(Hart* hart, const DecodedInstruction& instr);
+void ExecutorLW(Hart* hart, const DecodedInstruction& instr);
+void ExecutorLD(Hart* hart, const DecodedInstruction& instr);
+void ExecutorLBU(Hart* hart, const DecodedInstruction& instr);
+void ExecutorLHU(Hart* hart, const DecodedInstruction& instr);
+void ExecutorLWU(Hart* hart, const DecodedInstruction& instr);
 
 // =============================== Store =============================== //
 
-MAKE_EXECUTOR_DECL(SB)
-MAKE_EXECUTOR_DECL(SH)
-MAKE_EXECUTOR_DECL(SW)
-MAKE_EXECUTOR_DECL(SD)
+void ExecutorSB(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSH(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSW(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSD(Hart* hart, const DecodedInstruction& instr);
 
 // ======================= Arithmetic immediate ======================== //
 
-MAKE_EXECUTOR_DECL(ADDI)
-MAKE_EXECUTOR_DECL(SLLI)
-MAKE_EXECUTOR_DECL(SLTI)
-MAKE_EXECUTOR_DECL(SLTIU)
-MAKE_EXECUTOR_DECL(XORI)
-MAKE_EXECUTOR_DECL(SRLI)
-MAKE_EXECUTOR_DECL(SRAI)
-MAKE_EXECUTOR_DECL(ORI)
-MAKE_EXECUTOR_DECL(ANDI)
-MAKE_EXECUTOR_DECL(ADDIW)
-MAKE_EXECUTOR_DECL(SLLIW)
-MAKE_EXECUTOR_DECL(SRLIW)
-MAKE_EXECUTOR_DECL(SRAIW)
+void ExecutorADDI(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSLLI(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSLTI(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSLTIU(Hart* hart, const DecodedInstruction& instr);
+void ExecutorXORI(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSRLI(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSRAI(Hart* hart, const DecodedInstruction& instr);
+void ExecutorORI(Hart* hart, const DecodedInstruction& instr);
+void ExecutorANDI(Hart* hart, const DecodedInstruction& instr);
+void ExecutorADDIW(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSLLIW(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSRLIW(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSRAIW(Hart* hart, const DecodedInstruction& instr);
 
 // ============================ Arithmetic ============================= //
 
-MAKE_EXECUTOR_DECL(ADD)
-MAKE_EXECUTOR_DECL(SLL)
-MAKE_EXECUTOR_DECL(SLT)
-MAKE_EXECUTOR_DECL(SLTU)
-MAKE_EXECUTOR_DECL(XOR)
-MAKE_EXECUTOR_DECL(SRL)
-MAKE_EXECUTOR_DECL(OR)
-MAKE_EXECUTOR_DECL(AND)
-MAKE_EXECUTOR_DECL(SUB)
-MAKE_EXECUTOR_DECL(SRA)
-MAKE_EXECUTOR_DECL(ADDW)
-MAKE_EXECUTOR_DECL(SUBW)
-MAKE_EXECUTOR_DECL(SLLW)
-MAKE_EXECUTOR_DECL(SRLW)
-MAKE_EXECUTOR_DECL(SRAW)
+void ExecutorADD(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSLL(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSLT(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSLTU(Hart* hart, const DecodedInstruction& instr);
+void ExecutorXOR(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSRL(Hart* hart, const DecodedInstruction& instr);
+void ExecutorOR(Hart* hart, const DecodedInstruction& instr);
+void ExecutorAND(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSUB(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSRA(Hart* hart, const DecodedInstruction& instr);
+void ExecutorADDW(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSUBW(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSLLW(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSRLW(Hart* hart, const DecodedInstruction& instr);
+void ExecutorSRAW(Hart* hart, const DecodedInstruction& instr);
 
 // ========================== Miscellaneous ============================ //
 
-MAKE_EXECUTOR_DECL(FENCE)
-MAKE_EXECUTOR_DECL(ECALL)
-MAKE_EXECUTOR_DECL(EBREAK)
+void ExecutorFENCE(Hart* hart, const DecodedInstruction& instr);
+void ExecutorECALL(Hart* hart, const DecodedInstruction& instr);
+void ExecutorEBREAK(Hart* hart, const DecodedInstruction& instr);
 
 }  // namespace RISCV
 
