@@ -139,7 +139,8 @@ EOT
     instr_field = String.new
     sext_instructions = ["lui", "auipc", "jal", "jalr", "beq", "bne", "blt","bge",
                          "bltu", "bgeu", "lb", "lh", "lw", "ld", "lbu", "lhu", "lwu",
-                         "sb", "sh", "sw", "sd", "addi", "xori", "ori", "andi", "addiw"]
+                         "sb", "sh", "sw", "sd", "addi", "xori", "ori", "andi", "addiw",
+                         "slti", "sltiu"]
 
     for field in instruction.fields
       field_name = field
