@@ -18,10 +18,6 @@ int main(int argc, char* argv[]) {
 
     uint64_t instrCount = 0;
 
-    uint64_t fetchMicroseconds = 0;
-    uint64_t decodeMicroseconds = 0;
-    uint64_t executeMicroseconds = 0;
-
     auto executeStart = std::chrono::high_resolution_clock::now();
     while (true) {
         if (CPU.getPC() == 0)
