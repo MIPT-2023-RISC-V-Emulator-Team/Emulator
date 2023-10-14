@@ -6,20 +6,17 @@
 
 namespace RISCV {
 
-void Hart::fetch(EncodedInstruction& encInstr) {
+EncodedInstruction Hart::fetch() {
+    EncodedInstruction encInstr;
     if (!mmu_.load32(pc_, &encInstr)) {
         printf("Could not handle page fault\n");
         exit(EXIT_FAILURE);
     }
+    return encInstr;
 }
 
-void Hart::decode(const EncodedInstruction encInstr, DecodedInstruction& decInstr) const {
-    // Initialize instruction to be invalid so every return will
-    // be either valid instruction or invalid one
-    decInstr.type = InstructionType::INSTRUCTION_INVALID;
-    decoder_.decodeInstruction(encInstr, decInstr);
-
-    return;
+DecodedInstruction Hart::decode(const EncodedInstruction encInstr) const {
+    return decoder_.decodeInstruction(encInstr);
 }
 
 void Hart::execute(const DecodedInstruction& decInstr) {

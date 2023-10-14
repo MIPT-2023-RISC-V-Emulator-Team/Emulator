@@ -1,0 +1,2226 @@
+---
+fields:
+  rd:
+    name: rd
+    location: {bits: [{msb: 11, lsb: 7, from: 4, to: 0}], mask: 3968, debug_hex_mask: f80}
+  rs1:
+    name: rs1
+    location: {bits: [{msb: 19, lsb: 15, from: 4, to: 0}], mask: 1015808, debug_hex_mask: f8000}
+  rs2:
+    name: rs2
+    location: {bits: [{msb: 24, lsb: 20, from: 4, to: 0}], mask: 32505856, debug_hex_mask: 1f00000}
+  rs3:
+    name: rs3
+    location: {bits: [{msb: 31, lsb: 27, from: 4, to: 0}], mask: 4160749568, debug_hex_mask: f8000000}
+  rm:
+    name: rm
+    location: {bits: [{msb: 14, lsb: 12, from: 2, to: 0}], mask: 28672, debug_hex_mask: '7000'}
+  imm12:
+    name: imm
+    location: {bits: [{msb: 31, lsb: 20, from: 11, to: 0}], mask: 4293918720, debug_hex_mask: fff00000}
+  imm20:
+    name: imm
+    location: {bits: [{msb: 31, lsb: 12, from: 31, to: 12}], mask: 4294963200, debug_hex_mask: fffff000}
+  jimm20:
+    name: imm
+    location: {bits: [{msb: 31, lsb: 31, from: 20, to: 20}, {msb: 30, lsb: 21, from: 10, to: 1}, {msb: 20, lsb: 20, from: 11, to: 11}, {msb: 19, lsb: 12, from: 19, to: 12}], mask: 4294963200, debug_hex_mask: fffff000}
+  storeimm:
+    name: imm
+    location: {bits: [{msb: 31, lsb: 25, from: 11, to: 5}, {msb: 11, lsb: 7, from: 4, to: 0}], mask: 4261416832, debug_hex_mask: fe000f80}
+  bimm:
+    name: imm
+    location: {bits: [{msb: 31, lsb: 31, from: 12, to: 12}, {msb: 30, lsb: 25, from: 10, to: 5}, {msb: 11, lsb: 8, from: 4, to: 1}, {msb: 7, lsb: 7, from: 11, to: 11}], mask: 4261416832, debug_hex_mask: fe000f80}
+  aqrl:
+    name: aqrl
+    location: {bits: [{msb: 26, lsb: 25, from: 1, to: 0}], mask: 100663296, debug_hex_mask: '6000000'}
+  shamt:
+    name: shamt
+    location: {bits: [{msb: 25, lsb: 20, from: 5, to: 0}], mask: 66060288, debug_hex_mask: 3f00000}
+  shamtw:
+    name: shamtw
+    location: {bits: [{msb: 24, lsb: 20, from: 4, to: 0}], mask: 32505856, debug_hex_mask: 1f00000}
+  pred:
+    name: pred
+    location: {bits: [{msb: 27, lsb: 24, from: 3, to: 0}], mask: 251658240, debug_hex_mask: f000000}
+  succ:
+    name: succ
+    location: {bits: [{msb: 23, lsb: 20, from: 3, to: 0}], mask: 15728640, debug_hex_mask: f00000}
+  fm:
+    name: fm
+    location: {bits: [{msb: 31, lsb: 28, from: 3, to: 0}], mask: 4026531840, debug_hex_mask: f0000000}
+instructions:
+- &1
+  mnemonic: beq
+  format: B
+  fixedbits: [{msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 24}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rs1, rs2, bimm]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 99
+  debug_hex_fixedvalue: '63'
+- &2
+  mnemonic: bne
+  format: B
+  fixedbits: [{msb: 14, lsb: 12, value: 1}, {msb: 6, lsb: 2, value: 24}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rs1, rs2, bimm]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 4195
+  debug_hex_fixedvalue: '1063'
+- &3
+  mnemonic: blt
+  format: B
+  fixedbits: [{msb: 14, lsb: 12, value: 4}, {msb: 6, lsb: 2, value: 24}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rs1, rs2, bimm]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 16483
+  debug_hex_fixedvalue: '4063'
+- &4
+  mnemonic: bge
+  format: B
+  fixedbits: [{msb: 14, lsb: 12, value: 5}, {msb: 6, lsb: 2, value: 24}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rs1, rs2, bimm]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 20579
+  debug_hex_fixedvalue: '5063'
+- &5
+  mnemonic: bltu
+  format: B
+  fixedbits: [{msb: 14, lsb: 12, value: 6}, {msb: 6, lsb: 2, value: 24}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rs1, rs2, bimm]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 24675
+  debug_hex_fixedvalue: '6063'
+- &6
+  mnemonic: bgeu
+  format: B
+  fixedbits: [{msb: 14, lsb: 12, value: 7}, {msb: 6, lsb: 2, value: 24}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rs1, rs2, bimm]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 28771
+  debug_hex_fixedvalue: '7063'
+- &7
+  mnemonic: jalr
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 25}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 103
+  debug_hex_fixedvalue: '67'
+- &8
+  mnemonic: jal
+  format: J
+  fixedbits: [{msb: 6, lsb: 2, value: 27}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, jimm20]
+  fixedmask: 127
+  debug_hex_fixedmask: 7f
+  fixedvalue: 111
+  debug_hex_fixedvalue: 6f
+- &9
+  mnemonic: lui
+  format: U
+  fixedbits: [{msb: 6, lsb: 2, value: 13}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, imm20]
+  fixedmask: 127
+  debug_hex_fixedmask: 7f
+  fixedvalue: 55
+  debug_hex_fixedvalue: '37'
+- &10
+  mnemonic: auipc
+  format: U
+  fixedbits: [{msb: 6, lsb: 2, value: 5}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, imm20]
+  fixedmask: 127
+  debug_hex_fixedmask: 7f
+  fixedvalue: 23
+  debug_hex_fixedvalue: '17'
+- &11
+  mnemonic: addi
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 4}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 19
+  debug_hex_fixedvalue: '13'
+- &12
+  mnemonic: slli
+  format: R
+  fixedbits: [{msb: 31, lsb: 26, value: 0}, {msb: 14, lsb: 12, value: 1}, {msb: 6, lsb: 2, value: 4}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, shamt]
+  fixedmask: 4227887231
+  debug_hex_fixedmask: fc00707f
+  fixedvalue: 4115
+  debug_hex_fixedvalue: '1013'
+- &13
+  mnemonic: slti
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 2}, {msb: 6, lsb: 2, value: 4}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 8211
+  debug_hex_fixedvalue: '2013'
+- &14
+  mnemonic: sltiu
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 3}, {msb: 6, lsb: 2, value: 4}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 12307
+  debug_hex_fixedvalue: '3013'
+- &15
+  mnemonic: xori
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 4}, {msb: 6, lsb: 2, value: 4}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 16403
+  debug_hex_fixedvalue: '4013'
+- &16
+  mnemonic: srli
+  format: R
+  fixedbits: [{msb: 31, lsb: 26, value: 0}, {msb: 14, lsb: 12, value: 5}, {msb: 6, lsb: 2, value: 4}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, shamt]
+  fixedmask: 4227887231
+  debug_hex_fixedmask: fc00707f
+  fixedvalue: 20499
+  debug_hex_fixedvalue: '5013'
+- &17
+  mnemonic: srai
+  format: R
+  fixedbits: [{msb: 31, lsb: 26, value: 16}, {msb: 14, lsb: 12, value: 5}, {msb: 6, lsb: 2, value: 4}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, shamt]
+  fixedmask: 4227887231
+  debug_hex_fixedmask: fc00707f
+  fixedvalue: 1073762323
+  debug_hex_fixedvalue: '40005013'
+- &18
+  mnemonic: ori
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 6}, {msb: 6, lsb: 2, value: 4}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 24595
+  debug_hex_fixedvalue: '6013'
+- &19
+  mnemonic: andi
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 7}, {msb: 6, lsb: 2, value: 4}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 28691
+  debug_hex_fixedvalue: '7013'
+- &20
+  mnemonic: add
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 0}, {msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 12}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 51
+  debug_hex_fixedvalue: '33'
+- &28
+  mnemonic: sub
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 32}, {msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 12}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 1073741875
+  debug_hex_fixedvalue: '40000033'
+- &21
+  mnemonic: sll
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 0}, {msb: 14, lsb: 12, value: 1}, {msb: 6, lsb: 2, value: 12}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 4147
+  debug_hex_fixedvalue: '1033'
+- &22
+  mnemonic: slt
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 0}, {msb: 14, lsb: 12, value: 2}, {msb: 6, lsb: 2, value: 12}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 8243
+  debug_hex_fixedvalue: '2033'
+- &23
+  mnemonic: sltu
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 0}, {msb: 14, lsb: 12, value: 3}, {msb: 6, lsb: 2, value: 12}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 12339
+  debug_hex_fixedvalue: '3033'
+- &24
+  mnemonic: xor
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 0}, {msb: 14, lsb: 12, value: 4}, {msb: 6, lsb: 2, value: 12}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 16435
+  debug_hex_fixedvalue: '4033'
+- &25
+  mnemonic: srl
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 0}, {msb: 14, lsb: 12, value: 5}, {msb: 6, lsb: 2, value: 12}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 20531
+  debug_hex_fixedvalue: '5033'
+- &29
+  mnemonic: sra
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 32}, {msb: 14, lsb: 12, value: 5}, {msb: 6, lsb: 2, value: 12}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 1073762355
+  debug_hex_fixedvalue: '40005033'
+- &26
+  mnemonic: or
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 0}, {msb: 14, lsb: 12, value: 6}, {msb: 6, lsb: 2, value: 12}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 24627
+  debug_hex_fixedvalue: '6033'
+- &27
+  mnemonic: and
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 0}, {msb: 14, lsb: 12, value: 7}, {msb: 6, lsb: 2, value: 12}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 28723
+  debug_hex_fixedvalue: '7033'
+- &38
+  mnemonic: addiw
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 6}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 27
+  debug_hex_fixedvalue: 1b
+- &39
+  mnemonic: slliw
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 0}, {msb: 14, lsb: 12, value: 1}, {msb: 6, lsb: 2, value: 6}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, shamtw]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 4123
+  debug_hex_fixedvalue: 101b
+- &40
+  mnemonic: srliw
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 0}, {msb: 14, lsb: 12, value: 5}, {msb: 6, lsb: 2, value: 6}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, shamtw]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 20507
+  debug_hex_fixedvalue: 501b
+- &41
+  mnemonic: sraiw
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 32}, {msb: 14, lsb: 12, value: 5}, {msb: 6, lsb: 2, value: 6}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, shamtw]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 1073762331
+  debug_hex_fixedvalue: 4000501b
+- &42
+  mnemonic: addw
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 0}, {msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 14}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 59
+  debug_hex_fixedvalue: 3b
+- &45
+  mnemonic: subw
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 32}, {msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 14}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 1073741883
+  debug_hex_fixedvalue: 4000003b
+- &43
+  mnemonic: sllw
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 0}, {msb: 14, lsb: 12, value: 1}, {msb: 6, lsb: 2, value: 14}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 4155
+  debug_hex_fixedvalue: 103b
+- &44
+  mnemonic: srlw
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 0}, {msb: 14, lsb: 12, value: 5}, {msb: 6, lsb: 2, value: 14}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 20539
+  debug_hex_fixedvalue: 503b
+- &46
+  mnemonic: sraw
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 32}, {msb: 14, lsb: 12, value: 5}, {msb: 6, lsb: 2, value: 14}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 1073762363
+  debug_hex_fixedvalue: 4000503b
+- &52
+  mnemonic: lb
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 0}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 3
+  debug_hex_fixedvalue: '3'
+- &53
+  mnemonic: lh
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 1}, {msb: 6, lsb: 2, value: 0}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 4099
+  debug_hex_fixedvalue: '1003'
+- &54
+  mnemonic: lw
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 2}, {msb: 6, lsb: 2, value: 0}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 8195
+  debug_hex_fixedvalue: '2003'
+- &55
+  mnemonic: ld
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 3}, {msb: 6, lsb: 2, value: 0}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 12291
+  debug_hex_fixedvalue: '3003'
+- &56
+  mnemonic: lbu
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 4}, {msb: 6, lsb: 2, value: 0}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 16387
+  debug_hex_fixedvalue: '4003'
+- &57
+  mnemonic: lhu
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 5}, {msb: 6, lsb: 2, value: 0}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 20483
+  debug_hex_fixedvalue: '5003'
+- &58
+  mnemonic: lwu
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 6}, {msb: 6, lsb: 2, value: 0}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 24579
+  debug_hex_fixedvalue: '6003'
+- &59
+  mnemonic: sb
+  format: S
+  fixedbits: [{msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 8}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rs1, rs2, storeimm]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 35
+  debug_hex_fixedvalue: '23'
+- &60
+  mnemonic: sh
+  format: S
+  fixedbits: [{msb: 14, lsb: 12, value: 1}, {msb: 6, lsb: 2, value: 8}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rs1, rs2, storeimm]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 4131
+  debug_hex_fixedvalue: '1023'
+- &61
+  mnemonic: sw
+  format: S
+  fixedbits: [{msb: 14, lsb: 12, value: 2}, {msb: 6, lsb: 2, value: 8}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rs1, rs2, storeimm]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 8227
+  debug_hex_fixedvalue: '2023'
+- &62
+  mnemonic: sd
+  format: S
+  fixedbits: [{msb: 14, lsb: 12, value: 3}, {msb: 6, lsb: 2, value: 8}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rs1, rs2, storeimm]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 12323
+  debug_hex_fixedvalue: '3023'
+- &63
+  mnemonic: fence
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 3}, {msb: 1, lsb: 0, value: 3}]
+  fields: [fm, pred, succ, rs1, rd]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 15
+  debug_hex_fixedvalue: f
+- &64
+  mnemonic: fence.i
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 1}, {msb: 6, lsb: 2, value: 3}, {msb: 1, lsb: 0, value: 3}]
+  fields: [imm12, rs1, rd]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 4111
+  debug_hex_fixedvalue: 100f
+- &30
+  mnemonic: mul
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 1}, {msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 12}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 33554483
+  debug_hex_fixedvalue: '2000033'
+- &31
+  mnemonic: mulh
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 1}, {msb: 14, lsb: 12, value: 1}, {msb: 6, lsb: 2, value: 12}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 33558579
+  debug_hex_fixedvalue: '2001033'
+- &32
+  mnemonic: mulhsu
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 1}, {msb: 14, lsb: 12, value: 2}, {msb: 6, lsb: 2, value: 12}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 33562675
+  debug_hex_fixedvalue: '2002033'
+- &33
+  mnemonic: mulhu
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 1}, {msb: 14, lsb: 12, value: 3}, {msb: 6, lsb: 2, value: 12}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 33566771
+  debug_hex_fixedvalue: '2003033'
+- &34
+  mnemonic: div
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 1}, {msb: 14, lsb: 12, value: 4}, {msb: 6, lsb: 2, value: 12}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 33570867
+  debug_hex_fixedvalue: '2004033'
+- &35
+  mnemonic: divu
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 1}, {msb: 14, lsb: 12, value: 5}, {msb: 6, lsb: 2, value: 12}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 33574963
+  debug_hex_fixedvalue: '2005033'
+- &36
+  mnemonic: rem
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 1}, {msb: 14, lsb: 12, value: 6}, {msb: 6, lsb: 2, value: 12}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 33579059
+  debug_hex_fixedvalue: '2006033'
+- &37
+  mnemonic: remu
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 1}, {msb: 14, lsb: 12, value: 7}, {msb: 6, lsb: 2, value: 12}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 33583155
+  debug_hex_fixedvalue: '2007033'
+- &47
+  mnemonic: mulw
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 1}, {msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 14}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 33554491
+  debug_hex_fixedvalue: 200003b
+- &48
+  mnemonic: divw
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 1}, {msb: 14, lsb: 12, value: 4}, {msb: 6, lsb: 2, value: 14}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 33570875
+  debug_hex_fixedvalue: 200403b
+- &49
+  mnemonic: divuw
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 1}, {msb: 14, lsb: 12, value: 5}, {msb: 6, lsb: 2, value: 14}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 33574971
+  debug_hex_fixedvalue: 200503b
+- &50
+  mnemonic: remw
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 1}, {msb: 14, lsb: 12, value: 6}, {msb: 6, lsb: 2, value: 14}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 33579067
+  debug_hex_fixedvalue: 200603b
+- &51
+  mnemonic: remuw
+  format: R
+  fixedbits: [{msb: 31, lsb: 25, value: 1}, {msb: 14, lsb: 12, value: 7}, {msb: 6, lsb: 2, value: 14}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 33583163
+  debug_hex_fixedvalue: 200703b
+- &65
+  mnemonic: amoadd.w
+  format: R
+  fixedbits: [{msb: 31, lsb: 29, value: 0}, {msb: 28, lsb: 27, value: 0}, {msb: 14, lsb: 12, value: 2}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, aqrl]
+  fixedmask: 4160778367
+  debug_hex_fixedmask: f800707f
+  fixedvalue: 8239
+  debug_hex_fixedvalue: 202f
+- &67
+  mnemonic: amoxor.w
+  format: R
+  fixedbits: [{msb: 31, lsb: 29, value: 1}, {msb: 28, lsb: 27, value: 0}, {msb: 14, lsb: 12, value: 2}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, aqrl]
+  fixedmask: 4160778367
+  debug_hex_fixedmask: f800707f
+  fixedvalue: 536879151
+  debug_hex_fixedvalue: 2000202f
+- &69
+  mnemonic: amoor.w
+  format: R
+  fixedbits: [{msb: 31, lsb: 29, value: 2}, {msb: 28, lsb: 27, value: 0}, {msb: 14, lsb: 12, value: 2}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, aqrl]
+  fixedmask: 4160778367
+  debug_hex_fixedmask: f800707f
+  fixedvalue: 1073750063
+  debug_hex_fixedvalue: 4000202f
+- &71
+  mnemonic: amoand.w
+  format: R
+  fixedbits: [{msb: 31, lsb: 29, value: 3}, {msb: 28, lsb: 27, value: 0}, {msb: 14, lsb: 12, value: 2}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, aqrl]
+  fixedmask: 4160778367
+  debug_hex_fixedmask: f800707f
+  fixedvalue: 1610620975
+  debug_hex_fixedvalue: 6000202f
+- &73
+  mnemonic: amomin.w
+  format: R
+  fixedbits: [{msb: 31, lsb: 29, value: 4}, {msb: 28, lsb: 27, value: 0}, {msb: 14, lsb: 12, value: 2}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, aqrl]
+  fixedmask: 4160778367
+  debug_hex_fixedmask: f800707f
+  fixedvalue: 2147491887
+  debug_hex_fixedvalue: 8000202f
+- &75
+  mnemonic: amomax.w
+  format: R
+  fixedbits: [{msb: 31, lsb: 29, value: 5}, {msb: 28, lsb: 27, value: 0}, {msb: 14, lsb: 12, value: 2}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, aqrl]
+  fixedmask: 4160778367
+  debug_hex_fixedmask: f800707f
+  fixedvalue: 2684362799
+  debug_hex_fixedvalue: a000202f
+- &77
+  mnemonic: amominu.w
+  format: R
+  fixedbits: [{msb: 31, lsb: 29, value: 6}, {msb: 28, lsb: 27, value: 0}, {msb: 14, lsb: 12, value: 2}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, aqrl]
+  fixedmask: 4160778367
+  debug_hex_fixedmask: f800707f
+  fixedvalue: 3221233711
+  debug_hex_fixedvalue: c000202f
+- &79
+  mnemonic: amomaxu.w
+  format: R
+  fixedbits: [{msb: 31, lsb: 29, value: 7}, {msb: 28, lsb: 27, value: 0}, {msb: 14, lsb: 12, value: 2}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, aqrl]
+  fixedmask: 4160778367
+  debug_hex_fixedmask: f800707f
+  fixedvalue: 3758104623
+  debug_hex_fixedvalue: e000202f
+- &81
+  mnemonic: amoswap.w
+  format: R
+  fixedbits: [{msb: 31, lsb: 29, value: 0}, {msb: 28, lsb: 27, value: 1}, {msb: 14, lsb: 12, value: 2}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, aqrl]
+  fixedmask: 4160778367
+  debug_hex_fixedmask: f800707f
+  fixedvalue: 134225967
+  debug_hex_fixedvalue: 800202f
+- &83
+  mnemonic: lr.w
+  format: 
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 29, value: 0}, {msb: 28, lsb: 27, value: 2}, {msb: 14, lsb: 12, value: 2}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, aqrl]
+  fixedmask: 4193284223
+  debug_hex_fixedmask: f9f0707f
+  fixedvalue: 268443695
+  debug_hex_fixedvalue: 1000202f
+- &85
+  mnemonic: sc.w
+  format: R
+  fixedbits: [{msb: 31, lsb: 29, value: 0}, {msb: 28, lsb: 27, value: 3}, {msb: 14, lsb: 12, value: 2}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, aqrl]
+  fixedmask: 4160778367
+  debug_hex_fixedmask: f800707f
+  fixedvalue: 402661423
+  debug_hex_fixedvalue: 1800202f
+- &66
+  mnemonic: amoadd.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 29, value: 0}, {msb: 28, lsb: 27, value: 0}, {msb: 14, lsb: 12, value: 3}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, aqrl]
+  fixedmask: 4160778367
+  debug_hex_fixedmask: f800707f
+  fixedvalue: 12335
+  debug_hex_fixedvalue: 302f
+- &68
+  mnemonic: amoxor.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 29, value: 1}, {msb: 28, lsb: 27, value: 0}, {msb: 14, lsb: 12, value: 3}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, aqrl]
+  fixedmask: 4160778367
+  debug_hex_fixedmask: f800707f
+  fixedvalue: 536883247
+  debug_hex_fixedvalue: 2000302f
+- &70
+  mnemonic: amoor.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 29, value: 2}, {msb: 28, lsb: 27, value: 0}, {msb: 14, lsb: 12, value: 3}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, aqrl]
+  fixedmask: 4160778367
+  debug_hex_fixedmask: f800707f
+  fixedvalue: 1073754159
+  debug_hex_fixedvalue: 4000302f
+- &72
+  mnemonic: amoand.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 29, value: 3}, {msb: 28, lsb: 27, value: 0}, {msb: 14, lsb: 12, value: 3}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, aqrl]
+  fixedmask: 4160778367
+  debug_hex_fixedmask: f800707f
+  fixedvalue: 1610625071
+  debug_hex_fixedvalue: 6000302f
+- &74
+  mnemonic: amomin.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 29, value: 4}, {msb: 28, lsb: 27, value: 0}, {msb: 14, lsb: 12, value: 3}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, aqrl]
+  fixedmask: 4160778367
+  debug_hex_fixedmask: f800707f
+  fixedvalue: 2147495983
+  debug_hex_fixedvalue: 8000302f
+- &76
+  mnemonic: amomax.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 29, value: 5}, {msb: 28, lsb: 27, value: 0}, {msb: 14, lsb: 12, value: 3}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, aqrl]
+  fixedmask: 4160778367
+  debug_hex_fixedmask: f800707f
+  fixedvalue: 2684366895
+  debug_hex_fixedvalue: a000302f
+- &78
+  mnemonic: amominu.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 29, value: 6}, {msb: 28, lsb: 27, value: 0}, {msb: 14, lsb: 12, value: 3}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, aqrl]
+  fixedmask: 4160778367
+  debug_hex_fixedmask: f800707f
+  fixedvalue: 3221237807
+  debug_hex_fixedvalue: c000302f
+- &80
+  mnemonic: amomaxu.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 29, value: 7}, {msb: 28, lsb: 27, value: 0}, {msb: 14, lsb: 12, value: 3}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, aqrl]
+  fixedmask: 4160778367
+  debug_hex_fixedmask: f800707f
+  fixedvalue: 3758108719
+  debug_hex_fixedvalue: e000302f
+- &82
+  mnemonic: amoswap.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 29, value: 0}, {msb: 28, lsb: 27, value: 1}, {msb: 14, lsb: 12, value: 3}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, aqrl]
+  fixedmask: 4160778367
+  debug_hex_fixedmask: f800707f
+  fixedvalue: 134230063
+  debug_hex_fixedvalue: 800302f
+- &84
+  mnemonic: lr.d
+  format: 
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 29, value: 0}, {msb: 28, lsb: 27, value: 2}, {msb: 14, lsb: 12, value: 3}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, aqrl]
+  fixedmask: 4193284223
+  debug_hex_fixedmask: f9f0707f
+  fixedvalue: 268447791
+  debug_hex_fixedvalue: 1000302f
+- &86
+  mnemonic: sc.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 29, value: 0}, {msb: 28, lsb: 27, value: 3}, {msb: 14, lsb: 12, value: 3}, {msb: 6, lsb: 2, value: 11}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, aqrl]
+  fixedmask: 4160778367
+  debug_hex_fixedmask: f800707f
+  fixedvalue: 402665519
+  debug_hex_fixedvalue: 1800302f
+- &87
+  mnemonic: ecall
+  format: 
+  fixedbits: [{msb: 11, lsb: 7, value: 0}, {msb: 19, lsb: 15, value: 0}, {msb: 31, lsb: 20, value: 0}, {msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 28}, {msb: 1, lsb: 0, value: 3}]
+  fields: []
+  fixedmask: 4294967295
+  debug_hex_fixedmask: ffffffff
+  fixedvalue: 115
+  debug_hex_fixedvalue: '73'
+- &88
+  mnemonic: ebreak
+  format: 
+  fixedbits: [{msb: 11, lsb: 7, value: 0}, {msb: 19, lsb: 15, value: 0}, {msb: 31, lsb: 20, value: 1}, {msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 28}, {msb: 1, lsb: 0, value: 3}]
+  fields: []
+  fixedmask: 4294967295
+  debug_hex_fixedmask: ffffffff
+  fixedvalue: 1048691
+  debug_hex_fixedvalue: '100073'
+- &89
+  mnemonic: uret
+  format: 
+  fixedbits: [{msb: 11, lsb: 7, value: 0}, {msb: 19, lsb: 15, value: 0}, {msb: 31, lsb: 20, value: 2}, {msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 28}, {msb: 1, lsb: 0, value: 3}]
+  fields: []
+  fixedmask: 4294967295
+  debug_hex_fixedmask: ffffffff
+  fixedvalue: 2097267
+  debug_hex_fixedvalue: '200073'
+- &90
+  mnemonic: sret
+  format: 
+  fixedbits: [{msb: 11, lsb: 7, value: 0}, {msb: 19, lsb: 15, value: 0}, {msb: 31, lsb: 20, value: 258}, {msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 28}, {msb: 1, lsb: 0, value: 3}]
+  fields: []
+  fixedmask: 4294967295
+  debug_hex_fixedmask: ffffffff
+  fixedvalue: 270532723
+  debug_hex_fixedvalue: '10200073'
+- &92
+  mnemonic: mret
+  format: 
+  fixedbits: [{msb: 11, lsb: 7, value: 0}, {msb: 19, lsb: 15, value: 0}, {msb: 31, lsb: 20, value: 770}, {msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 28}, {msb: 1, lsb: 0, value: 3}]
+  fields: []
+  fixedmask: 4294967295
+  debug_hex_fixedmask: ffffffff
+  fixedvalue: 807403635
+  debug_hex_fixedvalue: '30200073'
+- &93
+  mnemonic: dret
+  format: 
+  fixedbits: [{msb: 11, lsb: 7, value: 0}, {msb: 19, lsb: 15, value: 0}, {msb: 31, lsb: 20, value: 1970}, {msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 28}, {msb: 1, lsb: 0, value: 3}]
+  fields: []
+  fixedmask: 4294967295
+  debug_hex_fixedmask: ffffffff
+  fixedvalue: 2065694835
+  debug_hex_fixedvalue: 7b200073
+- &94
+  mnemonic: sfence.vma
+  format: 
+  fixedbits: [{msb: 11, lsb: 7, value: 0}, {msb: 31, lsb: 25, value: 9}, {msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 28}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rs1, rs2]
+  fixedmask: 4261445631
+  debug_hex_fixedmask: fe007fff
+  fixedvalue: 301990003
+  debug_hex_fixedvalue: '12000073'
+- &91
+  mnemonic: wfi
+  format: 
+  fixedbits: [{msb: 11, lsb: 7, value: 0}, {msb: 19, lsb: 15, value: 0}, {msb: 31, lsb: 20, value: 261}, {msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 28}, {msb: 1, lsb: 0, value: 3}]
+  fields: []
+  fixedmask: 4294967295
+  debug_hex_fixedmask: ffffffff
+  fixedvalue: 273678451
+  debug_hex_fixedvalue: '10500073'
+- &97
+  mnemonic: csrrw
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 1}, {msb: 6, lsb: 2, value: 28}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 4211
+  debug_hex_fixedvalue: '1073'
+- &98
+  mnemonic: csrrs
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 2}, {msb: 6, lsb: 2, value: 28}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 8307
+  debug_hex_fixedvalue: '2073'
+- &99
+  mnemonic: csrrc
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 3}, {msb: 6, lsb: 2, value: 28}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 12403
+  debug_hex_fixedvalue: '3073'
+- &100
+  mnemonic: csrrwi
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 5}, {msb: 6, lsb: 2, value: 28}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 20595
+  debug_hex_fixedvalue: '5073'
+- &101
+  mnemonic: csrrsi
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 6}, {msb: 6, lsb: 2, value: 28}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 24691
+  debug_hex_fixedvalue: '6073'
+- &102
+  mnemonic: csrrci
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 7}, {msb: 6, lsb: 2, value: 28}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 28787
+  debug_hex_fixedvalue: '7073'
+- &95
+  mnemonic: hfence.vvma
+  format: 
+  fixedbits: [{msb: 11, lsb: 7, value: 0}, {msb: 31, lsb: 25, value: 17}, {msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 28}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rs1, rs2]
+  fixedmask: 4261445631
+  debug_hex_fixedmask: fe007fff
+  fixedvalue: 570425459
+  debug_hex_fixedvalue: '22000073'
+- &96
+  mnemonic: hfence.gvma
+  format: 
+  fixedbits: [{msb: 11, lsb: 7, value: 0}, {msb: 31, lsb: 25, value: 49}, {msb: 14, lsb: 12, value: 0}, {msb: 6, lsb: 2, value: 28}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rs1, rs2]
+  fixedmask: 4261445631
+  debug_hex_fixedmask: fe007fff
+  fixedvalue: 1644167283
+  debug_hex_fixedvalue: '62000073'
+- &103
+  mnemonic: fadd.s
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 0}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rm]
+  fixedmask: 4261412991
+  debug_hex_fixedmask: fe00007f
+  fixedvalue: 83
+  debug_hex_fixedvalue: '53'
+- &104
+  mnemonic: fsub.s
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 1}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rm]
+  fixedmask: 4261412991
+  debug_hex_fixedmask: fe00007f
+  fixedvalue: 134217811
+  debug_hex_fixedvalue: '8000053'
+- &105
+  mnemonic: fmul.s
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 2}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rm]
+  fixedmask: 4261412991
+  debug_hex_fixedmask: fe00007f
+  fixedvalue: 268435539
+  debug_hex_fixedvalue: '10000053'
+- &106
+  mnemonic: fdiv.s
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 3}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rm]
+  fixedmask: 4261412991
+  debug_hex_fixedmask: fe00007f
+  fixedvalue: 402653267
+  debug_hex_fixedvalue: '18000053'
+- &107
+  mnemonic: fsgnj.s
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 4}, {msb: 14, lsb: 12, value: 0}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 536870995
+  debug_hex_fixedvalue: '20000053'
+- &108
+  mnemonic: fsgnjn.s
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 4}, {msb: 14, lsb: 12, value: 1}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 536875091
+  debug_hex_fixedvalue: '20001053'
+- &109
+  mnemonic: fsgnjx.s
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 4}, {msb: 14, lsb: 12, value: 2}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 536879187
+  debug_hex_fixedvalue: '20002053'
+- &110
+  mnemonic: fmin.s
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 5}, {msb: 14, lsb: 12, value: 0}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 671088723
+  debug_hex_fixedvalue: '28000053'
+- &111
+  mnemonic: fmax.s
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 5}, {msb: 14, lsb: 12, value: 1}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 671092819
+  debug_hex_fixedvalue: '28001053'
+- &112
+  mnemonic: fsqrt.s
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 27, value: 11}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 1476395091
+  debug_hex_fixedvalue: '58000053'
+- &113
+  mnemonic: fadd.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 0}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rm]
+  fixedmask: 4261412991
+  debug_hex_fixedmask: fe00007f
+  fixedvalue: 33554515
+  debug_hex_fixedvalue: '2000053'
+- &114
+  mnemonic: fsub.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 1}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rm]
+  fixedmask: 4261412991
+  debug_hex_fixedmask: fe00007f
+  fixedvalue: 167772243
+  debug_hex_fixedvalue: a000053
+- &115
+  mnemonic: fmul.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 2}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rm]
+  fixedmask: 4261412991
+  debug_hex_fixedmask: fe00007f
+  fixedvalue: 301989971
+  debug_hex_fixedvalue: '12000053'
+- &116
+  mnemonic: fdiv.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 3}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rm]
+  fixedmask: 4261412991
+  debug_hex_fixedmask: fe00007f
+  fixedvalue: 436207699
+  debug_hex_fixedvalue: 1a000053
+- &117
+  mnemonic: fsgnj.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 4}, {msb: 14, lsb: 12, value: 0}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 570425427
+  debug_hex_fixedvalue: '22000053'
+- &118
+  mnemonic: fsgnjn.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 4}, {msb: 14, lsb: 12, value: 1}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 570429523
+  debug_hex_fixedvalue: '22001053'
+- &119
+  mnemonic: fsgnjx.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 4}, {msb: 14, lsb: 12, value: 2}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 570433619
+  debug_hex_fixedvalue: '22002053'
+- &120
+  mnemonic: fmin.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 5}, {msb: 14, lsb: 12, value: 0}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 704643155
+  debug_hex_fixedvalue: 2a000053
+- &121
+  mnemonic: fmax.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 5}, {msb: 14, lsb: 12, value: 1}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 704647251
+  debug_hex_fixedvalue: 2a001053
+- &122
+  mnemonic: fcvt.s.d
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 1}, {msb: 31, lsb: 27, value: 8}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 1074790483
+  debug_hex_fixedvalue: '40100053'
+- &124
+  mnemonic: fcvt.d.s
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 27, value: 8}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 1107296339
+  debug_hex_fixedvalue: '42000053'
+- &126
+  mnemonic: fsqrt.d
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 27, value: 11}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 1509949523
+  debug_hex_fixedvalue: 5a000053
+- &127
+  mnemonic: fadd.q
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 0}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rm]
+  fixedmask: 4261412991
+  debug_hex_fixedmask: fe00007f
+  fixedvalue: 100663379
+  debug_hex_fixedvalue: '6000053'
+- &128
+  mnemonic: fsub.q
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 1}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rm]
+  fixedmask: 4261412991
+  debug_hex_fixedmask: fe00007f
+  fixedvalue: 234881107
+  debug_hex_fixedvalue: e000053
+- &129
+  mnemonic: fmul.q
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 2}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rm]
+  fixedmask: 4261412991
+  debug_hex_fixedmask: fe00007f
+  fixedvalue: 369098835
+  debug_hex_fixedvalue: '16000053'
+- &130
+  mnemonic: fdiv.q
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 3}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rm]
+  fixedmask: 4261412991
+  debug_hex_fixedmask: fe00007f
+  fixedvalue: 503316563
+  debug_hex_fixedvalue: 1e000053
+- &131
+  mnemonic: fsgnj.q
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 4}, {msb: 14, lsb: 12, value: 0}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 637534291
+  debug_hex_fixedvalue: '26000053'
+- &132
+  mnemonic: fsgnjn.q
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 4}, {msb: 14, lsb: 12, value: 1}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 637538387
+  debug_hex_fixedvalue: '26001053'
+- &133
+  mnemonic: fsgnjx.q
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 4}, {msb: 14, lsb: 12, value: 2}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 637542483
+  debug_hex_fixedvalue: '26002053'
+- &134
+  mnemonic: fmin.q
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 5}, {msb: 14, lsb: 12, value: 0}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 771752019
+  debug_hex_fixedvalue: 2e000053
+- &135
+  mnemonic: fmax.q
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 5}, {msb: 14, lsb: 12, value: 1}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 771756115
+  debug_hex_fixedvalue: 2e001053
+- &123
+  mnemonic: fcvt.s.q
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 3}, {msb: 31, lsb: 27, value: 8}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 1076887635
+  debug_hex_fixedvalue: '40300053'
+- &136
+  mnemonic: fcvt.q.s
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 27, value: 8}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 1174405203
+  debug_hex_fixedvalue: '46000053'
+- &125
+  mnemonic: fcvt.d.q
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 3}, {msb: 31, lsb: 27, value: 8}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 1110442067
+  debug_hex_fixedvalue: '42300053'
+- &137
+  mnemonic: fcvt.q.d
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 1}, {msb: 31, lsb: 27, value: 8}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 1175453779
+  debug_hex_fixedvalue: '46100053'
+- &138
+  mnemonic: fsqrt.q
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 27, value: 11}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 1577058387
+  debug_hex_fixedvalue: 5e000053
+- &139
+  mnemonic: fle.s
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 20}, {msb: 14, lsb: 12, value: 0}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 2684354643
+  debug_hex_fixedvalue: a0000053
+- &140
+  mnemonic: flt.s
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 20}, {msb: 14, lsb: 12, value: 1}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 2684358739
+  debug_hex_fixedvalue: a0001053
+- &141
+  mnemonic: feq.s
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 20}, {msb: 14, lsb: 12, value: 2}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 2684362835
+  debug_hex_fixedvalue: a0002053
+- &142
+  mnemonic: fle.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 20}, {msb: 14, lsb: 12, value: 0}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 2717909075
+  debug_hex_fixedvalue: a2000053
+- &143
+  mnemonic: flt.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 20}, {msb: 14, lsb: 12, value: 1}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 2717913171
+  debug_hex_fixedvalue: a2001053
+- &144
+  mnemonic: feq.d
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 20}, {msb: 14, lsb: 12, value: 2}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 2717917267
+  debug_hex_fixedvalue: a2002053
+- &145
+  mnemonic: fle.q
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 20}, {msb: 14, lsb: 12, value: 0}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 2785017939
+  debug_hex_fixedvalue: a6000053
+- &146
+  mnemonic: flt.q
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 20}, {msb: 14, lsb: 12, value: 1}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 2785022035
+  debug_hex_fixedvalue: a6001053
+- &147
+  mnemonic: feq.q
+  format: R
+  fixedbits: [{msb: 31, lsb: 27, value: 20}, {msb: 14, lsb: 12, value: 2}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2]
+  fixedmask: 4261441663
+  debug_hex_fixedmask: fe00707f
+  fixedvalue: 2785026131
+  debug_hex_fixedvalue: a6002053
+- &148
+  mnemonic: fcvt.w.s
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 27, value: 24}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3221225555
+  debug_hex_fixedvalue: c0000053
+- &149
+  mnemonic: fcvt.wu.s
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 1}, {msb: 31, lsb: 27, value: 24}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3222274131
+  debug_hex_fixedvalue: c0100053
+- &150
+  mnemonic: fcvt.l.s
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 2}, {msb: 31, lsb: 27, value: 24}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3223322707
+  debug_hex_fixedvalue: c0200053
+- &151
+  mnemonic: fcvt.lu.s
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 3}, {msb: 31, lsb: 27, value: 24}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3224371283
+  debug_hex_fixedvalue: c0300053
+- &152
+  mnemonic: fmv.x.w
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 27, value: 28}, {msb: 14, lsb: 12, value: 0}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1]
+  fixedmask: 4293947519
+  debug_hex_fixedmask: fff0707f
+  fixedvalue: 3758096467
+  debug_hex_fixedvalue: e0000053
+- &153
+  mnemonic: fclass.s
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 27, value: 28}, {msb: 14, lsb: 12, value: 1}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1]
+  fixedmask: 4293947519
+  debug_hex_fixedmask: fff0707f
+  fixedvalue: 3758100563
+  debug_hex_fixedvalue: e0001053
+- &154
+  mnemonic: fcvt.w.d
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 27, value: 24}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3254779987
+  debug_hex_fixedvalue: c2000053
+- &155
+  mnemonic: fcvt.wu.d
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 1}, {msb: 31, lsb: 27, value: 24}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3255828563
+  debug_hex_fixedvalue: c2100053
+- &156
+  mnemonic: fcvt.l.d
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 2}, {msb: 31, lsb: 27, value: 24}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3256877139
+  debug_hex_fixedvalue: c2200053
+- &157
+  mnemonic: fcvt.lu.d
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 3}, {msb: 31, lsb: 27, value: 24}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3257925715
+  debug_hex_fixedvalue: c2300053
+- &158
+  mnemonic: fmv.x.d
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 27, value: 28}, {msb: 14, lsb: 12, value: 0}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1]
+  fixedmask: 4293947519
+  debug_hex_fixedmask: fff0707f
+  fixedvalue: 3791650899
+  debug_hex_fixedvalue: e2000053
+- &159
+  mnemonic: fclass.d
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 27, value: 28}, {msb: 14, lsb: 12, value: 1}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1]
+  fixedmask: 4293947519
+  debug_hex_fixedmask: fff0707f
+  fixedvalue: 3791654995
+  debug_hex_fixedvalue: e2001053
+- &160
+  mnemonic: fcvt.w.q
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 27, value: 24}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3321888851
+  debug_hex_fixedvalue: c6000053
+- &161
+  mnemonic: fcvt.wu.q
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 1}, {msb: 31, lsb: 27, value: 24}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3322937427
+  debug_hex_fixedvalue: c6100053
+- &162
+  mnemonic: fcvt.l.q
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 2}, {msb: 31, lsb: 27, value: 24}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3323986003
+  debug_hex_fixedvalue: c6200053
+- &163
+  mnemonic: fcvt.lu.q
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 3}, {msb: 31, lsb: 27, value: 24}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3325034579
+  debug_hex_fixedvalue: c6300053
+- &164
+  mnemonic: fmv.x.q
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 27, value: 28}, {msb: 14, lsb: 12, value: 0}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1]
+  fixedmask: 4293947519
+  debug_hex_fixedmask: fff0707f
+  fixedvalue: 3858759763
+  debug_hex_fixedvalue: e6000053
+- &165
+  mnemonic: fclass.q
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 27, value: 28}, {msb: 14, lsb: 12, value: 1}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1]
+  fixedmask: 4293947519
+  debug_hex_fixedmask: fff0707f
+  fixedvalue: 3858763859
+  debug_hex_fixedvalue: e6001053
+- &166
+  mnemonic: fcvt.s.w
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 27, value: 26}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3489661011
+  debug_hex_fixedvalue: d0000053
+- &167
+  mnemonic: fcvt.s.wu
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 1}, {msb: 31, lsb: 27, value: 26}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3490709587
+  debug_hex_fixedvalue: d0100053
+- &168
+  mnemonic: fcvt.s.l
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 2}, {msb: 31, lsb: 27, value: 26}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3491758163
+  debug_hex_fixedvalue: d0200053
+- &169
+  mnemonic: fcvt.s.lu
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 3}, {msb: 31, lsb: 27, value: 26}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3492806739
+  debug_hex_fixedvalue: d0300053
+- &170
+  mnemonic: fmv.w.x
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 27, value: 30}, {msb: 14, lsb: 12, value: 0}, {msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1]
+  fixedmask: 4293947519
+  debug_hex_fixedmask: fff0707f
+  fixedvalue: 4026531923
+  debug_hex_fixedvalue: f0000053
+- &171
+  mnemonic: fcvt.d.w
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 27, value: 26}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3523215443
+  debug_hex_fixedvalue: d2000053
+- &172
+  mnemonic: fcvt.d.wu
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 1}, {msb: 31, lsb: 27, value: 26}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3524264019
+  debug_hex_fixedvalue: d2100053
+- &173
+  mnemonic: fcvt.d.l
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 2}, {msb: 31, lsb: 27, value: 26}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3525312595
+  debug_hex_fixedvalue: d2200053
+- &174
+  mnemonic: fcvt.d.lu
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 3}, {msb: 31, lsb: 27, value: 26}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3526361171
+  debug_hex_fixedvalue: d2300053
+- &175
+  mnemonic: fmv.d.x
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 27, value: 30}, {msb: 14, lsb: 12, value: 0}, {msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1]
+  fixedmask: 4293947519
+  debug_hex_fixedmask: fff0707f
+  fixedvalue: 4060086355
+  debug_hex_fixedvalue: f2000053
+- &176
+  mnemonic: fcvt.q.w
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 27, value: 26}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3590324307
+  debug_hex_fixedvalue: d6000053
+- &177
+  mnemonic: fcvt.q.wu
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 1}, {msb: 31, lsb: 27, value: 26}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3591372883
+  debug_hex_fixedvalue: d6100053
+- &178
+  mnemonic: fcvt.q.l
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 2}, {msb: 31, lsb: 27, value: 26}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3592421459
+  debug_hex_fixedvalue: d6200053
+- &179
+  mnemonic: fcvt.q.lu
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 3}, {msb: 31, lsb: 27, value: 26}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rm]
+  fixedmask: 4293918847
+  debug_hex_fixedmask: fff0007f
+  fixedvalue: 3593470035
+  debug_hex_fixedvalue: d6300053
+- &180
+  mnemonic: fmv.q.x
+  format: R
+  fixedbits: [{msb: 24, lsb: 20, value: 0}, {msb: 31, lsb: 27, value: 30}, {msb: 14, lsb: 12, value: 0}, {msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 20}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1]
+  fixedmask: 4293947519
+  debug_hex_fixedmask: fff0707f
+  fixedvalue: 4127195219
+  debug_hex_fixedvalue: f6000053
+- &181
+  mnemonic: flw
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 2}, {msb: 6, lsb: 2, value: 1}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 8199
+  debug_hex_fixedvalue: '2007'
+- &182
+  mnemonic: fld
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 3}, {msb: 6, lsb: 2, value: 1}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 12295
+  debug_hex_fixedvalue: '3007'
+- &183
+  mnemonic: flq
+  format: I
+  fixedbits: [{msb: 14, lsb: 12, value: 4}, {msb: 6, lsb: 2, value: 1}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, imm12]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 16391
+  debug_hex_fixedvalue: '4007'
+- &184
+  mnemonic: fsw
+  format: S
+  fixedbits: [{msb: 14, lsb: 12, value: 2}, {msb: 6, lsb: 2, value: 9}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rs1, rs2, storeimm]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 8231
+  debug_hex_fixedvalue: '2027'
+- &185
+  mnemonic: fsd
+  format: S
+  fixedbits: [{msb: 14, lsb: 12, value: 3}, {msb: 6, lsb: 2, value: 9}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rs1, rs2, storeimm]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 12327
+  debug_hex_fixedvalue: '3027'
+- &186
+  mnemonic: fsq
+  format: S
+  fixedbits: [{msb: 14, lsb: 12, value: 4}, {msb: 6, lsb: 2, value: 9}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rs1, rs2, storeimm]
+  fixedmask: 28799
+  debug_hex_fixedmask: 707f
+  fixedvalue: 16423
+  debug_hex_fixedvalue: '4027'
+- &187
+  mnemonic: fmadd.s
+  format: R
+  fixedbits: [{msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 16}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rs3, rm]
+  fixedmask: 100663423
+  debug_hex_fixedmask: 600007f
+  fixedvalue: 67
+  debug_hex_fixedvalue: '43'
+- &190
+  mnemonic: fmsub.s
+  format: R
+  fixedbits: [{msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 17}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rs3, rm]
+  fixedmask: 100663423
+  debug_hex_fixedmask: 600007f
+  fixedvalue: 71
+  debug_hex_fixedvalue: '47'
+- &193
+  mnemonic: fnmsub.s
+  format: R
+  fixedbits: [{msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 18}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rs3, rm]
+  fixedmask: 100663423
+  debug_hex_fixedmask: 600007f
+  fixedvalue: 75
+  debug_hex_fixedvalue: 4b
+- &196
+  mnemonic: fnmadd.s
+  format: R
+  fixedbits: [{msb: 26, lsb: 25, value: 0}, {msb: 6, lsb: 2, value: 19}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rs3, rm]
+  fixedmask: 100663423
+  debug_hex_fixedmask: 600007f
+  fixedvalue: 79
+  debug_hex_fixedvalue: 4f
+- &188
+  mnemonic: fmadd.d
+  format: R
+  fixedbits: [{msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 16}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rs3, rm]
+  fixedmask: 100663423
+  debug_hex_fixedmask: 600007f
+  fixedvalue: 33554499
+  debug_hex_fixedvalue: '2000043'
+- &191
+  mnemonic: fmsub.d
+  format: R
+  fixedbits: [{msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 17}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rs3, rm]
+  fixedmask: 100663423
+  debug_hex_fixedmask: 600007f
+  fixedvalue: 33554503
+  debug_hex_fixedvalue: '2000047'
+- &194
+  mnemonic: fnmsub.d
+  format: R
+  fixedbits: [{msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 18}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rs3, rm]
+  fixedmask: 100663423
+  debug_hex_fixedmask: 600007f
+  fixedvalue: 33554507
+  debug_hex_fixedvalue: 200004b
+- &197
+  mnemonic: fnmadd.d
+  format: R
+  fixedbits: [{msb: 26, lsb: 25, value: 1}, {msb: 6, lsb: 2, value: 19}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rs3, rm]
+  fixedmask: 100663423
+  debug_hex_fixedmask: 600007f
+  fixedvalue: 33554511
+  debug_hex_fixedvalue: 200004f
+- &189
+  mnemonic: fmadd.q
+  format: R
+  fixedbits: [{msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 16}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rs3, rm]
+  fixedmask: 100663423
+  debug_hex_fixedmask: 600007f
+  fixedvalue: 100663363
+  debug_hex_fixedvalue: '6000043'
+- &192
+  mnemonic: fmsub.q
+  format: R
+  fixedbits: [{msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 17}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rs3, rm]
+  fixedmask: 100663423
+  debug_hex_fixedmask: 600007f
+  fixedvalue: 100663367
+  debug_hex_fixedvalue: '6000047'
+- &195
+  mnemonic: fnmsub.q
+  format: R
+  fixedbits: [{msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 18}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rs3, rm]
+  fixedmask: 100663423
+  debug_hex_fixedmask: 600007f
+  fixedvalue: 100663371
+  debug_hex_fixedvalue: 600004b
+- &198
+  mnemonic: fnmadd.q
+  format: R
+  fixedbits: [{msb: 26, lsb: 25, value: 3}, {msb: 6, lsb: 2, value: 19}, {msb: 1, lsb: 0, value: 3}]
+  fields: [rd, rs1, rs2, rs3, rm]
+  fixedmask: 100663423
+  debug_hex_fixedmask: 600007f
+  fixedvalue: 100663375
+  debug_hex_fixedvalue: 600004f
+decodertree:
+  range: {msb: 6, lsb: 0}
+  nodes:
+    99:
+      range: {msb: 14, lsb: 12}
+      nodes:
+        0: *1
+        1: *2
+        4: *3
+        5: *4
+        6: *5
+        7: *6
+    103: *7
+    111: *8
+    55: *9
+    23: *10
+    19:
+      range: {msb: 14, lsb: 12}
+      nodes:
+        0: *11
+        1: *12
+        2: *13
+        3: *14
+        4: *15
+        5:
+          range: {msb: 31, lsb: 26}
+          nodes:
+            0: *16
+            16: *17
+        6: *18
+        7: *19
+    51:
+      range: {msb: 31, lsb: 25}
+      nodes:
+        0:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            0: *20
+            1: *21
+            2: *22
+            3: *23
+            4: *24
+            5: *25
+            6: *26
+            7: *27
+        32:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            0: *28
+            5: *29
+        1:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            0: *30
+            1: *31
+            2: *32
+            3: *33
+            4: *34
+            5: *35
+            6: *36
+            7: *37
+    27:
+      range: {msb: 14, lsb: 12}
+      nodes:
+        0: *38
+        1: *39
+        5:
+          range: {msb: 31, lsb: 25}
+          nodes:
+            0: *40
+            32: *41
+    59:
+      range: {msb: 31, lsb: 25}
+      nodes:
+        0:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            0: *42
+            1: *43
+            5: *44
+        32:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            0: *45
+            5: *46
+        1:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            0: *47
+            4: *48
+            5: *49
+            6: *50
+            7: *51
+    3:
+      range: {msb: 14, lsb: 12}
+      nodes:
+        0: *52
+        1: *53
+        2: *54
+        3: *55
+        4: *56
+        5: *57
+        6: *58
+    35:
+      range: {msb: 14, lsb: 12}
+      nodes:
+        0: *59
+        1: *60
+        2: *61
+        3: *62
+    15:
+      range: {msb: 14, lsb: 12}
+      nodes:
+        0: *63
+        1: *64
+    47:
+      range: {msb: 31, lsb: 27}
+      nodes:
+        0:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            2: *65
+            3: *66
+        4:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            2: *67
+            3: *68
+        8:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            2: *69
+            3: *70
+        12:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            2: *71
+            3: *72
+        16:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            2: *73
+            3: *74
+        20:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            2: *75
+            3: *76
+        24:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            2: *77
+            3: *78
+        28:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            2: *79
+            3: *80
+        1:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            2: *81
+            3: *82
+        2:
+          range: {msb: 24, lsb: 20}
+          nodes:
+            0:
+              range: {msb: 14, lsb: 12}
+              nodes:
+                2: *83
+                3: *84
+        3:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            2: *85
+            3: *86
+    115:
+      range: {msb: 14, lsb: 12}
+      nodes:
+        0:
+          range: {msb: 31, lsb: 25}
+          nodes:
+            0:
+              range: {msb: 24, lsb: 15}
+              nodes:
+                0: *87
+                32: *88
+                64: *89
+            8:
+              range: {msb: 24, lsb: 15}
+              nodes:
+                64: *90
+                160: *91
+            24: *92
+            61: *93
+            9: *94
+            17: *95
+            49: *96
+        1: *97
+        2: *98
+        3: *99
+        5: *100
+        6: *101
+        7: *102
+    83:
+      range: {msb: 31, lsb: 25}
+      nodes:
+        0: *103
+        4: *104
+        8: *105
+        12: *106
+        16:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            0: *107
+            1: *108
+            2: *109
+        20:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            0: *110
+            1: *111
+        44: *112
+        1: *113
+        5: *114
+        9: *115
+        13: *116
+        17:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            0: *117
+            1: *118
+            2: *119
+        21:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            0: *120
+            1: *121
+        32:
+          range: {msb: 24, lsb: 20}
+          nodes:
+            1: *122
+            3: *123
+        33:
+          range: {msb: 24, lsb: 20}
+          nodes:
+            0: *124
+            3: *125
+        45: *126
+        3: *127
+        7: *128
+        11: *129
+        15: *130
+        19:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            0: *131
+            1: *132
+            2: *133
+        23:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            0: *134
+            1: *135
+        35:
+          range: {msb: 24, lsb: 20}
+          nodes:
+            0: *136
+            1: *137
+        47: *138
+        80:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            0: *139
+            1: *140
+            2: *141
+        81:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            0: *142
+            1: *143
+            2: *144
+        83:
+          range: {msb: 14, lsb: 12}
+          nodes:
+            0: *145
+            1: *146
+            2: *147
+        96:
+          range: {msb: 24, lsb: 20}
+          nodes:
+            0: *148
+            1: *149
+            2: *150
+            3: *151
+        112:
+          range: {msb: 24, lsb: 20}
+          nodes:
+            0:
+              range: {msb: 14, lsb: 12}
+              nodes:
+                0: *152
+                1: *153
+        97:
+          range: {msb: 24, lsb: 20}
+          nodes:
+            0: *154
+            1: *155
+            2: *156
+            3: *157
+        113:
+          range: {msb: 24, lsb: 20}
+          nodes:
+            0:
+              range: {msb: 14, lsb: 12}
+              nodes:
+                0: *158
+                1: *159
+        99:
+          range: {msb: 24, lsb: 20}
+          nodes:
+            0: *160
+            1: *161
+            2: *162
+            3: *163
+        115:
+          range: {msb: 24, lsb: 20}
+          nodes:
+            0:
+              range: {msb: 14, lsb: 12}
+              nodes:
+                0: *164
+                1: *165
+        104:
+          range: {msb: 24, lsb: 20}
+          nodes:
+            0: *166
+            1: *167
+            2: *168
+            3: *169
+        120: *170
+        105:
+          range: {msb: 24, lsb: 20}
+          nodes:
+            0: *171
+            1: *172
+            2: *173
+            3: *174
+        121: *175
+        107:
+          range: {msb: 24, lsb: 20}
+          nodes:
+            0: *176
+            1: *177
+            2: *178
+            3: *179
+        123: *180
+    7:
+      range: {msb: 14, lsb: 12}
+      nodes:
+        2: *181
+        3: *182
+        4: *183
+    39:
+      range: {msb: 14, lsb: 12}
+      nodes:
+        2: *184
+        3: *185
+        4: *186
+    67:
+      range: {msb: 26, lsb: 25}
+      nodes:
+        0: *187
+        1: *188
+        3: *189
+    71:
+      range: {msb: 26, lsb: 25}
+      nodes:
+        0: *190
+        1: *191
+        3: *192
+    75:
+      range: {msb: 26, lsb: 25}
+      nodes:
+        0: *193
+        1: *194
+        3: *195
+    79:
+      range: {msb: 26, lsb: 25}
+      nodes:
+        0: *196
+        1: *197
+        3: *198

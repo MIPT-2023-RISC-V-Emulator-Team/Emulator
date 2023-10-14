@@ -4,3 +4,4 @@ build/
 *.s
 *.o
 *.out
+generated/

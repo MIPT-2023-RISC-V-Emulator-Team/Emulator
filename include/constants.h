@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <string_view>
 
+#include "generated/InstructionTypes.h"
+
 namespace RISCV {
 
 static constexpr uint8_t INSTRUCTION_BYTESIZE = 4;
@@ -63,65 +65,6 @@ enum RegisterType : uint8_t {
     ZERO = X0,
     RA = X1,
     SP = X2
-};
-
-enum InstructionType : uint16_t {
-    LUI = 0,
-    AUIPC,
-    JAL,
-    JALR,
-    BEQ,
-    BNE,
-    BLT,
-    BGE,
-    BLTU,
-    BGEU,
-    LB,
-    LH,
-    LW,
-    LBU,
-    LHU,
-    SB,
-    SH,
-    SW,
-    ADDI,
-    SLTI,
-    SLTIU,
-    XORI,
-    ORI,
-    ANDI,
-    SLLI,
-    SRLI,
-    SRAI,
-    ADD,
-    SUB,
-    SLL,
-    SLT,
-    SLTU,
-    XOR,
-    SRL,
-    SRA,
-    OR,
-    AND,
-    FENCE,
-    ECALL,
-    EBREAK,
-    LWU,
-    LD,
-    SD,
-    ADDIW,
-    SLLIW,
-    SRLIW,
-    SRAIW,
-    ADDW,
-    SUBW,
-    SLLW,
-    SRLW,
-    SRAW,
-
-    INSTRUCTION_COUNT,
-
-    INSTRUCTION_INVALID
 };
 
 static constexpr std::array<std::string_view, InstructionType::INSTRUCTION_COUNT> InstructionNames =

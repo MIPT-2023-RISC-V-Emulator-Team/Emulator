@@ -32,8 +32,8 @@ public:
         pc_ = newPC;
     }
 
-    void fetch(EncodedInstruction& encInstr);
-    void decode(const EncodedInstruction encInstr, DecodedInstruction& decInstr) const;
+    EncodedInstruction fetch();
+    DecodedInstruction decode(const EncodedInstruction encInstr) const;
     void execute(const DecodedInstruction& decInstr);
 
     void loadElfFile(const std::string& filename) {

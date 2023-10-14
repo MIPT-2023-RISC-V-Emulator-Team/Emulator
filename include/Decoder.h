@@ -5,22 +5,32 @@
 
 namespace RISCV {
 
-template <int high, int low>
-static inline uint32_t getPartialBits(const EncodedInstruction val) {
-    constexpr const uint32_t mask = ((1 << (high - low + 1)) - 1) << low;
-    return (val & mask);
-}
-
-template <int high, int low>
-static inline uint32_t getPartialBitsShifted(const EncodedInstruction val) {
-    constexpr const uint32_t mask = ((1 << (high - low + 1)) - 1) << low;
-    return (val & mask) >> low;
-}
-
 class Decoder {
 public:
-    void decodeInstruction(const EncodedInstruction encInstr, DecodedInstruction& decInstr) const;
+    DecodedInstruction decodeInstruction(const EncodedInstruction encInstr) const;
 };
+
+template <int8_t shift>
+inline constexpr uint32_t shiftRight(uint32_t val) {
+    return val >> shift;
+}
+
+template <int8_t shift>
+inline constexpr uint32_t shiftLeft(uint32_t val) {
+    return val << shift;
+}
+
+template <uint8_t low, uint8_t high>
+inline constexpr uint32_t getPartialBits(uint32_t val) {
+    static_assert(low <= high);
+    constexpr uint32_t mask = ((1 << (high - low + 1)) - 1) << low;
+    return val & mask;
+}
+
+template <uint32_t opcode, uint32_t mask>
+inline constexpr uint32_t getOpcodeBits() {
+    return opcode & mask;
+}
 
 }  // namespace RISCV
 

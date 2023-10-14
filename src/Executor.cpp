@@ -473,4 +473,588 @@ void ExecutorEBREAK(Hart* hart, const DecodedInstruction& instr) {
     hart->incrementPC();
 }
 
+void ExecutorFENCEI(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorMUL(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorMULH(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorMULHSU(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorMULHU(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorDIV(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorDIVU(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorREM(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorREMU(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorMULW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorDIVW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorDIVUW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorREMW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorREMUW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorAMOADDW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorAMOXORW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorAMOORW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorAMOANDW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorAMOMINW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorAMOMAXW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorAMOMINUW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorAMOMAXUW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorAMOSWAPW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorLRW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorSCW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorAMOADDD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorAMOXORD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorAMOORD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorAMOANDD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorAMOMIND(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorAMOMAXD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorAMOMINUD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorAMOMAXUD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorAMOSWAPD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorLRD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorSCD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorURET(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorSRET(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorMRET(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorDRET(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorSFENCEVMA(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorWFI(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorCSRRW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorCSRRS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorCSRRC(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorCSRRWI(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorCSRRSI(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorCSRRCI(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorHFENCEVVMA(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorHFENCEGVMA(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFADDS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFSUBS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMULS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFDIVS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFSGNJS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFSGNJNS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFSGNJXS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMINS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMAXS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFSQRTS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFADDD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFSUBD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMULD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFDIVD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFSGNJD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFSGNJND(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFSGNJXD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMIND(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMAXD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTSD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTDS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFSQRTD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFADDQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFSUBQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMULQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFDIVQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFSGNJQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFSGNJNQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFSGNJXQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMINQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMAXQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTSQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTQS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTDQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTQD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFSQRTQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFLES(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFLTS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFEQS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFLED(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFLTD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFEQD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFLEQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFLTQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFEQQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTWS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTWUS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTLS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTLUS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMVXW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCLASSS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTWD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTWUD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTLD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTLUD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMVXD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCLASSD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTWQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTWUQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTLQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTLUQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMVXQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCLASSQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTSW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTSWU(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTSL(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTSLU(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMVWX(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTDW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTDWU(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTDL(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTDLU(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMVDX(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTQW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTQWU(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTQL(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFCVTQLU(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMVQX(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFLW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFLD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFLQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFSW(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFSD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFSQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMADDS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMSUBS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFNMSUBS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFNMADDS(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMADDD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMSUBD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFNMSUBD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFNMADDD(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMADDQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFMSUBQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFNMSUBQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
+void ExecutorFNMADDQ(Hart* hart, const DecodedInstruction& instr) {
+    UNREACHABLE();
+}
+
 }  // namespace RISCV

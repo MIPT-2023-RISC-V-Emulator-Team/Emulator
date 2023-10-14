@@ -5,8 +5,8 @@ project(RISC-V VERSION 1.0 DESCRIPTION "RISC-V Emulator")
 set(CMAKE_CXX_STANDARD 17)
 set(COMPILE_OPT -std=c++17 -O2)
 set(LINK_OPT -lelf)
-set(SRC_DIR ./src)
-set(INCLUDE_DIR ./include)
+set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Remove strings matching given regular expression from a list.
 # @param(in,out) aItems Reference of a list variable to filter.
@@ -35,16 +35,28 @@ add_custom_target(format
     ${EMULATOR_FILES}
 )
 
+set(ISA_FILE ${CMAKE_CURRENT_SOURCE_DIR}/isa/risc-v.yaml)
+set(GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
+
+add_custom_command(
+  OUTPUT ${GEN_DIR}/Decoder.cpp ${GEN_DIR}/Fields.h ${GEN_DIR}/Inctructions.h
+  COMMAND ruby ${SRC_DIR}/decoder.rb --isa=${ISA_FILE} --gen=${GEN_DIR}
+  DEPENDS ${ISA_FILE} ${SRC_DIR}/decoder.rb
+  VERBATIM
+)
+
 add_executable(risc-v
     ${SRC_DIR}/risc-v.cpp
     ${SRC_DIR}/Hart.cpp
     ${SRC_DIR}/Memory.cpp
     ${SRC_DIR}/Executor.cpp
-    ${SRC_DIR}/Decoder.cpp
+    ${SRC_DIR}/Debug.cpp
+    ${GEN_DIR}/Decoder.cpp
 )
 
 target_include_directories(risc-v
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
     PUBLIC ${INCLUDE_DIR}
 )
 
