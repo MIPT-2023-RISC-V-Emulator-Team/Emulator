@@ -50,9 +50,11 @@ add_executable(risc-v
     ${SRC_DIR}/Hart.cpp
     ${SRC_DIR}/Memory.cpp
     ${SRC_DIR}/Executor.cpp
-    ${SRC_DIR}/Debug.cpp
     ${GEN_DIR}/Decoder.cpp
     ${SRC_DIR}/BasicBlock.cpp
+    ${SRC_DIR}/Debug.cpp
+    ${SRC_DIR}/ElfLoader.cpp
+    ${SRC_DIR}/MMU.cpp
 )
 
 target_include_directories(risc-v

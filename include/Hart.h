@@ -5,21 +5,22 @@
 
 #include "Common.h"
 #include "Decoder.h"
-#include "Memory.h"
 #include "BasicBlock.h"
+#include "MMU.h"
+
 
 namespace RISCV {
 
-class Hart {
+class Hart final {
 public:
     static constexpr size_t BB_CACHE_CAPACITY = 1024;
 
-    Hart() {
-        regs_[RegisterType::SP] = mmu_.getStackAddress();
-    }
-
     RegValue getReg(const RegisterType id) const {
         return regs_[id];
+    }
+
+    RegValue getCSRReg(const uint32_t id) const {
+        return csrRegs_[id];
     }
 
     void setReg(const RegisterType id, const RegValue val) {
@@ -31,11 +32,11 @@ public:
         pc_ += INSTRUCTION_BYTESIZE;
     }
 
-    uint64_t getPC() const {
+    memory::VirtAddr getPC() const {
         return pc_;
     }
 
-    void setPC(uint64_t newPC) {
+    void setPC(memory::VirtAddr newPC) {
         pc_ = newPC;
     }
 
@@ -44,20 +45,23 @@ public:
     void executeBasicBlock(const BasicBlock &bb);
     void execute(const DecodedInstruction& decInstr);
 
-    void loadElfFile(const std::string& filename) {
-        mmu_.loadElfFile(filename, &pc_);
-    }
+    Hart();
 
-    // Temporary solution is to make MMU public. TODO: organize memory
-    memory::MMU mmu_;
+    const memory::MMU& getTranslator() const {
+        return mmu_;
+    }
 
 private:
     EncodedInstruction fetch();
     DecodedInstruction decode(const EncodedInstruction encInstr) const;
 
-    uint64_t pc_;
+    memory::VirtAddr pc_;
     std::array<RegValue, RegisterType::REGISTER_COUNT> regs_ = {};
+    std::array<RegValue, CSR_COUNT> csrRegs_ = {};
+    memory::MMU mmu_;
+
     BBCache<BB_CACHE_CAPACITY> bbCache_;
+
     Decoder decoder_;
 };
 

@@ -3,6 +3,8 @@
 #include <chrono>
 
 #include "Hart.h"
+#include "ElfLoader.h"
+
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
@@ -11,7 +13,9 @@ int main(int argc, char* argv[]) {
     }
 
     RISCV::Hart CPU;
-    CPU.loadElfFile(argv[1]);
+    RISCV::ElfLoader* elfLoader = RISCV::ElfLoader::getInstance();
+
+    elfLoader->loadElf(argv[1], CPU);
 
     size_t instrCount = 0;
     auto executeStart = std::chrono::high_resolution_clock::now();
