@@ -8,12 +8,72 @@
 
 #include "constants.h"
 
+
 namespace RISCV::memory {
 
+
 struct Page {
-    std::array<uint8_t, memory::PAGE_BYTESIZE> memory;
+    std::array<uint8_t, memory::PAGE_BYTESIZE> memory = {};
 };
 
+
+struct PhysAddr {
+    uint32_t pageNum;
+    uint32_t pageOffset;
+};
+
+
+using VirtAddr = uint64_t;
+
+
+class PhysicalMemory final {
+private:
+    std::unordered_map<uint32_t, Page*> allocatedPages_;
+
+    static PhysicalMemory* instancePtr;
+    PhysicalMemory() {};
+
+public:
+    bool load8 (const PhysAddr paddr,  uint8_t* value) const;
+    bool load16(const PhysAddr paddr, uint16_t* value) const;
+    bool load32(const PhysAddr paddr, uint32_t* value) const;
+    bool load64(const PhysAddr paddr, uint64_t* value) const;
+
+    bool store8 (const PhysAddr paddr,  uint8_t value);
+    bool store16(const PhysAddr paddr, uint16_t value);
+    bool store32(const PhysAddr paddr, uint32_t value);
+    bool store64(const PhysAddr paddr, uint64_t value);
+
+    bool allocatePage(const PhysAddr paddr);
+    Page* getPage(const PhysAddr paddr);
+    Page* getPage(const uint32_t pageNum);
+
+    PhysicalMemory(const PhysicalMemory& other) = delete;
+
+    static PhysicalMemory* getInstance() {
+        if (!instancePtr)
+            instancePtr = new PhysicalMemory();
+
+        return instancePtr;
+    }
+};
+
+
+class MemoryTranslator {
+public:
+    PhysAddr getPhysAddr(const VirtAddr vaddr) const;
+};
+
+
+class MMU final : public MemoryTranslator {
+public:
+    MMU();
+};
+
+
+
+
+/*
 class MMU {
 public:
     MMU();
@@ -38,6 +98,8 @@ private:
     std::unordered_map<uint32_t, Page*> allocatedPhysPages_;
     uint64_t stackAddress_ = DEFAULT_STACK_ADDRESS;
 };
+*/
+
 
 }  // namespace RISCV::memory
 

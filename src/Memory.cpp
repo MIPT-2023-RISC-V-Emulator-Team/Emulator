@@ -1,298 +1,168 @@
 #include "Memory.h"
 
-#include <elf.h>
-#include <fcntl.h>
-#include <gelf.h>
-#include <libelf.h>
-#include <stdlib.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
-#include <cstring>
 #include <string>
 
 #include "constants.h"
 
+
 namespace RISCV::memory {
 
-bool MMU::allocatePage(const uint32_t pageNum) {
-    if (allocatedPhysPages_.size() >= PHYS_PAGE_COUNT) {
+PhysicalMemory* PhysicalMemory::instancePtr = nullptr;
+
+
+bool PhysicalMemory::load8(const PhysAddr paddr, uint8_t* value) const {
+    if (paddr.pageOffset > PAGE_BYTESIZE - 1) {
         fprintf(stderr, "PAGE FAULT OCCURS\n");
         return false;
     }
 
-    allocatedPhysPages_[pageNum] = new Page();
+    if (auto it = allocatedPages_.find(paddr.pageNum); it != allocatedPages_.end()) {
+        *value = it->second->memory[paddr.pageOffset];
+        return true;
+    }
+    fprintf(stderr, "PAGE FAULT OCCURS\n");
+    return false;
+}
+
+bool PhysicalMemory::load16(const PhysAddr paddr, uint16_t* value) const {
+    if (paddr.pageOffset > PAGE_BYTESIZE - 2) {
+        fprintf(stderr, "PAGE FAULT OCCURS\n");
+        return false;
+    }
+
+    if (auto it = allocatedPages_.find(paddr.pageNum); it != allocatedPages_.end()) {
+        *value = *reinterpret_cast<uint16_t*>(&it->second->memory[paddr.pageOffset]);
+        return true;
+    }
+    fprintf(stderr, "PAGE FAULT OCCURS\n");
+    return false;
+}
+
+bool PhysicalMemory::load32(const PhysAddr paddr, uint32_t* value) const {
+    if (paddr.pageOffset > PAGE_BYTESIZE - 4) {
+        fprintf(stderr, "PAGE FAULT OCCURS\n");
+        return false;
+    }
+
+    if (auto it = allocatedPages_.find(paddr.pageNum); it != allocatedPages_.end()) {
+        *value = *reinterpret_cast<uint32_t*>(&it->second->memory[paddr.pageOffset]);
+        return true;
+    }
+    fprintf(stderr, "PAGE FAULT OCCURS\n");
+    return false;
+}
+
+bool PhysicalMemory::load64(const PhysAddr paddr, uint64_t* value) const {
+    if (paddr.pageOffset > PAGE_BYTESIZE - 8) {
+        fprintf(stderr, "PAGE FAULT OCCURS\n");
+        return false;
+    }
+
+    if (auto it = allocatedPages_.find(paddr.pageNum); it != allocatedPages_.end()) {
+        *value = *reinterpret_cast<uint64_t*>(&it->second->memory[paddr.pageOffset]);
+        return true;
+    }
+    fprintf(stderr, "PAGE FAULT OCCURS\n");
+    return false;
+}
+
+
+bool PhysicalMemory::store8(const PhysAddr paddr, uint8_t value) {
+    if (paddr.pageOffset > PAGE_BYTESIZE - 1) {
+        fprintf(stderr, "PAGE FAULT OCCURS\n");
+        return false;
+    }
+
+    if (auto it = allocatedPages_.find(paddr.pageNum); it != allocatedPages_.end()) {
+        it->second->memory[paddr.pageOffset] = value;
+        return true;
+    }
+    fprintf(stderr, "PAGE FAULT OCCURS\n");
+    return false;
+}
+
+bool PhysicalMemory::store16(const PhysAddr paddr, uint16_t value) {
+    if (paddr.pageOffset > PAGE_BYTESIZE - 2) {
+        fprintf(stderr, "PAGE FAULT OCCURS\n");
+        return false;
+    }
+
+    if (auto it = allocatedPages_.find(paddr.pageNum); it != allocatedPages_.end()) {
+        *reinterpret_cast<uint16_t*>(&it->second->memory[paddr.pageOffset]) = value;
+        return true;
+    }
+    fprintf(stderr, "PAGE FAULT OCCURS\n");
+    return false;
+}
+
+bool PhysicalMemory::store32(const PhysAddr paddr, uint32_t value) {
+    if (paddr.pageOffset > PAGE_BYTESIZE - 4) {
+        fprintf(stderr, "PAGE FAULT OCCURS\n");
+        return false;
+    }
+
+    if (auto it = allocatedPages_.find(paddr.pageNum); it != allocatedPages_.end()) {
+        *reinterpret_cast<uint32_t*>(&it->second->memory[paddr.pageOffset]) = value;
+        return true;
+    }
+    fprintf(stderr, "PAGE FAULT OCCURS\n");
+    return false;
+}
+
+bool PhysicalMemory::store64(const PhysAddr paddr, uint64_t value) {
+    if (paddr.pageOffset > PAGE_BYTESIZE - 8) {
+        fprintf(stderr, "PAGE FAULT OCCURS\n");
+        return false;
+    }
+
+    if (auto it = allocatedPages_.find(paddr.pageNum); it != allocatedPages_.end()) {
+        *reinterpret_cast<uint64_t*>(&it->second->memory[paddr.pageOffset]) = value;
+        return true;
+    }
+    fprintf(stderr, "PAGE FAULT OCCURS\n");
+    return false;
+}
+
+
+bool PhysicalMemory::allocatePage(const PhysAddr paddr) {
+    if (paddr.pageNum >= PHYS_PAGE_COUNT) {
+        fprintf(stderr, "PAGE FAULT OCCURS\n");
+        return false;
+    }
+
+    if (allocatedPages_.find(paddr.pageNum) == allocatedPages_.cend()) {
+        allocatedPages_[paddr.pageNum] = new Page();
+    }
     return true;
 }
 
-uint64_t MMU::getStackAddress() const {
-    return stackAddress_;
+
+Page* PhysicalMemory::getPage(const uint32_t pageNum) {
+    if (auto it = allocatedPages_.find(pageNum); it != allocatedPages_.end()) {
+        return it->second;
+    }
+    return nullptr;
 }
 
-bool MMU::load8(const uint64_t addr, uint8_t* value) const {
-    uint32_t pageNum = addr >> ADDRESS_PAGE_NUM_SHIFT;
 
-    if (auto it = allocatedPhysPages_.find(pageNum); it != allocatedPhysPages_.end()) {
-        uint32_t offset = addr & ADDRESS_PAGE_OFFSET_MASK;
-
-        *value = it->second->memory[offset];
-        return true;
-    }
-    fprintf(stderr, "PAGE FAULT OCCURS\n");
-    return false;
+Page* PhysicalMemory::getPage(const PhysAddr paddr) {
+    return getPage(paddr.pageNum);
 }
 
-bool MMU::load16(const uint64_t addr, uint16_t* value) const {
-    uint32_t pageNumStart = addr >> ADDRESS_PAGE_NUM_SHIFT;
-    uint32_t pageNumEnd = (addr + 1) >> ADDRESS_PAGE_NUM_SHIFT;
 
-    if (pageNumStart != pageNumEnd) {
-        fprintf(stderr, "PAGE FAULT OCCURS\n");
-        return false;
-    }
-
-    if (auto it = allocatedPhysPages_.find(pageNumStart); it != allocatedPhysPages_.end()) {
-        uint32_t offset = addr & ADDRESS_PAGE_OFFSET_MASK;
-
-        *value = *reinterpret_cast<uint16_t*>(&it->second->memory[offset]);
-        return true;
-    }
-    fprintf(stderr, "PAGE FAULT OCCURS\n");
-    return false;
+PhysAddr MemoryTranslator::getPhysAddr(const VirtAddr vaddr) const {
+    PhysAddr paddr;
+    paddr.pageNum = vaddr >> ADDRESS_PAGE_NUM_SHIFT;
+    paddr.pageOffset = vaddr & ADDRESS_PAGE_OFFSET_MASK;
+    return paddr;
 }
 
-bool MMU::load32(const uint64_t addr, uint32_t* value) const {
-    uint32_t pageNumStart = addr >> ADDRESS_PAGE_NUM_SHIFT;
-    uint32_t pageNumEnd = (addr + 3) >> ADDRESS_PAGE_NUM_SHIFT;
-
-    if (pageNumStart != pageNumEnd) {
-        fprintf(stderr, "PAGE FAULT OCCURS\n");
-        return false;
-    }
-
-    if (auto it = allocatedPhysPages_.find(pageNumStart); it != allocatedPhysPages_.end()) {
-        uint32_t offset = addr & ADDRESS_PAGE_OFFSET_MASK;
-
-        *value = *reinterpret_cast<uint32_t*>(&it->second->memory[offset]);
-        return true;
-    }
-    fprintf(stderr, "PAGE FAULT OCCURS\n");
-    return false;
-}
-
-bool MMU::load64(const uint64_t addr, uint64_t* value) const {
-    uint32_t pageNumStart = addr >> ADDRESS_PAGE_NUM_SHIFT;
-    uint32_t pageNumEnd = (addr + 7) >> ADDRESS_PAGE_NUM_SHIFT;
-
-    if (pageNumStart != pageNumEnd) {
-        fprintf(stderr, "PAGE FAULT OCCURS\n");
-        return false;
-    }
-
-    if (auto it = allocatedPhysPages_.find(pageNumStart); it != allocatedPhysPages_.end()) {
-        uint32_t offset = addr & ADDRESS_PAGE_OFFSET_MASK;
-
-        *value = *reinterpret_cast<uint64_t*>(&it->second->memory[offset]);
-        return true;
-    }
-    fprintf(stderr, "PAGE FAULT OCCURS\n");
-    return false;
-}
-
-bool MMU::store8(const uint64_t addr, uint8_t value) {
-    uint32_t pageNum = addr >> ADDRESS_PAGE_NUM_SHIFT;
-    uint32_t offset = addr & ADDRESS_PAGE_OFFSET_MASK;
-
-    if (auto it = allocatedPhysPages_.find(pageNum); it != allocatedPhysPages_.end()) {
-        it->second->memory[offset] = value;
-        return true;
-    }
-
-    fprintf(stderr, "PAGE FAULT OCCURS\n");
-    return false;
-}
-
-bool MMU::store16(const uint64_t addr, uint16_t value) {
-    uint32_t pageNumStart = addr >> ADDRESS_PAGE_NUM_SHIFT;
-    uint32_t pageNumEnd = (addr + 1) >> ADDRESS_PAGE_NUM_SHIFT;
-
-    if (pageNumStart != pageNumEnd) {
-        fprintf(stderr, "PAGE FAULT OCCURS\n");
-        return false;
-    }
-
-    uint32_t offset = addr & ADDRESS_PAGE_OFFSET_MASK;
-    if (auto it = allocatedPhysPages_.find(pageNumStart); it != allocatedPhysPages_.end()) {
-        *reinterpret_cast<uint16_t*>(&it->second->memory[offset]) = value;
-        return true;
-    }
-
-    fprintf(stderr, "PAGE FAULT OCCURS\n");
-    return false;
-}
-
-bool MMU::store32(const uint64_t addr, uint32_t value) {
-    uint32_t pageNumStart = addr >> ADDRESS_PAGE_NUM_SHIFT;
-    uint32_t pageNumEnd = (addr + 3) >> ADDRESS_PAGE_NUM_SHIFT;
-
-    if (pageNumStart != pageNumEnd) {
-        fprintf(stderr, "PAGE FAULT OCCURS\n");
-        return false;
-    }
-
-    uint32_t offset = addr & ADDRESS_PAGE_OFFSET_MASK;
-    if (auto it = allocatedPhysPages_.find(pageNumStart); it != allocatedPhysPages_.end()) {
-        *reinterpret_cast<uint32_t*>(&it->second->memory[offset]) = value;
-        return true;
-    }
-
-    fprintf(stderr, "PAGE FAULT OCCURS\n");
-    return false;
-}
-
-bool MMU::store64(const uint64_t addr, uint64_t value) {
-    uint32_t pageNumStart = addr >> ADDRESS_PAGE_NUM_SHIFT;
-    uint32_t pageNumEnd = (addr + 7) >> ADDRESS_PAGE_NUM_SHIFT;
-
-    if (pageNumStart != pageNumEnd) {
-        fprintf(stderr, "PAGE FAULT OCCURS\n");
-        return false;
-    }
-
-    uint32_t offset = addr & ADDRESS_PAGE_OFFSET_MASK;
-    if (auto it = allocatedPhysPages_.find(pageNumStart); it != allocatedPhysPages_.end()) {
-        *reinterpret_cast<uint64_t*>(&it->second->memory[offset]) = value;
-        return true;
-    }
-
-    fprintf(stderr, "PAGE FAULT OCCURS\n");
-    return false;
-}
-
-bool MMU::loadElfFile(const std::string& filename, uint64_t* pc) {
-    int fd = open(filename.c_str(), O_RDONLY);
-    if (fd == -1) {
-        fprintf(stderr, "failed to open file \'%s\'\n", filename.c_str());
-        return -1;
-    }
-
-    if (elf_version(EV_CURRENT) == EV_NONE) {
-        fprintf(stderr, "ELF init failed\n");
-        return false;
-    }
-
-    Elf* elf = elf_begin(fd, ELF_C_READ, nullptr);
-    if (!elf) {
-        fprintf(stderr, "elf_begin() failed\n");
-        return false;
-    }
-
-    if (elf_kind(elf) != ELF_K_ELF) {
-        fprintf(stderr, "%s is not ELF file\n", filename.c_str());
-        return false;
-    }
-
-    GElf_Ehdr ehdr;
-    if (!gelf_getehdr(elf, &ehdr)) {
-        fprintf(stderr, "gelf_getehdr() failed\n");
-        return false;
-    }
-
-    if (gelf_getclass(elf) != ELFCLASS64) {
-        fprintf(stderr, "%s must be 64-bit ELF file\n", filename.c_str());
-        return -1;
-    }
-
-    struct stat fileStat;
-    if (fstat(fd, &fileStat) == -1) {
-        fprintf(stderr, "Cannot stat %s\n", filename.c_str());
-        return false;
-    }
-
-    void* fileBuffer = mmap(NULL, fileStat.st_size, PROT_READ, MAP_SHARED, fd, 0);
-    if (fileBuffer == NULL) {
-        fprintf(stderr, "mmap() failed\n");
-        return false;
-    }
-
-    for (size_t i = 0; i < ehdr.e_phnum; ++i) {
-        GElf_Phdr phdr;
-        gelf_getphdr(elf, i, &phdr);
-
-        if (phdr.p_type != PT_LOAD)
-            continue;
-
-        const uint64_t segmentStart = phdr.p_vaddr;
-        const uint64_t segmentSize = phdr.p_filesz;
-
-        const uint32_t pageNumStart = segmentStart >> ADDRESS_PAGE_NUM_SHIFT;
-        const uint32_t pageNumEnd = (segmentStart + segmentSize) >> ADDRESS_PAGE_NUM_SHIFT;
-
-        // If segment occupies only one page of memory
-        if (pageNumStart == pageNumEnd) {
-            if (allocatedPhysPages_.find(pageNumStart) == allocatedPhysPages_.end()) {
-                if (!allocatePage(pageNumStart)) {
-                    munmap(fileBuffer, fileStat.st_size);
-                    elf_end(elf);
-                    close(fd);
-                    return false;
-                }
-            }
-
-            uint32_t pageOffset = segmentStart & ADDRESS_PAGE_OFFSET_MASK;
-            memcpy(allocatedPhysPages_[pageNumStart]->memory.data() + pageOffset,
-                   (uint8_t*)fileBuffer + phdr.p_offset,
-                   phdr.p_filesz);
-            continue;
-        }
-
-        // If segment occupies two or more pages of memory
-        uint32_t pageOffset = segmentStart & ADDRESS_PAGE_OFFSET_MASK;
-        uint32_t copyBytesize = PAGE_BYTESIZE - pageOffset;
-        uint32_t leftBytesize = phdr.p_filesz;
-        uint32_t fileOffset = phdr.p_offset;
-
-        for (uint32_t currentPage = pageNumStart; currentPage <= pageNumEnd; ++currentPage) {
-            if (allocatedPhysPages_.find(currentPage) == allocatedPhysPages_.end()) {
-                if (!allocatePage(currentPage)) {
-                    munmap(fileBuffer, fileStat.st_size);
-                    elf_end(elf);
-                    close(fd);
-                    return false;
-                }
-            }
-
-            memcpy(allocatedPhysPages_[currentPage]->memory.data() + pageOffset,
-                   (uint8_t*)fileBuffer + fileOffset,
-                   copyBytesize);
-
-            fileOffset += copyBytesize;
-            leftBytesize -= copyBytesize;
-
-            pageOffset = 0;
-            copyBytesize = std::min((uint32_t)PAGE_BYTESIZE, leftBytesize);
-        }
-    }
-
-    munmap(fileBuffer, fileStat.st_size);
-    elf_end(elf);
-    close(fd);
-
-    *pc = ehdr.e_entry;
-
-    printf("Loaded ELF file: %s\n\n", filename.c_str());
-    return true;
-}
 
 MMU::MMU() {
-    allocatePage(stackAddress_ >> ADDRESS_PAGE_NUM_SHIFT);
+    PhysicalMemory* pmem = PhysicalMemory::getInstance();
+    PhysAddr stackPAddr = getPhysAddr(DEFAULT_STACK_ADDRESS);
+    pmem->allocatePage(stackPAddr);
 }
 
-MMU::~MMU() {
-    for (auto page : allocatedPhysPages_) {
-        delete page.second;
-    }
-}
 
 }  // namespace RISCV::memory

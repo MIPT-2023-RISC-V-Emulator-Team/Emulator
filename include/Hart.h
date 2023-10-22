@@ -24,11 +24,11 @@ public:
         pc_ += INSTRUCTION_BYTESIZE;
     }
 
-    uint64_t getPC() const {
+    memory::VirtAddr getPC() const {
         return pc_;
     }
 
-    void setPC(uint64_t newPC) {
+    void setPC(memory::VirtAddr newPC) {
         pc_ = newPC;
     }
 
@@ -36,19 +36,16 @@ public:
     DecodedInstruction decode(const EncodedInstruction encInstr) const;
     void execute(const DecodedInstruction& decInstr);
 
-    void loadElfFile(const std::string& filename) {
-        mmu_.loadElfFile(filename, &pc_);
-    }
 
     Hart() {
-        regs_[RegisterType::SP] = mmu_.getStackAddress();
+        regs_[RegisterType::SP] = memory::DEFAULT_STACK_ADDRESS;
     }
 
     // Temporary solution is to make MMU public. TODO: organize memory
     memory::MMU mmu_;
 
 private:
-    uint64_t pc_;
+    memory::VirtAddr pc_;
     std::array<RegValue, RegisterType::REGISTER_COUNT> regs_ = {};
 
     Decoder decoder_;

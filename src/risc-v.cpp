@@ -3,6 +3,8 @@
 #include <chrono>
 
 #include "Hart.h"
+#include "ElfLoader.h"
+
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
@@ -11,7 +13,11 @@ int main(int argc, char* argv[]) {
     }
 
     RISCV::Hart CPU;
-    CPU.loadElfFile(argv[1]);
+    RISCV::ElfLoader* elfLoader = RISCV::ElfLoader::getInstance();
+    RISCV::memory::VirtAddr entry;
+
+    elfLoader->loadElf(argv[1], entry);
+    CPU.setPC(entry);
 
     uint64_t instrCount = 0;
 

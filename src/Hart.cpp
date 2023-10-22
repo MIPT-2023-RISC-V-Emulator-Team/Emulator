@@ -8,7 +8,9 @@ namespace RISCV {
 
 EncodedInstruction Hart::fetch() {
     EncodedInstruction encInstr;
-    if (!mmu_.load32(pc_, &encInstr)) {
+    memory::PhysAddr paddr = mmu_.getPhysAddr(pc_);
+    memory::PhysicalMemory* pmem = memory::PhysicalMemory::getInstance();
+    if (!pmem->load32(paddr, &encInstr)) {
         printf("Could not handle page fault\n");
         exit(EXIT_FAILURE);
     }
