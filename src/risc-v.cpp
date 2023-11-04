@@ -13,18 +13,16 @@ int main(int argc, char* argv[]) {
     RISCV::Hart CPU;
     CPU.loadElfFile(argv[1]);
 
-    RISCV::EncodedInstruction encInstr;
-    RISCV::DecodedInstruction decInstr;
-
     uint64_t instrCount = 0;
 
     auto executeStart = std::chrono::high_resolution_clock::now();
     while (true) {
-        if (CPU.getPC() == 0)
+        if (CPU.getPC() == 0) {
             break;
+        }
 
-        CPU.fetch(encInstr);
-        CPU.decode(encInstr, decInstr);
+        auto encInstr = CPU.fetch();
+        auto decInstr = CPU.decode(encInstr);
         CPU.execute(decInstr);
 
         ++instrCount;
@@ -34,7 +32,8 @@ int main(int argc, char* argv[]) {
     printf("\nInterpreting ELF file %s has finished. Instruction count: %ld. AVG MIPS: %lf\n",
            argv[1],
            instrCount,
-           static_cast<float>(instrCount) / (std::chrono::duration_cast<std::chrono::microseconds>(executeEnd).count()));
+           static_cast<float>(instrCount) /
+               (std::chrono::duration_cast<std::chrono::microseconds>(executeEnd).count()));
 
     return 0;
 }
