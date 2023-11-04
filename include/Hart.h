@@ -6,11 +6,18 @@
 #include "Common.h"
 #include "Decoder.h"
 #include "Memory.h"
+#include "BasicBlock.h"
 
 namespace RISCV {
 
 class Hart {
 public:
+    static constexpr size_t BB_CACHE_CAPACITY = 1024;
+
+    Hart() {
+        regs_[RegisterType::SP] = mmu_.getStackAddress();
+    }
+
     RegValue getReg(const RegisterType id) const {
         return regs_[id];
     }
@@ -32,25 +39,25 @@ public:
         pc_ = newPC;
     }
 
-    EncodedInstruction fetch();
-    DecodedInstruction decode(const EncodedInstruction encInstr) const;
+    BasicBlock createBasicBlock();
+    const BasicBlock &getBasicBlock();
+    void executeBasicBlock(const BasicBlock &bb);
     void execute(const DecodedInstruction& decInstr);
 
     void loadElfFile(const std::string& filename) {
         mmu_.loadElfFile(filename, &pc_);
     }
 
-    Hart() {
-        regs_[RegisterType::SP] = mmu_.getStackAddress();
-    }
-
     // Temporary solution is to make MMU public. TODO: organize memory
     memory::MMU mmu_;
 
 private:
+    EncodedInstruction fetch();
+    DecodedInstruction decode(const EncodedInstruction encInstr) const;
+
     uint64_t pc_;
     std::array<RegValue, RegisterType::REGISTER_COUNT> regs_ = {};
-
+    BBCache<BB_CACHE_CAPACITY> bbCache_;
     Decoder decoder_;
 };
 
