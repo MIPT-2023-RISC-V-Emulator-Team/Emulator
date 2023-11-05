@@ -156,9 +156,11 @@ void ExecutorLB(Hart* hart, const DecodedInstruction& instr) {
     uint8_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->mmu_.getPhysAddr(vaddr);
+    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::R);
 
-    memory::PhysicalMemory::getInstance()->load8(paddr, &loaded);
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.read(paddr, 1, &loaded);
+
     hart->setReg(instr.rd, sext(loaded, 7));
     hart->incrementPC();
 }
@@ -170,9 +172,11 @@ void ExecutorLH(Hart* hart, const DecodedInstruction& instr) {
     uint16_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->mmu_.getPhysAddr(vaddr);
+    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::R);
 
-    memory::PhysicalMemory::getInstance()->load16(paddr, &loaded);
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.read(paddr, 2, &loaded);
+
     hart->setReg(instr.rd, sext(loaded, 15));
     hart->incrementPC();
 }
@@ -184,9 +188,11 @@ void ExecutorLW(Hart* hart, const DecodedInstruction& instr) {
     uint32_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->mmu_.getPhysAddr(vaddr);
+    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::R);
 
-    memory::PhysicalMemory::getInstance()->load32(paddr, &loaded);
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.read(paddr, 4, &loaded);
+
     hart->setReg(instr.rd, sext(loaded, 31));
     hart->incrementPC();
 }
@@ -198,9 +204,11 @@ void ExecutorLD(Hart* hart, const DecodedInstruction& instr) {
     uint64_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->mmu_.getPhysAddr(vaddr);
+    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::R);
 
-    memory::PhysicalMemory::getInstance()->load64(paddr, &loaded);
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.read(paddr, 8, &loaded);
+
     hart->setReg(instr.rd, loaded);
     hart->incrementPC();
 }
@@ -212,9 +220,11 @@ void ExecutorLBU(Hart* hart, const DecodedInstruction& instr) {
     uint8_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->mmu_.getPhysAddr(vaddr);
+    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::R);
 
-    memory::PhysicalMemory::getInstance()->load8(paddr, &loaded);
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.read(paddr, 1, &loaded);
+
     hart->setReg(instr.rd, loaded);
     hart->incrementPC();
 }
@@ -226,9 +236,11 @@ void ExecutorLHU(Hart* hart, const DecodedInstruction& instr) {
     uint16_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->mmu_.getPhysAddr(vaddr);
+    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::R);
 
-    memory::PhysicalMemory::getInstance()->load16(paddr, &loaded);
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.read(paddr, 2, &loaded);
+
     hart->setReg(instr.rd, loaded);
     hart->incrementPC();
 }
@@ -240,9 +252,11 @@ void ExecutorLWU(Hart* hart, const DecodedInstruction& instr) {
     uint32_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->mmu_.getPhysAddr(vaddr);
+    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::R);
 
-    memory::PhysicalMemory::getInstance()->load32(paddr, &loaded);
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.read(paddr, 4, &loaded);
+
     hart->setReg(instr.rd, loaded);
     hart->incrementPC();
 }
@@ -256,9 +270,11 @@ void ExecutorSB(Hart* hart, const DecodedInstruction& instr) {
     uint8_t stored = hart->getReg(instr.rs2) & 0xFF;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->mmu_.getPhysAddr(vaddr);
+    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::W);
 
-    memory::PhysicalMemory::getInstance()->store8(paddr, stored);
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.write(paddr, 1, &stored);
+
     hart->incrementPC();
 }
 
@@ -269,9 +285,11 @@ void ExecutorSH(Hart* hart, const DecodedInstruction& instr) {
     uint16_t stored = hart->getReg(instr.rs2) & 0xFFFF;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->mmu_.getPhysAddr(vaddr);
+    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::W);
 
-    memory::PhysicalMemory::getInstance()->store16(paddr, stored);
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.write(paddr, 2, &stored);
+
     hart->incrementPC();
 }
 
@@ -282,9 +300,11 @@ void ExecutorSW(Hart* hart, const DecodedInstruction& instr) {
     uint32_t stored = hart->getReg(instr.rs2) & 0xFFFFFFFF;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->mmu_.getPhysAddr(vaddr);
+    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::W);
 
-    memory::PhysicalMemory::getInstance()->store32(paddr, stored);
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.write(paddr, 4, &stored);
+
     hart->incrementPC();
 }
 
@@ -295,9 +315,11 @@ void ExecutorSD(Hart* hart, const DecodedInstruction& instr) {
     uint64_t stored = hart->getReg(instr.rs2);
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->mmu_.getPhysAddr(vaddr);
+    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::W);
 
-    memory::PhysicalMemory::getInstance()->store64(paddr, stored);
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.write(paddr, 8, &stored);
+
     hart->incrementPC();
 }
 

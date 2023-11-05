@@ -14,10 +14,8 @@ int main(int argc, char* argv[]) {
 
     RISCV::Hart CPU;
     RISCV::ElfLoader* elfLoader = RISCV::ElfLoader::getInstance();
-    RISCV::memory::VirtAddr entry;
 
-    elfLoader->loadElf(argv[1], entry);
-    CPU.setPC(entry);
+    elfLoader->loadElf(argv[1], CPU);
 
     uint64_t instrCount = 0;
 

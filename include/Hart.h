@@ -5,14 +5,18 @@
 
 #include "Common.h"
 #include "Decoder.h"
-#include "Memory.h"
+#include "MMU.h"
 
 namespace RISCV {
 
-class Hart {
+class Hart final {
 public:
     RegValue getReg(const RegisterType id) const {
         return regs_[id];
+    }
+
+    RegValue getCSRReg(const uint32_t id) const {
+        return csrRegs_[id];
     }
 
     void setReg(const RegisterType id, const RegValue val) {
@@ -36,17 +40,17 @@ public:
     DecodedInstruction decode(const EncodedInstruction encInstr) const;
     void execute(const DecodedInstruction& decInstr);
 
+    Hart();
 
-    Hart() {
-        regs_[RegisterType::SP] = memory::DEFAULT_STACK_ADDRESS;
+    const memory::MMU& getTranslator() const {
+        return mmu_;
     }
-
-    // Temporary solution is to make MMU public. TODO: organize memory
-    memory::MMU mmu_;
 
 private:
     memory::VirtAddr pc_;
     std::array<RegValue, RegisterType::REGISTER_COUNT> regs_ = {};
+    std::array<RegValue, CSR_COUNT> csrRegs_ = {};
+    memory::MMU mmu_;
 
     Decoder decoder_;
 };

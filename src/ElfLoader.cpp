@@ -18,7 +18,7 @@ using namespace memory;
 ElfLoader* ElfLoader::instancePtr = nullptr;
 
 
-bool ElfLoader::loadElf(const std::string& filename, VirtAddr& outEntry) {
+bool ElfLoader::loadElf(const std::string& filename, Hart& hart) {
     int fd = open(filename.c_str(), O_RDONLY);
     if (fd == -1) {
         fprintf(stderr, "failed to open file \'%s\'\n", filename.c_str());
@@ -71,67 +71,50 @@ bool ElfLoader::loadElf(const std::string& filename, VirtAddr& outEntry) {
         if (phdr.p_type != PT_LOAD)
             continue;
 
-        MemoryTranslator translator;
-        PhysicalMemory* pmem = PhysicalMemory::getInstance();
+        const MMU& translator = hart.getTranslator();
+        PhysicalMemory& pmem = getPhysicalMemory();
 
         const uint64_t segmentStart = phdr.p_vaddr;
-        const uint64_t segmentSize = phdr.p_memsz;
+        const uint64_t segmentSize  = phdr.p_memsz;
 
-        const PhysAddr paddrStart = translator.getPhysAddr(segmentStart);
-        const PhysAddr paddrEnd   = translator.getPhysAddr(segmentStart + segmentSize - 1);
+        MemoryRequest request;
+        if (phdr.p_flags & PF_R) {
+            request |= MemoryRequestBits::R;
+        }
+        if (phdr.p_flags & PF_W) {
+            request |= MemoryRequestBits::W;
+        }
+        if (phdr.p_flags & PF_X) {
+            request |= MemoryRequestBits::X;
+        }
+
+        const PhysAddr paddrStart = translator.getPhysAddrWithAllocation(segmentStart, request);
+        const PhysAddr paddrEnd   = translator.getPhysAddrWithAllocation(segmentStart + segmentSize - 1, request);
 
         // If segment occupies only one page of memory
         if (paddrStart.pageNum == paddrEnd.pageNum) {
-            if (!pmem->allocatePage(paddrStart)) {
+            // Use phdr.p_filesz because remaining information will be filled with zeros as supposed to be
+            if (!pmem.write(paddrStart, phdr.p_filesz, (uint8_t*)fileBuffer + phdr.p_offset)) {
                 munmap(fileBuffer, fileStat.st_size);
                 elf_end(elf);
                 close(fd);
                 return false;
             }
-
-            Page* page = pmem->getPage(paddrStart);
-            if(!page) {
-                munmap(fileBuffer, fileStat.st_size);
-                elf_end(elf);
-                close(fd);
-                return false;                
-            }
-
-            memcpy(page->memory.data() + paddrStart.pageOffset,
-                   (uint8_t*)fileBuffer + phdr.p_offset,
-                   phdr.p_filesz);
             continue;
         }
 
         // If segment occupies two or more pages of memory
-        uint32_t pageOffset = paddrStart.pageOffset;
-        uint32_t copyBytesize = PAGE_BYTESIZE - pageOffset;
+        uint32_t copyBytesize = PAGE_BYTESIZE - paddrStart.pageOffset;
         uint32_t leftBytesize = phdr.p_filesz;
         uint32_t fileOffset = phdr.p_offset;
 
-        for (uint32_t currPageNum = paddrStart.pageNum; currPageNum <= paddrEnd.pageNum; ++currPageNum) {
-            Page* currPage = pmem->getPage(currPageNum);
-            if (!currPage) {
-                PhysAddr tmp;
-                tmp.pageNum = currPageNum;
-                tmp.pageOffset = 0;
-                if (!pmem->allocatePage(tmp)) {
-                    munmap(fileBuffer, fileStat.st_size);
-                    elf_end(elf);
-                    close(fd);
-                    return false;                    
-                }
-                currPage = pmem->getPage(currPageNum);
-            }
-
-            memcpy(currPage->memory.data() + pageOffset,
-                   (uint8_t*)fileBuffer + fileOffset,
-                   copyBytesize);
+        for (VirtAddr currVirtAddr = segmentStart; currVirtAddr < segmentStart + segmentSize; currVirtAddr += PAGE_BYTESIZE) {
+            PhysAddr currPhysAddr = translator.getPhysAddrWithAllocation(currVirtAddr, request);
+            pmem.write(currPhysAddr, copyBytesize, (uint8_t*)fileBuffer + fileOffset);
 
             fileOffset += copyBytesize;
             leftBytesize -= copyBytesize;
 
-            pageOffset = 0;
             copyBytesize = std::min((uint32_t)PAGE_BYTESIZE, leftBytesize);
         }
     }
@@ -140,7 +123,7 @@ bool ElfLoader::loadElf(const std::string& filename, VirtAddr& outEntry) {
     elf_end(elf);
     close(fd);
 
-    outEntry = ehdr.e_entry;
+    hart.setPC(ehdr.e_entry);
 
     printf("Loaded ELF file: %s\n\n", filename.c_str());
     return true;

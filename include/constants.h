@@ -16,15 +16,25 @@ namespace memory {
 static constexpr uint32_t PAGE_BYTESIZE = 1 << 12;            // 4 KiB
 static constexpr uint64_t PHYS_MEMORY_BYTESIZE = 1ULL << 33;  // 8 GiB
 static constexpr uint64_t VIRT_MEMORY_BYTESIZE = 1ULL << 33;  // 8 GiB
-static constexpr uint32_t PHYS_PAGE_COUNT = PHYS_MEMORY_BYTESIZE / PAGE_BYTESIZE;
+static constexpr uint64_t PHYS_PAGE_COUNT = PHYS_MEMORY_BYTESIZE / PAGE_BYTESIZE;
 
 static constexpr uint32_t ADDRESS_PAGE_NUM_SHIFT = 12;
 static constexpr uint32_t ADDRESS_PAGE_OFFSET_MASK = 0xFFF;
 
 static constexpr uint32_t STACK_BYTESIZE = 1 << 20;  // 1 MiB
-static constexpr uint64_t DEFAULT_STACK_ADDRESS = STACK_BYTESIZE - 1;
+static constexpr uint64_t DEFAULT_STACK_ADDRESS = 0x3FFFFC00;
 
-}  // namespace memory
+} // namespace memory
+
+static constexpr uint32_t CSR_COUNT = 4096;
+static constexpr uint32_t CSR_SATP_INDEX = 0x180;
+
+// Sv48 mode
+static constexpr uint64_t CSR_SATP_MODE_SV48 = 9;
+static constexpr uint64_t CSR_SATP_MODE_BARE = 0;
+static constexpr uint8_t  PTE_LEVELS_SV48 = 4;
+static constexpr uint8_t  PTE_SIZE = 8;
+
 
 enum RegisterType : uint8_t {
     X0 = 0,
@@ -66,14 +76,6 @@ enum RegisterType : uint8_t {
     RA = X1,
     SP = X2
 };
-
-static constexpr std::array<std::string_view, InstructionType::INSTRUCTION_COUNT> InstructionNames =
-    {"lui",   "auipc", "jal",   "jalr",   "beq",  "bne",  "blt",  "bge",   "bltu",
-     "bgeu",  "lb",    "lh",    "lw",     "lbu",  "lhu",  "sb",   "sh",    "sw",
-     "addi",  "slti",  "sltiu", "xori",   "ori",  "andi", "slli", "srli",  "srai",
-     "add",   "sub",   "sll",   "slt",    "sltu", "xor",  "srl",  "sra",   "or",
-     "and",   "fence", "ecall", "ebreak", "lwu",  "ld",   "sd",   "addiw", "slliw",
-     "srliw", "sraiw", "addw",  "subw",   "sllw", "srlw", "sraw"};
 
 }  // namespace RISCV
 

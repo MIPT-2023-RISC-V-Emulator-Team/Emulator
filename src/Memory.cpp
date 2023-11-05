@@ -1,127 +1,15 @@
 #include "Memory.h"
 
 #include <string>
+#include <algorithm>
+#include <cstring>
 
 #include "constants.h"
 
 
 namespace RISCV::memory {
 
-PhysicalMemory* PhysicalMemory::instancePtr = nullptr;
-
-
-bool PhysicalMemory::load8(const PhysAddr paddr, uint8_t* value) const {
-    if (paddr.pageOffset > PAGE_BYTESIZE - 1) {
-        fprintf(stderr, "PAGE FAULT OCCURS\n");
-        return false;
-    }
-
-    if (auto it = allocatedPages_.find(paddr.pageNum); it != allocatedPages_.end()) {
-        *value = it->second->memory[paddr.pageOffset];
-        return true;
-    }
-    fprintf(stderr, "PAGE FAULT OCCURS\n");
-    return false;
-}
-
-bool PhysicalMemory::load16(const PhysAddr paddr, uint16_t* value) const {
-    if (paddr.pageOffset > PAGE_BYTESIZE - 2) {
-        fprintf(stderr, "PAGE FAULT OCCURS\n");
-        return false;
-    }
-
-    if (auto it = allocatedPages_.find(paddr.pageNum); it != allocatedPages_.end()) {
-        *value = *reinterpret_cast<uint16_t*>(&it->second->memory[paddr.pageOffset]);
-        return true;
-    }
-    fprintf(stderr, "PAGE FAULT OCCURS\n");
-    return false;
-}
-
-bool PhysicalMemory::load32(const PhysAddr paddr, uint32_t* value) const {
-    if (paddr.pageOffset > PAGE_BYTESIZE - 4) {
-        fprintf(stderr, "PAGE FAULT OCCURS\n");
-        return false;
-    }
-
-    if (auto it = allocatedPages_.find(paddr.pageNum); it != allocatedPages_.end()) {
-        *value = *reinterpret_cast<uint32_t*>(&it->second->memory[paddr.pageOffset]);
-        return true;
-    }
-    fprintf(stderr, "PAGE FAULT OCCURS\n");
-    return false;
-}
-
-bool PhysicalMemory::load64(const PhysAddr paddr, uint64_t* value) const {
-    if (paddr.pageOffset > PAGE_BYTESIZE - 8) {
-        fprintf(stderr, "PAGE FAULT OCCURS\n");
-        return false;
-    }
-
-    if (auto it = allocatedPages_.find(paddr.pageNum); it != allocatedPages_.end()) {
-        *value = *reinterpret_cast<uint64_t*>(&it->second->memory[paddr.pageOffset]);
-        return true;
-    }
-    fprintf(stderr, "PAGE FAULT OCCURS\n");
-    return false;
-}
-
-
-bool PhysicalMemory::store8(const PhysAddr paddr, uint8_t value) {
-    if (paddr.pageOffset > PAGE_BYTESIZE - 1) {
-        fprintf(stderr, "PAGE FAULT OCCURS\n");
-        return false;
-    }
-
-    if (auto it = allocatedPages_.find(paddr.pageNum); it != allocatedPages_.end()) {
-        it->second->memory[paddr.pageOffset] = value;
-        return true;
-    }
-    fprintf(stderr, "PAGE FAULT OCCURS\n");
-    return false;
-}
-
-bool PhysicalMemory::store16(const PhysAddr paddr, uint16_t value) {
-    if (paddr.pageOffset > PAGE_BYTESIZE - 2) {
-        fprintf(stderr, "PAGE FAULT OCCURS\n");
-        return false;
-    }
-
-    if (auto it = allocatedPages_.find(paddr.pageNum); it != allocatedPages_.end()) {
-        *reinterpret_cast<uint16_t*>(&it->second->memory[paddr.pageOffset]) = value;
-        return true;
-    }
-    fprintf(stderr, "PAGE FAULT OCCURS\n");
-    return false;
-}
-
-bool PhysicalMemory::store32(const PhysAddr paddr, uint32_t value) {
-    if (paddr.pageOffset > PAGE_BYTESIZE - 4) {
-        fprintf(stderr, "PAGE FAULT OCCURS\n");
-        return false;
-    }
-
-    if (auto it = allocatedPages_.find(paddr.pageNum); it != allocatedPages_.end()) {
-        *reinterpret_cast<uint32_t*>(&it->second->memory[paddr.pageOffset]) = value;
-        return true;
-    }
-    fprintf(stderr, "PAGE FAULT OCCURS\n");
-    return false;
-}
-
-bool PhysicalMemory::store64(const PhysAddr paddr, uint64_t value) {
-    if (paddr.pageOffset > PAGE_BYTESIZE - 8) {
-        fprintf(stderr, "PAGE FAULT OCCURS\n");
-        return false;
-    }
-
-    if (auto it = allocatedPages_.find(paddr.pageNum); it != allocatedPages_.end()) {
-        *reinterpret_cast<uint64_t*>(&it->second->memory[paddr.pageOffset]) = value;
-        return true;
-    }
-    fprintf(stderr, "PAGE FAULT OCCURS\n");
-    return false;
-}
+PhysicalMemory g_physicalMemory;
 
 
 bool PhysicalMemory::allocatePage(const PhysAddr paddr) {
@@ -130,38 +18,46 @@ bool PhysicalMemory::allocatePage(const PhysAddr paddr) {
         return false;
     }
 
-    if (allocatedPages_.find(paddr.pageNum) == allocatedPages_.cend()) {
-        allocatedPages_[paddr.pageNum] = new Page();
+    static std::vector<uint32_t> allocatedPages_;
+
+    if (std::find(allocatedPages_.begin(), allocatedPages_.end(), paddr.pageNum) == allocatedPages_.end()) {
+        allocatedPages_.push_back(paddr.pageNum);
+        emptyPagesFlags_[paddr.pageNum] = 0;
     }
     return true;
 }
 
-
-Page* PhysicalMemory::getPage(const uint32_t pageNum) {
-    if (auto it = allocatedPages_.find(pageNum); it != allocatedPages_.end()) {
-        return it->second;
-    }
-    return nullptr;
+uint64_t PhysicalMemory::getEmptyPageNumber() const {
+    auto it = std::find(emptyPagesFlags_.begin(), emptyPagesFlags_.end(), 1);
+    return it - emptyPagesFlags_.begin();
 }
 
 
-Page* PhysicalMemory::getPage(const PhysAddr paddr) {
-    return getPage(paddr.pageNum);
+bool PhysicalMemory::read(const PhysAddr paddr, const size_t size, void* value) {
+    std::memcpy(value, memory_ + paddr.pageNum * PAGE_BYTESIZE + paddr.pageOffset, size);
+    return true;
 }
 
 
-PhysAddr MemoryTranslator::getPhysAddr(const VirtAddr vaddr) const {
-    PhysAddr paddr;
-    paddr.pageNum = vaddr >> ADDRESS_PAGE_NUM_SHIFT;
-    paddr.pageOffset = vaddr & ADDRESS_PAGE_OFFSET_MASK;
-    return paddr;
+bool PhysicalMemory::write(const PhysAddr paddr, const size_t size, const void* value) {
+    std::memcpy(memory_ + paddr.pageNum * PAGE_BYTESIZE + paddr.pageOffset, value, size);
+    return true;
 }
 
 
-MMU::MMU() {
-    PhysicalMemory* pmem = PhysicalMemory::getInstance();
-    PhysAddr stackPAddr = getPhysAddr(DEFAULT_STACK_ADDRESS);
-    pmem->allocatePage(stackPAddr);
+PhysicalMemory::PhysicalMemory() {
+    memory_ = new uint8_t[PHYS_MEMORY_BYTESIZE];
+    emptyPagesFlags_.resize(PHYS_PAGE_COUNT);
+    std::fill(emptyPagesFlags_.begin(), emptyPagesFlags_.end(), 1);
+}
+
+PhysicalMemory::~PhysicalMemory() {
+    delete[] memory_;
+}
+
+
+PhysicalMemory& getPhysicalMemory() {
+    return g_physicalMemory;
 }
 
 
