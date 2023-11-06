@@ -156,7 +156,25 @@ void ExecutorLB(Hart* hart, const DecodedInstruction& instr) {
     uint8_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::R);
+    memory::PhysAddr paddr;
+
+
+    // Try TLB
+    const uint64_t vpn = getPartialBits<12, 63>(vaddr);
+    auto& tlb = hart->getTLB();
+    auto tlbEntry = tlb.findR(vpn);
+    if (tlbEntry != std::nullopt) {
+        // TLB hit
+        paddr = (*tlbEntry) * memory::PAGE_BYTESIZE;
+        paddr += memory::getPageOffset(vaddr);
+    }
+    else {
+        // TLB miss, translate address in usual way
+        auto& mmu = hart->getTranslator();
+        paddr = mmu.getPhysAddrR(vaddr);
+        tlb.insertR(vpn, memory::getPageNumber(paddr));
+    }
+
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.read(paddr, 1, &loaded);
@@ -172,7 +190,25 @@ void ExecutorLH(Hart* hart, const DecodedInstruction& instr) {
     uint16_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::R);
+    memory::PhysAddr paddr;
+
+
+    // Try TLB
+    const uint64_t vpn = getPartialBits<12, 63>(vaddr);
+    auto& tlb = hart->getTLB();
+    auto tlbEntry = tlb.findR(vpn);
+    if (tlbEntry != std::nullopt) {
+        // TLB hit
+        paddr = (*tlbEntry) * memory::PAGE_BYTESIZE;
+        paddr += memory::getPageOffset(vaddr);
+    }
+    else {
+        // TLB miss, translate address in usual way
+        auto& mmu = hart->getTranslator();
+        paddr = mmu.getPhysAddrR(vaddr);
+        tlb.insertR(vpn, memory::getPageNumber(paddr));
+    }
+
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.read(paddr, 2, &loaded);
@@ -188,7 +224,25 @@ void ExecutorLW(Hart* hart, const DecodedInstruction& instr) {
     uint32_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::R);
+    memory::PhysAddr paddr;
+
+
+    // Try TLB
+    const uint64_t vpn = getPartialBits<12, 63>(vaddr);
+    auto& tlb = hart->getTLB();
+    auto tlbEntry = tlb.findR(vpn);
+    if (tlbEntry != std::nullopt) {
+        // TLB hit
+        paddr = (*tlbEntry) * memory::PAGE_BYTESIZE;
+        paddr += memory::getPageOffset(vaddr);
+    }
+    else {
+        // TLB miss, translate address in usual way
+        auto& mmu = hart->getTranslator();
+        paddr = mmu.getPhysAddrR(vaddr);
+        tlb.insertR(vpn, memory::getPageNumber(paddr));
+    }
+
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.read(paddr, 4, &loaded);
@@ -204,7 +258,25 @@ void ExecutorLD(Hart* hart, const DecodedInstruction& instr) {
     uint64_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::R);
+    memory::PhysAddr paddr;
+
+
+    // Try TLB
+    const uint64_t vpn = getPartialBits<12, 63>(vaddr);
+    auto& tlb = hart->getTLB();
+    auto tlbEntry = tlb.findR(vpn);
+    if (tlbEntry != std::nullopt) {
+        // TLB hit
+        paddr = (*tlbEntry) * memory::PAGE_BYTESIZE;
+        paddr += memory::getPageOffset(vaddr);
+    }
+    else {
+        // TLB miss, translate address in usual way
+        auto& mmu = hart->getTranslator();
+        paddr = mmu.getPhysAddrR(vaddr);
+        tlb.insertR(vpn, memory::getPageNumber(paddr));
+    }
+
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.read(paddr, 8, &loaded);
@@ -220,7 +292,25 @@ void ExecutorLBU(Hart* hart, const DecodedInstruction& instr) {
     uint8_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::R);
+    memory::PhysAddr paddr;
+
+
+    // Try TLB
+    const uint64_t vpn = getPartialBits<12, 63>(vaddr);
+    auto& tlb = hart->getTLB();
+    auto tlbEntry = tlb.findR(vpn);
+    if (tlbEntry != std::nullopt) {
+        // TLB hit
+        paddr = (*tlbEntry) * memory::PAGE_BYTESIZE;
+        paddr += memory::getPageOffset(vaddr);
+    }
+    else {
+        // TLB miss, translate address in usual way
+        auto& mmu = hart->getTranslator();
+        paddr = mmu.getPhysAddrR(vaddr);
+        tlb.insertR(vpn, memory::getPageNumber(paddr));
+    }
+
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.read(paddr, 1, &loaded);
@@ -236,7 +326,25 @@ void ExecutorLHU(Hart* hart, const DecodedInstruction& instr) {
     uint16_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::R);
+    memory::PhysAddr paddr;
+
+
+    // Try TLB
+    const uint64_t vpn = getPartialBits<12, 63>(vaddr);
+    auto& tlb = hart->getTLB();
+    auto tlbEntry = tlb.findR(vpn);
+    if (tlbEntry != std::nullopt) {
+        // TLB hit
+        paddr = (*tlbEntry) * memory::PAGE_BYTESIZE;
+        paddr += memory::getPageOffset(vaddr);
+    }
+    else {
+        // TLB miss, translate address in usual way
+        auto& mmu = hart->getTranslator();
+        paddr = mmu.getPhysAddrR(vaddr);
+        tlb.insertR(vpn, memory::getPageNumber(paddr));
+    }
+
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.read(paddr, 2, &loaded);
@@ -252,7 +360,25 @@ void ExecutorLWU(Hart* hart, const DecodedInstruction& instr) {
     uint32_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::R);
+    memory::PhysAddr paddr;
+
+
+    // Try TLB
+    const uint64_t vpn = getPartialBits<12, 63>(vaddr);
+    auto& tlb = hart->getTLB();
+    auto tlbEntry = tlb.findR(vpn);
+    if (tlbEntry != std::nullopt) {
+        // TLB hit
+        paddr = (*tlbEntry) * memory::PAGE_BYTESIZE;
+        paddr += memory::getPageOffset(vaddr);
+    }
+    else {
+        // TLB miss, translate address in usual way
+        auto& mmu = hart->getTranslator();
+        paddr = mmu.getPhysAddrR(vaddr);
+        tlb.insertR(vpn, memory::getPageNumber(paddr));
+    }
+
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.read(paddr, 4, &loaded);
@@ -270,7 +396,25 @@ void ExecutorSB(Hart* hart, const DecodedInstruction& instr) {
     uint8_t stored = hart->getReg(instr.rs2) & 0xFF;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::W);
+    memory::PhysAddr paddr;
+
+
+    // Try TLB
+    const uint64_t vpn = getPartialBits<12, 63>(vaddr);
+    auto& tlb = hart->getTLB();
+    auto tlbEntry = tlb.findW(vpn);
+    if (tlbEntry != std::nullopt) {
+        // TLB hit
+        paddr = (*tlbEntry) * memory::PAGE_BYTESIZE;
+        paddr += memory::getPageOffset(vaddr);
+    }
+    else {
+        // TLB miss, translate address in usual way
+        auto& mmu = hart->getTranslator();
+        paddr = mmu.getPhysAddrW(vaddr);
+        tlb.insertW(vpn, memory::getPageNumber(paddr));
+    }
+
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.write(paddr, 1, &stored);
@@ -285,7 +429,25 @@ void ExecutorSH(Hart* hart, const DecodedInstruction& instr) {
     uint16_t stored = hart->getReg(instr.rs2) & 0xFFFF;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::W);
+    memory::PhysAddr paddr;
+
+
+    // Try TLB
+    const uint64_t vpn = getPartialBits<12, 63>(vaddr);
+    auto& tlb = hart->getTLB();
+    auto tlbEntry = tlb.findW(vpn);
+    if (tlbEntry != std::nullopt) {
+        // TLB hit
+        paddr = (*tlbEntry) * memory::PAGE_BYTESIZE;
+        paddr += memory::getPageOffset(vaddr);
+    }
+    else {
+        // TLB miss, translate address in usual way
+        auto& mmu = hart->getTranslator();
+        paddr = mmu.getPhysAddrW(vaddr);
+        tlb.insertW(vpn, memory::getPageNumber(paddr));
+    }
+
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.write(paddr, 2, &stored);
@@ -300,7 +462,25 @@ void ExecutorSW(Hart* hart, const DecodedInstruction& instr) {
     uint32_t stored = hart->getReg(instr.rs2) & 0xFFFFFFFF;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::W);
+    memory::PhysAddr paddr;
+
+
+    // Try TLB
+    const uint64_t vpn = getPartialBits<12, 63>(vaddr);
+    auto& tlb = hart->getTLB();
+    auto tlbEntry = tlb.findW(vpn);
+    if (tlbEntry != std::nullopt) {
+        // TLB hit
+        paddr = (*tlbEntry) * memory::PAGE_BYTESIZE;
+        paddr += memory::getPageOffset(vaddr);
+    }
+    else {
+        // TLB miss, translate address in usual way
+        auto& mmu = hart->getTranslator();
+        paddr = mmu.getPhysAddrW(vaddr);
+        tlb.insertW(vpn, memory::getPageNumber(paddr));
+    }
+
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.write(paddr, 4, &stored);
@@ -315,7 +495,25 @@ void ExecutorSD(Hart* hart, const DecodedInstruction& instr) {
     uint64_t stored = hart->getReg(instr.rs2);
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
-    memory::PhysAddr paddr = hart->getTranslator().getPhysAddr(vaddr, memory::MemoryRequestBits::W);
+    memory::PhysAddr paddr;
+
+
+    // Try TLB
+    const uint64_t vpn = getPartialBits<12, 63>(vaddr);
+    auto& tlb = hart->getTLB();
+    auto tlbEntry = tlb.findW(vpn);
+    if (tlbEntry != std::nullopt) {
+        // TLB hit
+        paddr = (*tlbEntry) * memory::PAGE_BYTESIZE;
+        paddr += memory::getPageOffset(vaddr);
+    }
+    else {
+        // TLB miss, translate address in usual way
+        auto& mmu = hart->getTranslator();
+        paddr = mmu.getPhysAddrW(vaddr);
+        tlb.insertW(vpn, memory::getPageNumber(paddr));
+    }
+
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.write(paddr, 8, &stored);

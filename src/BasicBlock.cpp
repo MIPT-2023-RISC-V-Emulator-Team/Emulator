@@ -3,10 +3,6 @@
 
 namespace RISCV {
 
-BasicBlock::Entrypoint BasicBlock::getEntry() const {
-    return entrypoint_;
-}
-
 size_t BasicBlock::getSize() const {
     return body_.size();
 }

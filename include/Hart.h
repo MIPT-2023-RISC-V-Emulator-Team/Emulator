@@ -7,6 +7,7 @@
 #include "Decoder.h"
 #include "BasicBlock.h"
 #include "MMU.h"
+#include "Cache.h"
 
 
 namespace RISCV {
@@ -40,7 +41,7 @@ public:
         pc_ = newPC;
     }
 
-    BasicBlock createBasicBlock();
+    BasicBlock fetchBasicBlock();
     const BasicBlock &getBasicBlock();
     void executeBasicBlock(const BasicBlock &bb);
     void execute(const DecodedInstruction& decInstr);
@@ -51,6 +52,10 @@ public:
         return mmu_;
     }
 
+    inline memory::TLB& getTLB() {
+        return tlb_;
+    }
+
 private:
     EncodedInstruction fetch();
     DecodedInstruction decode(const EncodedInstruction encInstr) const;
@@ -58,9 +63,11 @@ private:
     memory::VirtAddr pc_;
     std::array<RegValue, RegisterType::REGISTER_COUNT> regs_ = {};
     std::array<RegValue, CSR_COUNT> csrRegs_ = {};
-    memory::MMU mmu_;
 
-    BBCache<BB_CACHE_CAPACITY> bbCache_;
+    memory::MMU mmu_;
+    memory::TLB tlb_;
+
+    LRUCache<BB_CACHE_CAPACITY, memory::VirtAddr, BasicBlock> bbCache_;
 
     Decoder decoder_;
 };

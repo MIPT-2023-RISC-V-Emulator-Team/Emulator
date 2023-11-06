@@ -74,7 +74,7 @@ bool ElfLoader::loadElf(const std::string& filename, Hart& hart) {
         const MMU& translator = hart.getTranslator();
         PhysicalMemory& pmem = getPhysicalMemory();
 
-        const uint64_t segmentStart = phdr.p_vaddr;
+        const VirtAddr segmentStart = phdr.p_vaddr;
         const uint64_t segmentSize  = phdr.p_memsz;
 
         MemoryRequest request;
@@ -92,7 +92,7 @@ bool ElfLoader::loadElf(const std::string& filename, Hart& hart) {
         const PhysAddr paddrEnd   = translator.getPhysAddrWithAllocation(segmentStart + segmentSize - 1, request);
 
         // If segment occupies only one page of memory
-        if (paddrStart.pageNum == paddrEnd.pageNum) {
+        if (getPageNumber(paddrStart) == getPageNumber(paddrEnd)) {
             // Use phdr.p_filesz because remaining information will be filled with zeros as supposed to be
             if (!pmem.write(paddrStart, phdr.p_filesz, (uint8_t*)fileBuffer + phdr.p_offset)) {
                 munmap(fileBuffer, fileStat.st_size);
@@ -104,7 +104,7 @@ bool ElfLoader::loadElf(const std::string& filename, Hart& hart) {
         }
 
         // If segment occupies two or more pages of memory
-        uint32_t copyBytesize = PAGE_BYTESIZE - paddrStart.pageOffset;
+        uint32_t copyBytesize = PAGE_BYTESIZE - getPageOffset(segmentStart);
         uint32_t leftBytesize = phdr.p_filesz;
         uint32_t fileOffset = phdr.p_offset;
 
@@ -124,8 +124,6 @@ bool ElfLoader::loadElf(const std::string& filename, Hart& hart) {
     close(fd);
 
     hart.setPC(ehdr.e_entry);
-
-    printf("Loaded ELF file: %s\n\n", filename.c_str());
     return true;
 }
 

@@ -12,13 +12,18 @@
 namespace RISCV::memory {
 
 
-struct PhysAddr {
-    uint64_t pageNum;
-    uint32_t pageOffset;
-};
-
-
+using PhysAddr = uint64_t;
 using VirtAddr = uint64_t;
+
+template<typename T>
+static inline uint64_t getPageNumber(const T addr) {
+    return addr >> ADDRESS_PAGE_NUM_SHIFT;
+}
+
+template<typename T>
+static inline uint32_t getPageOffset(const T addr) {
+    return addr & ADDRESS_PAGE_OFFSET_MASK;
+}
 
 
 class PhysicalMemory final {

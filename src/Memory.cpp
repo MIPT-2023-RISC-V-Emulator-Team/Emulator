@@ -13,16 +13,17 @@ PhysicalMemory g_physicalMemory;
 
 
 bool PhysicalMemory::allocatePage(const PhysAddr paddr) {
-    if (paddr.pageNum >= PHYS_PAGE_COUNT) {
-        fprintf(stderr, "PAGE FAULT OCCURS\n");
+    uint64_t pageNum = getPageNumber(paddr);
+    if (pageNum >= PHYS_PAGE_COUNT) {
+        std::cerr << "invalid address" << std::endl;
         return false;
     }
 
     static std::vector<uint32_t> allocatedPages_;
 
-    if (std::find(allocatedPages_.begin(), allocatedPages_.end(), paddr.pageNum) == allocatedPages_.end()) {
-        allocatedPages_.push_back(paddr.pageNum);
-        emptyPagesFlags_[paddr.pageNum] = 0;
+    if (std::find(allocatedPages_.begin(), allocatedPages_.end(), pageNum) == allocatedPages_.end()) {
+        allocatedPages_.push_back(pageNum);
+        emptyPagesFlags_[pageNum] = 0;
     }
     return true;
 }
@@ -34,13 +35,13 @@ uint64_t PhysicalMemory::getEmptyPageNumber() const {
 
 
 bool PhysicalMemory::read(const PhysAddr paddr, const size_t size, void* value) {
-    std::memcpy(value, memory_ + paddr.pageNum * PAGE_BYTESIZE + paddr.pageOffset, size);
+    std::memcpy(value, memory_ + paddr, size);
     return true;
 }
 
 
 bool PhysicalMemory::write(const PhysAddr paddr, const size_t size, const void* value) {
-    std::memcpy(memory_ + paddr.pageNum * PAGE_BYTESIZE + paddr.pageOffset, value, size);
+    std::memcpy(memory_ + paddr, value, size);
     return true;
 }
 

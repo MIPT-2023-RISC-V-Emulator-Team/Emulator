@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 project(RISC-V VERSION 1.0 DESCRIPTION "RISC-V Emulator")
 
 set(CMAKE_CXX_STANDARD 17)
-set(COMPILE_OPT -std=c++17 -O2)
+set(COMPILE_OPT -std=c++17 -O3)
 set(LINK_OPT -lelf)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
