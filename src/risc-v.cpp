@@ -13,19 +13,12 @@ int main(int argc, char* argv[]) {
     RISCV::Hart CPU;
     CPU.loadElfFile(argv[1]);
 
-    uint64_t instrCount = 0;
-
+    size_t instrCount = 0;
     auto executeStart = std::chrono::high_resolution_clock::now();
-    while (true) {
-        if (CPU.getPC() == 0) {
-            break;
-        }
-
-        auto encInstr = CPU.fetch();
-        auto decInstr = CPU.decode(encInstr);
-        CPU.execute(decInstr);
-
-        ++instrCount;
+    while (CPU.getPC() != 0) {
+        const auto &bb = CPU.getBasicBlock();
+        CPU.executeBasicBlock(bb);
+        instrCount += bb.getSize();
     }
     auto executeEnd = std::chrono::high_resolution_clock::now() - executeStart;
 

@@ -52,6 +52,7 @@ add_executable(risc-v
     ${SRC_DIR}/Executor.cpp
     ${SRC_DIR}/Debug.cpp
     ${GEN_DIR}/Decoder.cpp
+    ${SRC_DIR}/BasicBlock.cpp
 )
 
 target_include_directories(risc-v

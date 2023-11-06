@@ -17,6 +17,22 @@ using Executor = void (*)(Hart* hart, const DecodedInstruction& instr);
 using EncodedInstruction = uint32_t;
 
 struct DecodedInstruction {
+    bool isJumpInstruction() {
+        switch (type) {
+            case InstructionType::JAL:
+            case InstructionType::JALR:
+            case InstructionType::BEQ:
+            case InstructionType::BNE:
+            case InstructionType::BLT:
+            case InstructionType::BGE:
+            case InstructionType::BLTU:
+            case InstructionType::BGEU:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     RegisterType rd;
     RegisterType rs1;
     RegisterType rs2;
