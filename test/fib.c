@@ -4,7 +4,7 @@ int main() {
 	for (int i = 0; i < 20; ++i) {
 		int tmp = b;
 		b += a;
-		a = tmp;	
+		a = tmp;
 	}
 	return b;
 }

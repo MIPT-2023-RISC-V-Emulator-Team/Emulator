@@ -108,7 +108,8 @@ bool ElfLoader::loadElf(const std::string& filename, Hart& hart) {
         uint32_t leftBytesize = phdr.p_filesz;
         uint32_t fileOffset = phdr.p_offset;
 
-        for (VirtAddr currVirtAddr = segmentStart; currVirtAddr < segmentStart + segmentSize; currVirtAddr += PAGE_BYTESIZE) {
+        size_t addressIncrementSize = copyBytesize;
+        for (VirtAddr currVirtAddr = segmentStart; currVirtAddr < segmentStart + segmentSize; ) {
             PhysAddr currPhysAddr = translator.getPhysAddrWithAllocation(currVirtAddr, request);
             pmem.write(currPhysAddr, copyBytesize, (uint8_t*)fileBuffer + fileOffset);
 
@@ -116,6 +117,13 @@ bool ElfLoader::loadElf(const std::string& filename, Hart& hart) {
             leftBytesize -= copyBytesize;
 
             copyBytesize = std::min((uint32_t)PAGE_BYTESIZE, leftBytesize);
+
+            /*
+             * Explicitly define loop ending since we need to add <PAGE_BYTESIZE - getPageOffset(segmentStart)>
+             * to virtual address only once and add <PAGE_BYTESIZE> all other times
+             */
+            currVirtAddr += addressIncrementSize;
+            addressIncrementSize = PAGE_BYTESIZE;
         }
     }
 
