@@ -72,6 +72,7 @@ int main(int argc, char* argv[]) {
         std::exit(EXIT_FAILURE);
     }
     std::cout << greenColor << "Successfully loaded ELF file: " << argv[1] << defaultColor << std::endl;
+    std::cout << "===============================================================================" << std::endl;
 
     int fd;
     startHostInstructionCount(&fd);
@@ -91,6 +92,7 @@ int main(int argc, char* argv[]) {
         endHostInstructionCount(&fd, &hostInstructions);
     }
 
+    std::cout << "===============================================================================" << std::endl;
     std::cout << greenColor << "Interpreting ELF file " << argv[1] << " has finished\n" << defaultColor << std::endl;
 
     std::cout << "Simulated instruction count: " << instrCount << std::endl;

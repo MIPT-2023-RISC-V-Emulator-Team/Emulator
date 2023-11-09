@@ -721,6 +721,48 @@ void ExecutorFENCE(Hart* hart, const DecodedInstruction& instr) {
 void ExecutorECALL(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("ecall\n");
 
+    const long syscallNo = hart->getReg(RegisterType::A7);
+
+    switch (syscallNo) {
+        case 64: {
+            uint64_t vaddr = hart->getReg(RegisterType::A1);
+            uint64_t length = hart->getReg(RegisterType::A2);
+
+            memory::PhysAddr paddr;
+
+            std::cout << "ECALL: " << std::endl;
+
+            // Try TLB
+            const uint64_t vpn = getPartialBits<12, 63>(vaddr);
+            auto& tlb = hart->getTLB();
+            auto tlbEntry = tlb.findR(vpn);
+            if (tlbEntry != std::nullopt) {
+                // TLB hit
+                paddr = (*tlbEntry) * memory::PAGE_BYTESIZE;
+                paddr += memory::getPageOffset(vaddr);
+            }
+            else {
+                // TLB miss, translate address in usual way
+                auto& mmu = hart->getTranslator();
+                paddr = mmu.getPhysAddrR(vaddr);
+                tlb.insertR(vpn, memory::getPageNumber(paddr));
+            }
+
+            std::string outStr;
+            outStr.resize(length);
+
+            memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+            pmem.read(paddr, length, outStr.data());
+            std::cout << outStr;
+
+            break;
+        }
+        default: {
+            std::cerr << "unknown syscall" << std::endl;
+            break;
+        }
+    }
+
     hart->incrementPC();
 }
 
@@ -751,7 +793,15 @@ void ExecutorMULHU(Hart* hart, const DecodedInstruction& instr) {
 }
 
 void ExecutorDIV(Hart* hart, const DecodedInstruction& instr) {
-    UNREACHABLE();
+    DEBUG_INSTRUCTION("div     x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
+
+    int64_t dividend = hart->getReg(instr.rs1);
+    int64_t divisor = hart->getReg(instr.rs2);
+
+    int64_t quot = dividend / divisor;
+    hart->setReg(instr.rd, quot);
+
+    hart->incrementPC();
 }
 
 void ExecutorDIVU(Hart* hart, const DecodedInstruction& instr) {
@@ -759,7 +809,15 @@ void ExecutorDIVU(Hart* hart, const DecodedInstruction& instr) {
 }
 
 void ExecutorREM(Hart* hart, const DecodedInstruction& instr) {
-    UNREACHABLE();
+    DEBUG_INSTRUCTION("rem     x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
+
+    int64_t dividend = hart->getReg(instr.rs1);
+    int64_t divisor = hart->getReg(instr.rs2);
+
+    int64_t rem = dividend % divisor;
+    hart->setReg(instr.rd, rem);
+
+    hart->incrementPC();
 }
 
 void ExecutorREMU(Hart* hart, const DecodedInstruction& instr) {
