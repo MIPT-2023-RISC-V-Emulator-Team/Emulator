@@ -37,12 +37,13 @@
     DEFAULT_COPY_CTOR(TypeName)         \
     DEFAULT_COPY_OPERATOR(TypeName)
 
+#define LIKELY(exp) (__builtin_expect((exp) != 0, true))
+#define UNLIKELY(exp) (__builtin_expect((exp) != 0, false))
+
 #if !defined(NDEBUG)
 
 #define DEBUG_INSTRUCTION(format, ...) printf(format, ##__VA_ARGS__)
 
-#define LIKELY(exp) (__builtin_expect((exp) != 0, true))
-#define UNLIKELY(exp) (__builtin_expect((exp) != 0, false))
 
 #define ASSERT_FAIL(expr) RISCV::debug::AssertionFail(expr, __FILE__, __LINE__, __FUNCTION__)
 

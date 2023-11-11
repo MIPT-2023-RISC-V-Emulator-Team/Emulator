@@ -22,7 +22,8 @@ public:
 
     static constexpr const uint64_t ppnMask = 0x3FFFFFFFFFFC00ULL;
 
-    inline bool getAttribute(const Attribute attr) const {
+    template<typename T>
+    inline bool getAttribute(const T attr) const {
         return value_ & attr;
     }
 
@@ -121,9 +122,19 @@ public:
     };
 
     void setSATPReg(const RegValue satp);
-    PhysAddr getPhysAddrI(const VirtAddr vaddr) const;
-    PhysAddr getPhysAddrR(const VirtAddr vaddr) const;
-    PhysAddr getPhysAddrW(const VirtAddr vaddr) const;
+
+    inline PhysAddr getPhysAddrI(const VirtAddr vaddr) const {
+        return getPhysAddr<MemoryRequestBits::R | MemoryRequestBits::X>(vaddr);
+    }
+
+    inline PhysAddr getPhysAddrR(const VirtAddr vaddr) const {
+        return getPhysAddr<MemoryRequestBits::R>(vaddr);
+    }
+
+    inline PhysAddr getPhysAddrW(const VirtAddr vaddr) const {
+        return getPhysAddr<MemoryRequestBits::W>(vaddr);
+    }
+
     PhysAddr getPhysAddrWithAllocation(const VirtAddr vaddr,
                                        const MemoryRequest request = MemoryRequestBits::R |
                                                                      MemoryRequestBits::W |
@@ -137,6 +148,168 @@ private:
 
     bool isVirtAddrCanonical(const VirtAddr vaddr) const;
     void handleException(const Exception exception) const;
+
+    template <MemoryRequest request>
+    inline void checkPermissions(const PTE pte) const {
+        if constexpr (request & MemoryRequestBits::R) {
+            if (!pte.getAttribute(PTE::Attribute::R)) {
+                handleException(Exception::NO_READ_PERM);
+            }
+        }
+
+        if constexpr (request & MemoryRequestBits::W) {
+            if (!pte.getAttribute(PTE::Attribute::W)) {
+                handleException(Exception::NO_WRITE_PERM);
+            }
+        }
+
+        if constexpr (request & MemoryRequestBits::X) {
+            if (!pte.getAttribute(PTE::Attribute::X)) {
+                handleException(Exception::NO_EXECUTE_PERM);
+            }
+        }
+    }
+
+    template <MemoryRequest request>
+    PhysAddr getPhysAddr(const VirtAddr vaddr) const {
+        PhysAddr paddr;
+
+        switch (currTransMode_) {
+            case TranslationMode::TRANSLATION_MODE_BARE: {
+                paddr = vaddr;
+                break;
+            }
+            case TranslationMode::TRANSLATION_MODE_SV39: {
+                // Unsupported yet
+                handleException(Exception::UNSUPPORTED);
+                break;
+            }
+            case TranslationMode::TRANSLATION_MODE_SV48: {
+                if (!isVirtAddrCanonical(vaddr)) {
+                    handleException(Exception::NONCANONICAL_ADDRESS);
+                }
+
+                PhysicalMemory& pmem = getPhysicalMemory();
+
+                uint64_t a = rootTransTablePAddr_;
+                uint32_t vpn3 = getPartialBitsShifted<39, 47>(vaddr);
+                PTE pte3;
+                pmem.read(a + vpn3 * PTE_SIZE, sizeof(pte3), &pte3);
+
+                if (!pte3.getAttribute(PTE::Attribute::V)) {
+                    handleException(Exception::NOT_VALID);
+                }
+                if (!pte3.getAttribute(PTE::Attribute::R) && pte3.getAttribute(PTE::Attribute::W)) {
+                    handleException(Exception::WRITE_NO_READ);
+                }
+
+                if (!pte3.getAttribute(PTE::Attribute::R | PTE::Attribute::X)) {
+
+                    a = pte3.getPPN() * PAGE_BYTESIZE;
+                    uint32_t vpn2 = getPartialBitsShifted<30, 38>(vaddr);
+                    PTE pte2;
+                    pmem.read(a + vpn2 * PTE_SIZE, sizeof(pte2), &pte2);
+
+                    if (!pte2.getAttribute(PTE::Attribute::V)) {
+                        handleException(Exception::NOT_VALID);
+                    }
+                    if (!pte2.getAttribute(PTE::Attribute::R) && pte2.getAttribute(PTE::Attribute::W)) {
+                        handleException(Exception::WRITE_NO_READ);
+                    }
+
+                    if (!pte2.getAttribute(PTE::Attribute::R | PTE::Attribute::X)) {
+
+                        a = pte2.getPPN() * PAGE_BYTESIZE;
+                        uint32_t vpn1 = getPartialBitsShifted<21, 29>(vaddr);
+                        PTE pte1;
+                        pmem.read(a + vpn1 * PTE_SIZE, sizeof(pte1), &pte1);
+
+                        if (!pte1.getAttribute(PTE::Attribute::V)) {
+                            handleException(Exception::NOT_VALID);
+                        }
+                        if (!pte1.getAttribute(PTE::Attribute::R) && pte1.getAttribute(PTE::Attribute::W)) {
+                            handleException(Exception::WRITE_NO_READ);
+                        }
+
+                        if (!pte1.getAttribute(PTE::Attribute::R | PTE::Attribute::X)) {
+
+                            a = pte1.getPPN() * PAGE_BYTESIZE;
+                            uint32_t vpn0 = getPartialBitsShifted<12, 20>(vaddr);
+                            PTE pte0;
+                            pmem.read(a + vpn0 * PTE_SIZE, sizeof(pte0), &pte0);
+
+                            if (!pte0.getAttribute(PTE::Attribute::V)) {
+                                handleException(Exception::NOT_VALID);
+                            }
+                            if (!pte0.getAttribute(PTE::Attribute::R) && pte0.getAttribute(PTE::Attribute::W)) {
+                                handleException(Exception::WRITE_NO_READ);
+                            }
+
+                            if (!pte0.getAttribute(PTE::Attribute::R | PTE::Attribute::X)) {
+                                // No leaf PTE page fault
+                                handleException(Exception::NO_LEAF_PTE);
+                            } else {
+                                // Check permissions
+                                checkPermissions<request>(pte0);
+
+                                paddr = pte0.getPPN() * PAGE_BYTESIZE;
+                                paddr += getPageOffset(vaddr);
+                            }
+                        } else {
+                            // Superpage
+                            uint64_t mask = 0b1;
+                            if ((pte1.getPPN() & mask) != 0) {
+                                handleException(Exception::MISALIGNED_SUPERPAGE);
+                            }
+
+                            // Check permissions
+                            checkPermissions<request>(pte1);
+
+                            paddr = ((pte1.getPPN() & ~mask) | (vpn1 & mask)) * PAGE_BYTESIZE;
+                            paddr += getPageOffset(vaddr);
+                        }
+                    } else {
+                        // Superpage
+                        uint64_t mask = 0b11;
+                        if ((pte2.getPPN() & mask) != 0) {
+                            handleException(Exception::MISALIGNED_SUPERPAGE);
+                        }
+
+                        // Check permissions
+                        checkPermissions<request>(pte2);
+
+                        paddr = ((pte2.getPPN() & ~mask) | (vpn2 & mask)) * PAGE_BYTESIZE;
+                        paddr += getPageOffset(vaddr);
+                    }
+                } else {
+                    // Superpage
+                    uint64_t mask = 0b111;
+                    if ((pte3.getPPN() & mask) != 0) {
+                        handleException(Exception::MISALIGNED_SUPERPAGE);
+                    }
+
+                    // Check permissions
+                    checkPermissions<request>(pte3);
+
+                    paddr = ((pte3.getPPN() & ~mask) | (vpn3 & mask)) * PAGE_BYTESIZE;
+                    paddr += getPageOffset(vaddr);
+                }
+                break;
+            }
+            case TranslationMode::TRANSLATION_MODE_SV57: {
+                // Unsupported yet
+                handleException(Exception::UNSUPPORTED);
+                break;
+            }
+            case TranslationMode::TRANSLATION_MODE_SV64: {
+                // Unsupported yet
+                handleException(Exception::UNSUPPORTED);
+                break;
+            }
+        }
+
+        return paddr;
+    }
 };
 
 }  // namespace RISCV::memory

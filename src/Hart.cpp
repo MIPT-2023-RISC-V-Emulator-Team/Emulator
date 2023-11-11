@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "Executor.h"
+#include "macros.h"
 
 namespace RISCV {
 
@@ -44,7 +45,7 @@ BasicBlock Hart::fetchBasicBlock() {
     size_t readBytesize = PAGE_BYTESIZE - pageOffset;
     size_t readInstructions = BasicBlock::MAX_SIZE;
 
-    if (readBytesize >= maxBasicBlockBytesize) {
+    if (LIKELY(readBytesize >= maxBasicBlockBytesize)) {
         // Hooooot
         readBytesize = maxBasicBlockBytesize;
     } else {

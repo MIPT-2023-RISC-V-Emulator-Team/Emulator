@@ -61,11 +61,12 @@ int main(int argc, char* argv[]) {
 
     const std::string redColor("\033[0;31m");
     const std::string greenColor("\033[0;32m");
+    const std::string yellowColor("\033[0;33m");
     const std::string defaultColor("\033[0m");
 
     if (!elfLoader->loadElf(argv[1], CPU)) {
         // Fatal error
-        std::cerr << redColor << "Could not load ELF file: " << argv[1] << defaultColor
+        std::cerr << redColor << "Error: could not load ELF file: " << argv[1] << defaultColor
                   << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -108,8 +109,8 @@ int main(int argc, char* argv[]) {
         std::cout << "Average host per simulated:  " << (float)hostInstructions / instrCount
                   << std::endl;
     } else {
-        // Unimportant error
-        std::cerr << redColor << "Error occured while host instruction counting" << defaultColor
+        // Unimportant warning
+        std::cerr << yellowColor << "Warning: unable to count host instructions" << defaultColor
                   << std::endl;
     }
 
