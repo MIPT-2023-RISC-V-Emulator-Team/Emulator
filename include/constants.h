@@ -24,14 +24,14 @@ static constexpr uint32_t ADDRESS_PAGE_OFFSET_MASK = 0xFFF;
 static constexpr uint32_t STACK_BYTESIZE = 1 << 24;  // 16 MiB
 static constexpr uint64_t DEFAULT_STACK_ADDRESS = 0x3FFFFC00 - 1;
 
-} // namespace memory
+}  // namespace memory
 
 static constexpr uint32_t CSR_COUNT = 4096;
 static constexpr uint32_t CSR_SATP_INDEX = 0x180;
 
 // Sv48 mode
-static constexpr uint8_t  PTE_LEVELS_SV48 = 4;
-static constexpr uint8_t  PTE_SIZE = 8;
+static constexpr uint8_t PTE_LEVELS_SV48 = 4;
+static constexpr uint8_t PTE_SIZE = 8;
 
 enum TranslationMode : uint64_t {
     TRANSLATION_MODE_BARE = 0,
@@ -41,12 +41,11 @@ enum TranslationMode : uint64_t {
     TRANSLATION_MODE_SV64 = 11
 };
 
-
 enum RegisterType : uint8_t {
 
     /*
-    * Numeric names
-    */
+     * Numeric names
+     */
 
     X0 = 0,
     X1,
@@ -84,8 +83,8 @@ enum RegisterType : uint8_t {
     REGISTER_COUNT,
 
     /*
-    * ABI names
-    */
+     * ABI names
+     */
 
     ZERO = X0,
     RA = X1,

@@ -1,10 +1,9 @@
 #ifndef MMU_H
 #define MMU_H
 
-#include "Memory.h"
-#include "Common.h"
 #include "Cache.h"
-
+#include "Common.h"
+#include "Memory.h"
 
 namespace RISCV::memory {
 
@@ -47,7 +46,6 @@ private:
     uint64_t value_;
 };
 
-
 using MemoryRequest = uint8_t;
 
 enum MemoryRequestBits : MemoryRequest {
@@ -56,19 +54,17 @@ enum MemoryRequestBits : MemoryRequest {
     X = PTE::Attribute::X
 };
 
-
 class TLB final {
 public:
-
     static constexpr const size_t iTLB_CACHE_CAPACITY = 256;
     static constexpr const size_t rTLB_CACHE_CAPACITY = 128;
     static constexpr const size_t wTLB_CACHE_CAPACITY = 128;
 
     static constexpr const uint64_t INSTRUCTION_MASK = 0b1010;
-    static constexpr const uint64_t READ_MASK        = 0b0010;
-    static constexpr const uint64_t WRITE_MASK       = 0b0100;
+    static constexpr const uint64_t READ_MASK = 0b0010;
+    static constexpr const uint64_t WRITE_MASK = 0b0100;
 
-    static constexpr const uint64_t ALL_PERMS_MASK   = 0b1110;
+    static constexpr const uint64_t ALL_PERMS_MASK = 0b1110;
 
     inline std::optional<uint64_t> findI(const uint64_t vpn) const {
         return iTLB_.find(vpn);
@@ -91,7 +87,6 @@ public:
         wTLB_.insert(vpn, ppn);
     }
 
-
 private:
     /*
      * Approximate TLB caches with simple LRU cache
@@ -105,12 +100,11 @@ private:
     LRUCache<wTLB_CACHE_CAPACITY, uint64_t, uint64_t, false> wTLB_;
 };
 
-
 class MMU final {
 public:
     enum Exception : uint8_t {
         NONE = 0,
-        
+
         NONCANONICAL_ADDRESS,
 
         NOT_VALID,
@@ -130,7 +124,10 @@ public:
     PhysAddr getPhysAddrI(const VirtAddr vaddr) const;
     PhysAddr getPhysAddrR(const VirtAddr vaddr) const;
     PhysAddr getPhysAddrW(const VirtAddr vaddr) const;
-    PhysAddr getPhysAddrWithAllocation(const VirtAddr vaddr, const MemoryRequest request = MemoryRequestBits::R | MemoryRequestBits::W | MemoryRequestBits::X) const;
+    PhysAddr getPhysAddrWithAllocation(const VirtAddr vaddr,
+                                       const MemoryRequest request = MemoryRequestBits::R |
+                                                                     MemoryRequestBits::W |
+                                                                     MemoryRequestBits::X) const;
 
 private:
     // For performance aspect we store translation mode and root table physical
@@ -142,6 +139,6 @@ private:
     void handleException(const Exception exception) const;
 };
 
-}
+}  // namespace RISCV::memory
 
-#endif // MMU_H
+#endif  // MMU_H

@@ -20,12 +20,12 @@ public:
     BasicBlock(Body body) : body_(std::move(body)) {}
 
     size_t getSize() const;
-    void execute(Hart *hart) const;
+    void execute(Hart* hart) const;
 
 private:
     Body body_;
 };
 
-}  // RISCV
+}  // namespace RISCV
 
 #endif  // INCLUDE_BASIC_BLOCK_H

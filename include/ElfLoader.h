@@ -1,8 +1,8 @@
 #ifndef ELF_LOADER_H
 #define ELF_LOADER_H
 
-#include "Memory.h"
 #include "Hart.h"
+#include "Memory.h"
 
 namespace RISCV {
 
@@ -10,9 +10,8 @@ using namespace memory;
 
 class ElfLoader final {
 private:
-    
     static ElfLoader* instancePtr;
-    ElfLoader() {};
+    ElfLoader(){};
 
 public:
     bool loadElf(const std::string& filename, Hart& hart);

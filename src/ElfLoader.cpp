@@ -1,3 +1,5 @@
+#include "ElfLoader.h"
+
 #include <elf.h>
 #include <fcntl.h>
 #include <gelf.h>
@@ -6,17 +8,14 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
 #include <cstring>
-
-#include "ElfLoader.h"
-
 
 namespace RISCV {
 
 using namespace memory;
 
 ElfLoader* ElfLoader::instancePtr = nullptr;
-
 
 bool ElfLoader::loadElf(const std::string& filename, Hart& hart) {
     int fd = open(filename.c_str(), O_RDONLY);
@@ -75,7 +74,7 @@ bool ElfLoader::loadElf(const std::string& filename, Hart& hart) {
         PhysicalMemory& pmem = getPhysicalMemory();
 
         const VirtAddr segmentStart = phdr.p_vaddr;
-        const uint64_t segmentSize  = phdr.p_memsz;
+        const uint64_t segmentSize = phdr.p_memsz;
 
         MemoryRequest request;
         if (phdr.p_flags & PF_R) {
@@ -89,11 +88,13 @@ bool ElfLoader::loadElf(const std::string& filename, Hart& hart) {
         }
 
         const PhysAddr paddrStart = translator.getPhysAddrWithAllocation(segmentStart, request);
-        const PhysAddr paddrEnd   = translator.getPhysAddrWithAllocation(segmentStart + segmentSize - 1, request);
+        const PhysAddr paddrEnd =
+            translator.getPhysAddrWithAllocation(segmentStart + segmentSize - 1, request);
 
         // If segment occupies only one page of memory
         if (getPageNumber(paddrStart) == getPageNumber(paddrEnd)) {
-            // Use phdr.p_filesz because remaining information will be filled with zeros as supposed to be
+            // Use phdr.p_filesz because remaining information will be filled with zeros as supposed
+            // to be
             if (!pmem.write(paddrStart, phdr.p_filesz, (uint8_t*)fileBuffer + phdr.p_offset)) {
                 munmap(fileBuffer, fileStat.st_size);
                 elf_end(elf);
@@ -109,7 +110,7 @@ bool ElfLoader::loadElf(const std::string& filename, Hart& hart) {
         uint32_t fileOffset = phdr.p_offset;
 
         size_t addressIncrementSize = copyBytesize;
-        for (VirtAddr currVirtAddr = segmentStart; currVirtAddr < segmentStart + segmentSize; ) {
+        for (VirtAddr currVirtAddr = segmentStart; currVirtAddr < segmentStart + segmentSize;) {
             PhysAddr currPhysAddr = translator.getPhysAddrWithAllocation(currVirtAddr, request);
             pmem.write(currPhysAddr, copyBytesize, (uint8_t*)fileBuffer + fileOffset);
 
@@ -119,8 +120,9 @@ bool ElfLoader::loadElf(const std::string& filename, Hart& hart) {
             copyBytesize = std::min((uint32_t)PAGE_BYTESIZE, leftBytesize);
 
             /*
-             * Explicitly define loop ending since we need to add <PAGE_BYTESIZE - getPageOffset(segmentStart)>
-             * to virtual address only once and add <PAGE_BYTESIZE> all other times
+             * Explicitly define loop ending since we need to add <PAGE_BYTESIZE -
+             * getPageOffset(segmentStart)> to virtual address only once and add <PAGE_BYTESIZE> all
+             * other times
              */
             currVirtAddr += addressIncrementSize;
             addressIncrementSize = PAGE_BYTESIZE;
@@ -135,4 +137,4 @@ bool ElfLoader::loadElf(const std::string& filename, Hart& hart) {
     return true;
 }
 
-}   // namespace RISCV
+}  // namespace RISCV

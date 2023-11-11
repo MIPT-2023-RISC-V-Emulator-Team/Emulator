@@ -3,12 +3,11 @@
 
 #include <array>
 
+#include "BasicBlock.h"
+#include "Cache.h"
 #include "Common.h"
 #include "Decoder.h"
-#include "BasicBlock.h"
 #include "MMU.h"
-#include "Cache.h"
-
 
 namespace RISCV {
 
@@ -42,8 +41,8 @@ public:
     }
 
     BasicBlock fetchBasicBlock();
-    const BasicBlock &getBasicBlock();
-    void executeBasicBlock(const BasicBlock &bb);
+    const BasicBlock& getBasicBlock();
+    void executeBasicBlock(const BasicBlock& bb);
     void execute(const DecodedInstruction& decInstr);
 
     Hart();
@@ -52,8 +51,42 @@ public:
         return mmu_;
     }
 
-    inline memory::TLB& getTLB() {
-        return tlb_;
+    inline memory::PhysAddr getPhysAddrR(const memory::VirtAddr vaddr) {
+        memory::PhysAddr paddr;
+
+        // Try TLB
+        const uint64_t vpn = getPartialBits<12, 63>(vaddr);
+        auto tlbEntry = tlb_.findR(vpn);
+        if (tlbEntry != std::nullopt) {
+            // TLB hit
+            paddr = (*tlbEntry) * memory::PAGE_BYTESIZE;
+            paddr += memory::getPageOffset(vaddr);
+        } else {
+            // TLB miss, translate address in usual way
+            paddr = mmu_.getPhysAddrR(vaddr);
+            tlb_.insertR(vpn, memory::getPageNumber(paddr));
+        }
+
+        return paddr;
+    }
+
+    inline memory::PhysAddr getPhysAddrW(const memory::VirtAddr vaddr) {
+        memory::PhysAddr paddr;
+
+        // Try TLB
+        const uint64_t vpn = getPartialBits<12, 63>(vaddr);
+        auto tlbEntry = tlb_.findW(vpn);
+        if (tlbEntry != std::nullopt) {
+            // TLB hit
+            paddr = (*tlbEntry) * memory::PAGE_BYTESIZE;
+            paddr += memory::getPageOffset(vaddr);
+        } else {
+            // TLB miss, translate address in usual way
+            paddr = mmu_.getPhysAddrW(vaddr);
+            tlb_.insertW(vpn, memory::getPageNumber(paddr));
+        }
+
+        return paddr;
     }
 
 private:

@@ -59,7 +59,6 @@ struct DecodedInstruction {
     InstructionType type = InstructionType::INSTRUCTION_INVALID;
 };
 
-
 template <int8_t shift, typename T = uint32_t>
 inline constexpr T shiftRight(const T val) {
     return val >> shift;
@@ -84,7 +83,7 @@ inline constexpr T getPartialBitsShifted(const T val) {
     return shiftRight<low, T>(val & mask);
 }
 
-template<uint8_t low, uint8_t high, typename T = uint32_t>
+template <uint8_t low, uint8_t high, typename T = uint32_t>
 inline constexpr T makePartialBits(const T val) {
     static_assert(low <= high);
     constexpr const T mask = ((static_cast<T>(1) << (high - low + 1)) - 1);

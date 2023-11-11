@@ -2,9 +2,8 @@
 
 #include <chrono>
 
-#include "Hart.h"
 #include "ElfLoader.h"
-
+#include "Hart.h"
 
 /*
  * For host instruction counting
@@ -17,6 +16,7 @@
 #include <linux/perf_event.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+
 #include <cstring>
 
 bool startHostInstructionCount(int* fd) {
@@ -50,9 +50,6 @@ bool endHostInstructionCount(int* fd, size_t* instructionCount) {
     return result;
 }
 
-
-
-
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         fprintf(stdout, "Usage: %s <elf_filename>\n", argv[0]);
@@ -68,11 +65,14 @@ int main(int argc, char* argv[]) {
 
     if (!elfLoader->loadElf(argv[1], CPU)) {
         // Fatal error
-        std::cerr << redColor << "Could not load ELF file: " << argv[1] << defaultColor << std::endl;
+        std::cerr << redColor << "Could not load ELF file: " << argv[1] << defaultColor
+                  << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    std::cout << greenColor << "Successfully loaded ELF file: " << argv[1] << defaultColor << std::endl;
-    std::cout << "===============================================================================" << std::endl;
+    std::cout << greenColor << "Successfully loaded ELF file: " << argv[1] << defaultColor
+              << std::endl;
+    std::cout << "==============================================================================="
+              << std::endl;
 
     int fd;
     startHostInstructionCount(&fd);
@@ -81,31 +81,36 @@ int main(int argc, char* argv[]) {
     size_t hostInstructions = 0;
     auto executeStart = std::chrono::high_resolution_clock::now();
     while (CPU.getPC() != 0) {
-        const auto &bb = CPU.getBasicBlock();
+        const auto& bb = CPU.getBasicBlock();
         CPU.executeBasicBlock(bb);
         instrCount += bb.getSize();
     }
     auto executeEnd = std::chrono::high_resolution_clock::now() - executeStart;
-    uint64_t microseconds = std::chrono::duration_cast<std::chrono::microseconds>(executeEnd).count();
+    uint64_t microseconds =
+        std::chrono::duration_cast<std::chrono::microseconds>(executeEnd).count();
 
     if (fd != -1) {
         endHostInstructionCount(&fd, &hostInstructions);
     }
 
-    std::cout << "===============================================================================" << std::endl;
-    std::cout << greenColor << "Interpreting ELF file " << argv[1] << " has finished\n" << defaultColor << std::endl;
+    std::cout << "==============================================================================="
+              << std::endl;
+    std::cout << greenColor << "Interpreting ELF file " << argv[1] << " has finished\n"
+              << defaultColor << std::endl;
 
     std::cout << "Simulated instruction count: " << instrCount << std::endl;
-    std::cout << "Average MIPS:                " << static_cast<float>(instrCount) / microseconds << std::endl;
+    std::cout << "Average MIPS:                " << static_cast<float>(instrCount) / microseconds
+              << std::endl;
 
     if (fd != -1) {
         endHostInstructionCount(&fd, &hostInstructions);
         std::cout << "Executed host instructions:  " << hostInstructions << std::endl;
-        std::cout << "Average host per simulated:  " << (float)hostInstructions / instrCount << std::endl;
-    }
-    else {
+        std::cout << "Average host per simulated:  " << (float)hostInstructions / instrCount
+                  << std::endl;
+    } else {
         // Unimportant error
-        std::cerr << redColor << "Error occured while host instruction counting" << defaultColor << std::endl;
+        std::cerr << redColor << "Error occured while host instruction counting" << defaultColor
+                  << std::endl;
     }
 
     return 0;

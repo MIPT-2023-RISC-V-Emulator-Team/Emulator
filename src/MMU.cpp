@@ -1,9 +1,8 @@
 #include "MMU.h"
+
 #include <algorithm>
 
-
 namespace RISCV::memory {
-
 
 // For performance aspect we store translation mode and root table physical
 // address rather than SATP register itself
@@ -11,7 +10,6 @@ void MMU::setSATPReg(const RegValue satp) {
     currTransMode_ = static_cast<TranslationMode>(getPartialBitsShifted<60, 63, uint64_t>(satp));
     rootTransTablePAddr_ = getPartialBitsShifted<0, 43>(satp) * PAGE_BYTESIZE;
 }
-
 
 bool MMU::isVirtAddrCanonical(const VirtAddr vaddr) const {
     switch (currTransMode_) {
@@ -48,9 +46,7 @@ bool MMU::isVirtAddrCanonical(const VirtAddr vaddr) const {
     return false;
 }
 
-
 PhysAddr MMU::getPhysAddrI(const VirtAddr vaddr) const {
-
     PhysAddr paddr;
 
     switch (currTransMode_) {
@@ -64,7 +60,6 @@ PhysAddr MMU::getPhysAddrI(const VirtAddr vaddr) const {
             break;
         }
         case TranslationMode::TRANSLATION_MODE_SV48: {
-
             if (!isVirtAddrCanonical(vaddr)) {
                 handleException(Exception::NONCANONICAL_ADDRESS);
             }
@@ -79,7 +74,8 @@ PhysAddr MMU::getPhysAddrI(const VirtAddr vaddr) const {
             if (pte3.getAttribute(PTE::Attribute::V) == 0) {
                 handleException(Exception::NOT_VALID);
             }
-            if (pte3.getAttribute(PTE::Attribute::R) == 0 && pte3.getAttribute(PTE::Attribute::W) == 1) {
+            if (pte3.getAttribute(PTE::Attribute::R) == 0 &&
+                pte3.getAttribute(PTE::Attribute::W) == 1) {
                 handleException(Exception::WRITE_NO_READ);
             }
 
@@ -92,11 +88,13 @@ PhysAddr MMU::getPhysAddrI(const VirtAddr vaddr) const {
                 if (pte2.getAttribute(PTE::Attribute::V) == 0) {
                     handleException(Exception::NOT_VALID);
                 }
-                if (pte2.getAttribute(PTE::Attribute::R) == 0 && pte2.getAttribute(PTE::Attribute::W) == 1) {
+                if (pte2.getAttribute(PTE::Attribute::R) == 0 &&
+                    pte2.getAttribute(PTE::Attribute::W) == 1) {
                     handleException(Exception::WRITE_NO_READ);
                 }
 
-                if (!pte2.getAttribute(PTE::Attribute::R) && !pte2.getAttribute(PTE::Attribute::X)) {
+                if (!pte2.getAttribute(PTE::Attribute::R) &&
+                    !pte2.getAttribute(PTE::Attribute::X)) {
                     a = pte2.getPPN() * PAGE_BYTESIZE;
                     uint32_t vpn1 = getPartialBitsShifted<21, 29>(vaddr);
                     PTE pte1;
@@ -105,11 +103,13 @@ PhysAddr MMU::getPhysAddrI(const VirtAddr vaddr) const {
                     if (pte1.getAttribute(PTE::Attribute::V) == 0) {
                         handleException(Exception::NOT_VALID);
                     }
-                    if (pte1.getAttribute(PTE::Attribute::R) == 0 && pte1.getAttribute(PTE::Attribute::W) == 1) {
+                    if (pte1.getAttribute(PTE::Attribute::R) == 0 &&
+                        pte1.getAttribute(PTE::Attribute::W) == 1) {
                         handleException(Exception::WRITE_NO_READ);
                     }
 
-                    if (!pte1.getAttribute(PTE::Attribute::R) && !pte1.getAttribute(PTE::Attribute::X)) {
+                    if (!pte1.getAttribute(PTE::Attribute::R) &&
+                        !pte1.getAttribute(PTE::Attribute::X)) {
                         a = pte1.getPPN() * PAGE_BYTESIZE;
                         uint32_t vpn0 = getPartialBitsShifted<12, 20>(vaddr);
                         PTE pte0;
@@ -118,15 +118,16 @@ PhysAddr MMU::getPhysAddrI(const VirtAddr vaddr) const {
                         if (pte0.getAttribute(PTE::Attribute::V) == 0) {
                             handleException(Exception::NOT_VALID);
                         }
-                        if (pte0.getAttribute(PTE::Attribute::R) == 0 && pte0.getAttribute(PTE::Attribute::W) == 1) {
+                        if (pte0.getAttribute(PTE::Attribute::R) == 0 &&
+                            pte0.getAttribute(PTE::Attribute::W) == 1) {
                             handleException(Exception::WRITE_NO_READ);
                         }
 
-                        if (!pte0.getAttribute(PTE::Attribute::R) && !pte0.getAttribute(PTE::Attribute::X)) {
+                        if (!pte0.getAttribute(PTE::Attribute::R) &&
+                            !pte0.getAttribute(PTE::Attribute::X)) {
                             // No leaf PTE page fault
                             handleException(Exception::NO_LEAF_PTE);
-                        }
-                        else {
+                        } else {
                             // Check permissions
                             if (!pte0.getAttribute(PTE::Attribute::R)) {
                                 handleException(Exception::NO_READ_PERM);
@@ -138,8 +139,7 @@ PhysAddr MMU::getPhysAddrI(const VirtAddr vaddr) const {
                             paddr = pte0.getPPN() * PAGE_BYTESIZE;
                             paddr += getPageOffset(vaddr);
                         }
-                    }
-                    else {
+                    } else {
                         // Superpage
                         uint64_t mask = 0b1;
                         if ((pte1.getPPN() & mask) != 0) {
@@ -157,8 +157,7 @@ PhysAddr MMU::getPhysAddrI(const VirtAddr vaddr) const {
                         paddr = ((pte1.getPPN() & ~mask) | (vpn1 & mask)) * PAGE_BYTESIZE;
                         paddr += getPageOffset(vaddr);
                     }
-                }
-                else {
+                } else {
                     // Superpage
                     uint64_t mask = 0b11;
                     if ((pte2.getPPN() & mask) != 0) {
@@ -176,8 +175,7 @@ PhysAddr MMU::getPhysAddrI(const VirtAddr vaddr) const {
                     paddr = ((pte2.getPPN() & ~mask) | (vpn2 & mask)) * PAGE_BYTESIZE;
                     paddr += getPageOffset(vaddr);
                 }
-            }
-            else {
+            } else {
                 // Superpage
                 uint64_t mask = 0b111;
                 if ((pte3.getPPN() & mask) != 0) {
@@ -212,9 +210,7 @@ PhysAddr MMU::getPhysAddrI(const VirtAddr vaddr) const {
     return paddr;
 }
 
-
 PhysAddr MMU::getPhysAddrR(const VirtAddr vaddr) const {
-
     PhysAddr paddr;
 
     switch (currTransMode_) {
@@ -228,7 +224,6 @@ PhysAddr MMU::getPhysAddrR(const VirtAddr vaddr) const {
             break;
         }
         case TranslationMode::TRANSLATION_MODE_SV48: {
-
             if (!isVirtAddrCanonical(vaddr)) {
                 handleException(Exception::NONCANONICAL_ADDRESS);
             }
@@ -243,7 +238,8 @@ PhysAddr MMU::getPhysAddrR(const VirtAddr vaddr) const {
             if (pte3.getAttribute(PTE::Attribute::V) == 0) {
                 handleException(Exception::NOT_VALID);
             }
-            if (pte3.getAttribute(PTE::Attribute::R) == 0 && pte3.getAttribute(PTE::Attribute::W) == 1) {
+            if (pte3.getAttribute(PTE::Attribute::R) == 0 &&
+                pte3.getAttribute(PTE::Attribute::W) == 1) {
                 handleException(Exception::WRITE_NO_READ);
             }
 
@@ -256,11 +252,13 @@ PhysAddr MMU::getPhysAddrR(const VirtAddr vaddr) const {
                 if (pte2.getAttribute(PTE::Attribute::V) == 0) {
                     handleException(Exception::NOT_VALID);
                 }
-                if (pte2.getAttribute(PTE::Attribute::R) == 0 && pte2.getAttribute(PTE::Attribute::W) == 1) {
+                if (pte2.getAttribute(PTE::Attribute::R) == 0 &&
+                    pte2.getAttribute(PTE::Attribute::W) == 1) {
                     handleException(Exception::WRITE_NO_READ);
                 }
 
-                if (!pte2.getAttribute(PTE::Attribute::R) && !pte2.getAttribute(PTE::Attribute::X)) {
+                if (!pte2.getAttribute(PTE::Attribute::R) &&
+                    !pte2.getAttribute(PTE::Attribute::X)) {
                     a = pte2.getPPN() * PAGE_BYTESIZE;
                     uint32_t vpn1 = getPartialBitsShifted<21, 29>(vaddr);
                     PTE pte1;
@@ -269,11 +267,13 @@ PhysAddr MMU::getPhysAddrR(const VirtAddr vaddr) const {
                     if (pte1.getAttribute(PTE::Attribute::V) == 0) {
                         handleException(Exception::NOT_VALID);
                     }
-                    if (pte1.getAttribute(PTE::Attribute::R) == 0 && pte1.getAttribute(PTE::Attribute::W) == 1) {
+                    if (pte1.getAttribute(PTE::Attribute::R) == 0 &&
+                        pte1.getAttribute(PTE::Attribute::W) == 1) {
                         handleException(Exception::WRITE_NO_READ);
                     }
 
-                    if (!pte1.getAttribute(PTE::Attribute::R) && !pte1.getAttribute(PTE::Attribute::X)) {
+                    if (!pte1.getAttribute(PTE::Attribute::R) &&
+                        !pte1.getAttribute(PTE::Attribute::X)) {
                         a = pte1.getPPN() * PAGE_BYTESIZE;
                         uint32_t vpn0 = getPartialBitsShifted<12, 20>(vaddr);
                         PTE pte0;
@@ -282,15 +282,16 @@ PhysAddr MMU::getPhysAddrR(const VirtAddr vaddr) const {
                         if (pte0.getAttribute(PTE::Attribute::V) == 0) {
                             handleException(Exception::NOT_VALID);
                         }
-                        if (pte0.getAttribute(PTE::Attribute::R) == 0 && pte0.getAttribute(PTE::Attribute::W) == 1) {
+                        if (pte0.getAttribute(PTE::Attribute::R) == 0 &&
+                            pte0.getAttribute(PTE::Attribute::W) == 1) {
                             handleException(Exception::WRITE_NO_READ);
                         }
 
-                        if (!pte0.getAttribute(PTE::Attribute::R) && !pte0.getAttribute(PTE::Attribute::X)) {
+                        if (!pte0.getAttribute(PTE::Attribute::R) &&
+                            !pte0.getAttribute(PTE::Attribute::X)) {
                             // No leaf PTE page fault
                             handleException(Exception::NO_LEAF_PTE);
-                        }
-                        else {
+                        } else {
                             // Check permissions
                             if (!pte0.getAttribute(PTE::Attribute::R)) {
                                 handleException(Exception::NO_READ_PERM);
@@ -299,8 +300,7 @@ PhysAddr MMU::getPhysAddrR(const VirtAddr vaddr) const {
                             paddr = pte0.getPPN() * PAGE_BYTESIZE;
                             paddr += getPageOffset(vaddr);
                         }
-                    }
-                    else {
+                    } else {
                         // Superpage
                         uint64_t mask = 0b1;
                         if ((pte1.getPPN() & mask) != 0) {
@@ -315,8 +315,7 @@ PhysAddr MMU::getPhysAddrR(const VirtAddr vaddr) const {
                         paddr = ((pte1.getPPN() & ~mask) | (vpn1 & mask)) * PAGE_BYTESIZE;
                         paddr += getPageOffset(vaddr);
                     }
-                }
-                else {
+                } else {
                     // Superpage
                     uint64_t mask = 0b11;
                     if ((pte2.getPPN() & mask) != 0) {
@@ -331,8 +330,7 @@ PhysAddr MMU::getPhysAddrR(const VirtAddr vaddr) const {
                     paddr = ((pte2.getPPN() & ~mask) | (vpn2 & mask)) * PAGE_BYTESIZE;
                     paddr += getPageOffset(vaddr);
                 }
-            }
-            else {
+            } else {
                 // Superpage
                 uint64_t mask = 0b111;
                 if ((pte3.getPPN() & mask) != 0) {
@@ -364,9 +362,7 @@ PhysAddr MMU::getPhysAddrR(const VirtAddr vaddr) const {
     return paddr;
 }
 
-
 PhysAddr MMU::getPhysAddrW(const VirtAddr vaddr) const {
-
     PhysAddr paddr;
 
     switch (currTransMode_) {
@@ -380,7 +376,6 @@ PhysAddr MMU::getPhysAddrW(const VirtAddr vaddr) const {
             break;
         }
         case TranslationMode::TRANSLATION_MODE_SV48: {
-
             if (!isVirtAddrCanonical(vaddr)) {
                 handleException(Exception::NONCANONICAL_ADDRESS);
             }
@@ -391,11 +386,12 @@ PhysAddr MMU::getPhysAddrW(const VirtAddr vaddr) const {
             uint32_t vpn3 = getPartialBitsShifted<39, 47>(vaddr);
             PTE pte3;
             pmem.read(a + vpn3 * PTE_SIZE, sizeof(pte3), &pte3);
-            
+
             if (pte3.getAttribute(PTE::Attribute::V) == 0) {
                 handleException(Exception::NOT_VALID);
             }
-            if (pte3.getAttribute(PTE::Attribute::R) == 0 && pte3.getAttribute(PTE::Attribute::W) == 1) {
+            if (pte3.getAttribute(PTE::Attribute::R) == 0 &&
+                pte3.getAttribute(PTE::Attribute::W) == 1) {
                 handleException(Exception::WRITE_NO_READ);
             }
 
@@ -408,11 +404,13 @@ PhysAddr MMU::getPhysAddrW(const VirtAddr vaddr) const {
                 if (pte2.getAttribute(PTE::Attribute::V) == 0) {
                     handleException(Exception::NOT_VALID);
                 }
-                if (pte2.getAttribute(PTE::Attribute::R) == 0 && pte2.getAttribute(PTE::Attribute::W) == 1) {
+                if (pte2.getAttribute(PTE::Attribute::R) == 0 &&
+                    pte2.getAttribute(PTE::Attribute::W) == 1) {
                     handleException(Exception::WRITE_NO_READ);
                 }
 
-                if (!pte2.getAttribute(PTE::Attribute::R) && !pte2.getAttribute(PTE::Attribute::X)) {
+                if (!pte2.getAttribute(PTE::Attribute::R) &&
+                    !pte2.getAttribute(PTE::Attribute::X)) {
                     a = pte2.getPPN() * PAGE_BYTESIZE;
                     uint32_t vpn1 = getPartialBitsShifted<21, 29>(vaddr);
                     PTE pte1;
@@ -421,11 +419,13 @@ PhysAddr MMU::getPhysAddrW(const VirtAddr vaddr) const {
                     if (pte1.getAttribute(PTE::Attribute::V) == 0) {
                         handleException(Exception::NOT_VALID);
                     }
-                    if (pte1.getAttribute(PTE::Attribute::R) == 0 && pte1.getAttribute(PTE::Attribute::W) == 1) {
+                    if (pte1.getAttribute(PTE::Attribute::R) == 0 &&
+                        pte1.getAttribute(PTE::Attribute::W) == 1) {
                         handleException(Exception::WRITE_NO_READ);
                     }
 
-                    if (!pte1.getAttribute(PTE::Attribute::R) && !pte1.getAttribute(PTE::Attribute::X)) {
+                    if (!pte1.getAttribute(PTE::Attribute::R) &&
+                        !pte1.getAttribute(PTE::Attribute::X)) {
                         a = pte1.getPPN() * PAGE_BYTESIZE;
                         uint32_t vpn0 = getPartialBitsShifted<12, 20>(vaddr);
                         PTE pte0;
@@ -434,15 +434,16 @@ PhysAddr MMU::getPhysAddrW(const VirtAddr vaddr) const {
                         if (pte0.getAttribute(PTE::Attribute::V) == 0) {
                             handleException(Exception::NOT_VALID);
                         }
-                        if (pte0.getAttribute(PTE::Attribute::R) == 0 && pte0.getAttribute(PTE::Attribute::W) == 1) {
+                        if (pte0.getAttribute(PTE::Attribute::R) == 0 &&
+                            pte0.getAttribute(PTE::Attribute::W) == 1) {
                             handleException(Exception::WRITE_NO_READ);
                         }
 
-                        if (!pte0.getAttribute(PTE::Attribute::R) && !pte0.getAttribute(PTE::Attribute::X)) {
+                        if (!pte0.getAttribute(PTE::Attribute::R) &&
+                            !pte0.getAttribute(PTE::Attribute::X)) {
                             // No leaf PTE page fault
                             handleException(Exception::NO_LEAF_PTE);
-                        }
-                        else {
+                        } else {
                             // Check permissions
                             if (!pte0.getAttribute(PTE::Attribute::W)) {
                                 handleException(Exception::NO_WRITE_PERM);
@@ -451,8 +452,7 @@ PhysAddr MMU::getPhysAddrW(const VirtAddr vaddr) const {
                             paddr = pte0.getPPN() * PAGE_BYTESIZE;
                             paddr += getPageOffset(vaddr);
                         }
-                    }
-                    else {
+                    } else {
                         // Superpage
                         uint64_t mask = 0b1;
                         if ((pte1.getPPN() & mask) != 0) {
@@ -467,8 +467,7 @@ PhysAddr MMU::getPhysAddrW(const VirtAddr vaddr) const {
                         paddr = ((pte1.getPPN() & ~mask) | (vpn1 & mask)) * PAGE_BYTESIZE;
                         paddr += getPageOffset(vaddr);
                     }
-                }
-                else {
+                } else {
                     // Superpage
                     uint64_t mask = 0b11;
                     if ((pte2.getPPN() & mask) != 0) {
@@ -483,8 +482,7 @@ PhysAddr MMU::getPhysAddrW(const VirtAddr vaddr) const {
                     paddr = ((pte2.getPPN() & ~mask) | (vpn2 & mask)) * PAGE_BYTESIZE;
                     paddr += getPageOffset(vaddr);
                 }
-            }
-            else {
+            } else {
                 // Superpage
                 uint64_t mask = 0b111;
                 if ((pte3.getPPN() & mask) != 0) {
@@ -516,9 +514,7 @@ PhysAddr MMU::getPhysAddrW(const VirtAddr vaddr) const {
     return paddr;
 }
 
-
 PhysAddr MMU::getPhysAddrWithAllocation(const VirtAddr vaddr, const MemoryRequest request) const {
-
     PhysAddr paddr;
 
     switch (currTransMode_) {
@@ -554,7 +550,6 @@ PhysAddr MMU::getPhysAddrWithAllocation(const VirtAddr vaddr, const MemoryReques
                 pmem.write(paddr3, sizeof(pte3), &pte3);
             }
 
-
             a = pte3.getPPN() * PAGE_BYTESIZE;
             uint32_t vpn2 = getPartialBitsShifted<30, 38>(vaddr);
             PTE pte2;
@@ -571,7 +566,6 @@ PhysAddr MMU::getPhysAddrWithAllocation(const VirtAddr vaddr, const MemoryReques
                 pmem.write(paddr2, sizeof(pte2), &pte2);
             }
 
-
             a = pte2.getPPN() * PAGE_BYTESIZE;
             uint32_t vpn1 = getPartialBitsShifted<21, 29>(vaddr);
             PTE pte1;
@@ -587,7 +581,6 @@ PhysAddr MMU::getPhysAddrWithAllocation(const VirtAddr vaddr, const MemoryReques
 
                 pmem.write(paddr1, sizeof(pte1), &pte1);
             }
-
 
             a = pte1.getPPN() * PAGE_BYTESIZE;
             uint32_t vpn0 = getPartialBitsShifted<12, 20>(vaddr);
@@ -634,9 +627,7 @@ PhysAddr MMU::getPhysAddrWithAllocation(const VirtAddr vaddr, const MemoryReques
     return paddr;
 }
 
-
 void MMU::handleException(const Exception exception) const {
-
     /*
      * Just print the error now, implement real handling in future
      */
@@ -687,4 +678,4 @@ void MMU::handleException(const Exception exception) const {
     std::exit(EXIT_FAILURE);
 }
 
-}
+}  // namespace RISCV::memory
