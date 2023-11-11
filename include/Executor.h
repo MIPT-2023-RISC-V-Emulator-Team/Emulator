@@ -1,10 +1,11 @@
 #ifndef INCLUDE_EXECUTOR_H
 #define INCLUDE_EXECUTOR_H
 
+#include "DecodedInstruction.h"
+
 namespace RISCV {
 
 class Hart;
-struct DecodedInstruction;
 
 // ================================ PC ================================= //
 

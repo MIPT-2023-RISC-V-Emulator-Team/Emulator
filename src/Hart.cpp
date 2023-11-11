@@ -22,6 +22,7 @@ const BasicBlock& Hart::getBasicBlock() {
 BasicBlock Hart::fetchBasicBlock() {
     EncodedInstruction encInstr[BasicBlock::MAX_SIZE];
     std::vector<DecodedInstruction> bbBody;
+    bbBody.reserve(BasicBlock::MAX_SIZE);
 
     constexpr const size_t maxBasicBlockBytesize = INSTRUCTION_BYTESIZE * BasicBlock::MAX_SIZE;
 
@@ -61,22 +62,20 @@ BasicBlock Hart::fetchBasicBlock() {
         }
     }
 
+    bbBody.emplace_back(DecodedInstruction{.type = BASIC_BLOCK_END});
+
     return BasicBlock(std::move(bbBody));
 }
 
 void Hart::executeBasicBlock(const BasicBlock& bb) {
-    bb.execute(this);
+    dispatcher_.dispatchExecute(bb.getEntryPoint());
 }
 
 DecodedInstruction Hart::decode(const EncodedInstruction encInstr) const {
     return decoder_.decodeInstruction(encInstr);
 }
 
-void Hart::execute(const DecodedInstruction& decInstr) {
-    decInstr.exec(this, decInstr);
-}
-
-Hart::Hart() {
+Hart::Hart() : dispatcher_(this) {
     PhysicalMemory& pmem = getPhysicalMemory();
 
     /*

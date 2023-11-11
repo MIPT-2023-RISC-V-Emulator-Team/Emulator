@@ -5,59 +5,13 @@
 
 #include "Executor.h"
 #include "constants.h"
-#include "generated/InstructionTypes.h"
 
 namespace RISCV {
 
 using RegValue = uint64_t;
 using SignedRegValue = int64_t;
 
-using Executor = void (*)(Hart* hart, const DecodedInstruction& instr);
-
 using EncodedInstruction = uint32_t;
-
-struct DecodedInstruction {
-    bool isJumpInstruction() {
-        switch (type) {
-            case InstructionType::JAL:
-            case InstructionType::JALR:
-            case InstructionType::BEQ:
-            case InstructionType::BNE:
-            case InstructionType::BLT:
-            case InstructionType::BGE:
-            case InstructionType::BLTU:
-            case InstructionType::BGEU:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    RegisterType rd;
-    RegisterType rs1;
-    RegisterType rs2;
-    RegisterType rs3;
-    RegisterType rm;
-
-    uint8_t pred = 0;
-    uint8_t succ = 0;
-    uint8_t fm = 0;
-
-    uint8_t immSignBitNum = 0;  // Helper to sext
-
-    union {
-        uint32_t imm = 0;
-        uint32_t shamt;
-        uint32_t shamtw;
-        uint32_t aqrl;
-    };
-
-    Executor exec;
-
-    // Initialize instruction to be invalid so every return will
-    // be either valid instruction or invalid one
-    InstructionType type = InstructionType::INSTRUCTION_INVALID;
-};
 
 template <int8_t shift, typename T = uint32_t>
 inline constexpr T shiftRight(const T val) {
@@ -93,6 +47,18 @@ inline constexpr T makePartialBits(const T val) {
 template <uint32_t opcode, uint32_t mask>
 inline constexpr uint32_t getOpcodeBits() {
     return opcode & mask;
+}
+
+// Sign Extend. signBitNum = 0, 1, 2, ..., 31 from right to left
+static inline uint64_t sext(const uint32_t val, const uint8_t signBitNum) {
+    const uint64_t tmp = val;
+    return ~(((tmp & (1 << signBitNum)) - 1)) | tmp;
+}
+
+// Zero Extend
+static inline uint64_t zext(const uint32_t val) {
+    const uint64_t tmp = val;
+    return tmp;
 }
 
 }  // namespace RISCV

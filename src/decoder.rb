@@ -135,16 +135,24 @@ EOT
     return instr_type
   end
 
-  def generate_instruction_fields(fields)
+  def generate_instruction_fields(instruction)
     instr_field = String.new
-    for field in fields
+    sext_instructions = ["lui", "auipc", "jal", "jalr", "beq", "bne", "blt","bge",
+                         "bltu", "bgeu", "lb", "lh", "lw", "ld", "lbu", "lhu", "lwu",
+                         "sb", "sh", "sw", "sd", "addi", "xori", "ori", "andi", "addiw"]
+
+    for field in instruction.fields
       field_name = field
       if field_name.include? 'imm'
         field_name = 'imm'
-        instr_field << " "*8 + "decInstr.immSignBitNum = #{field.capitalize}::SIGNEDBIT;\n"
+        if sext_instructions.include? instruction.mnemonic
+          instr_field << " "*8 + "decInstr.#{field_name} = " \
+                         "sext(#{field.capitalize}::getValue(encInstr), #{field.capitalize}::SIGNEDBIT);\n"
+        end
+      elsif
+        instr_field << " "*8 + "decInstr.#{field_name} = " \
+                       "#{field.capitalize}::getValue(encInstr);\n"
       end
-      instr_field << " "*8 + "decInstr.#{field_name} = " \
-                     "#{field.capitalize}::getValue(encInstr);\n"
     end
     instr_field << " "*8 + "return decInstr;"
     return instr_field
@@ -157,8 +165,7 @@ struct Instruction#{instruction.mnemonic.upcase} {
     static inline DecodedInstruction decodeInstruction(EncodedInstruction encInstr) {
         DecodedInstruction decInstr;
         decInstr.type = InstructionType::#{instruction.mnemonic.upcase};
-        decInstr.exec = Executor#{instruction.mnemonic.upcase};
-#{generate_instruction_fields(instruction.fields)}
+#{generate_instruction_fields(instruction)}
     }
 };
 
@@ -182,6 +189,7 @@ EOT
 
 #include <cstdint>
 #include "Common.h"
+#include "DecodedInstruction.h"
 #include "generated/Fields.h"
 
 namespace RISCV {
@@ -210,6 +218,7 @@ enum InstructionType : uint8_t {
 #{generate_instruction_type(instructions)}
     INSTRUCTION_COUNT,
 
+    BASIC_BLOCK_END = INSTRUCTION_COUNT,
     INSTRUCTION_INVALID = INSTRUCTION_COUNT
 };
 
@@ -249,7 +258,8 @@ EOT
         decoder_switch << generate_single_case(node.mnemonic, "0x#{opcode.to_s(16)}", whitespace + 4)
       else
         value = key.name.to_i()
-        decoder_switch << " "*(whitespace + 4) + "case 0x#{value.to_s(16)}:\n"
+        shift_bits = decodertree.range.lsb
+        decoder_switch << " "*(whitespace + 4) + "case 0x#{(value << shift_bits).to_s(16)}:\n"
         decoder_switch << generate_decoder_switch(node, whitespace + 8)
       end
     end
@@ -279,7 +289,6 @@ DecodedInstruction Decoder::decodeInstruction(const EncodedInstruction encInstr)
 }
 
 }  // namespace RISCV
-
 EOT
     decoder_file.write(decode_method)
     decoder_file.close

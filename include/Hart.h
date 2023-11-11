@@ -7,6 +7,7 @@
 #include "Cache.h"
 #include "Common.h"
 #include "Decoder.h"
+#include "Dispatcher.h"
 #include "MMU.h"
 
 namespace RISCV {
@@ -40,10 +41,8 @@ public:
         pc_ = newPC;
     }
 
-    BasicBlock fetchBasicBlock();
     const BasicBlock& getBasicBlock();
     void executeBasicBlock(const BasicBlock& bb);
-    void execute(const DecodedInstruction& decInstr);
 
     Hart();
 
@@ -90,6 +89,7 @@ public:
     }
 
 private:
+    BasicBlock fetchBasicBlock();
     EncodedInstruction fetch();
     DecodedInstruction decode(const EncodedInstruction encInstr) const;
 
@@ -103,6 +103,7 @@ private:
     LRUCache<BB_CACHE_CAPACITY, memory::VirtAddr, BasicBlock> bbCache_;
 
     Decoder decoder_;
+    Dispatcher dispatcher_;
 };
 
 }  // namespace RISCV
