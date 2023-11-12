@@ -22,7 +22,7 @@ public:
 
     static constexpr const uint64_t ppnMask = 0x3FFFFFFFFFFC00ULL;
 
-    template<typename T>
+    template <typename T>
     inline bool getAttribute(const T attr) const {
         return value_ & attr;
     }
@@ -204,7 +204,6 @@ private:
                 }
 
                 if (!pte3.getAttribute(PTE::Attribute::R | PTE::Attribute::X)) {
-
                     a = pte3.getPPN() * PAGE_BYTESIZE;
                     uint32_t vpn2 = getPartialBitsShifted<30, 38>(vaddr);
                     PTE pte2;
@@ -213,12 +212,12 @@ private:
                     if (!pte2.getAttribute(PTE::Attribute::V)) {
                         handleException(Exception::NOT_VALID);
                     }
-                    if (!pte2.getAttribute(PTE::Attribute::R) && pte2.getAttribute(PTE::Attribute::W)) {
+                    if (!pte2.getAttribute(PTE::Attribute::R) &&
+                        pte2.getAttribute(PTE::Attribute::W)) {
                         handleException(Exception::WRITE_NO_READ);
                     }
 
                     if (!pte2.getAttribute(PTE::Attribute::R | PTE::Attribute::X)) {
-
                         a = pte2.getPPN() * PAGE_BYTESIZE;
                         uint32_t vpn1 = getPartialBitsShifted<21, 29>(vaddr);
                         PTE pte1;
@@ -227,12 +226,12 @@ private:
                         if (!pte1.getAttribute(PTE::Attribute::V)) {
                             handleException(Exception::NOT_VALID);
                         }
-                        if (!pte1.getAttribute(PTE::Attribute::R) && pte1.getAttribute(PTE::Attribute::W)) {
+                        if (!pte1.getAttribute(PTE::Attribute::R) &&
+                            pte1.getAttribute(PTE::Attribute::W)) {
                             handleException(Exception::WRITE_NO_READ);
                         }
 
                         if (!pte1.getAttribute(PTE::Attribute::R | PTE::Attribute::X)) {
-
                             a = pte1.getPPN() * PAGE_BYTESIZE;
                             uint32_t vpn0 = getPartialBitsShifted<12, 20>(vaddr);
                             PTE pte0;
@@ -241,7 +240,8 @@ private:
                             if (!pte0.getAttribute(PTE::Attribute::V)) {
                                 handleException(Exception::NOT_VALID);
                             }
-                            if (!pte0.getAttribute(PTE::Attribute::R) && pte0.getAttribute(PTE::Attribute::W)) {
+                            if (!pte0.getAttribute(PTE::Attribute::R) &&
+                                pte0.getAttribute(PTE::Attribute::W)) {
                                 handleException(Exception::WRITE_NO_READ);
                             }
 

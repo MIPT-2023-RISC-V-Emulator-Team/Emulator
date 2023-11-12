@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "Common.h"
+#include "DecodedInstruction.h"
 #include "macros.h"
 
 namespace RISCV {

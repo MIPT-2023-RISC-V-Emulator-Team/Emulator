@@ -2,7 +2,6 @@
 
 #include <iostream>
 
-#include "Executor.h"
 #include "macros.h"
 
 namespace RISCV {

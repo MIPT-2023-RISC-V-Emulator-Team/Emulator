@@ -91,7 +91,7 @@ EOT
       dispatcher_file = File.new(@gen_dir + '/Dispatcher.cpp', 'w') 
       dispatcher = <<-EOT
 #include "Dispatcher.h"
-#include "Executor.h"
+#include "Executor-inl.h"
 
 namespace RISCV {
 

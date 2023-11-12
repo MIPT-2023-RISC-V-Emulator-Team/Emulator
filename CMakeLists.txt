@@ -56,7 +56,6 @@ add_executable(risc-v
     ${SRC_DIR}/risc-v.cpp
     ${SRC_DIR}/Hart.cpp
     ${SRC_DIR}/Memory.cpp
-    ${SRC_DIR}/Executor.cpp
     ${SRC_DIR}/Debug.cpp
     ${SRC_DIR}/ElfLoader.cpp
     ${SRC_DIR}/MMU.cpp

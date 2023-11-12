@@ -3,9 +3,6 @@
 
 #include <cstdint>
 
-#include "Executor.h"
-#include "constants.h"
-
 namespace RISCV {
 
 using RegValue = uint64_t;
