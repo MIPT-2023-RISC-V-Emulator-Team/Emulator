@@ -37,13 +37,16 @@
     DEFAULT_COPY_CTOR(TypeName)         \
     DEFAULT_COPY_OPERATOR(TypeName)
 
+#define MEMBER_OFFSET(T, F) offsetof(T, F)
+
 #define LIKELY(exp) (__builtin_expect((exp) != 0, true))
 #define UNLIKELY(exp) (__builtin_expect((exp) != 0, false))
 
 #if !defined(NDEBUG)
 
-#define DEBUG_INSTRUCTION(format, ...) printf(format, ##__VA_ARGS__)
+#define ALWAYS_INLINE
 
+#define DEBUG_INSTRUCTION(format, ...) printf(format, ##__VA_ARGS__)
 
 #define ASSERT_FAIL(expr) RISCV::debug::AssertionFail(expr, __FILE__, __LINE__, __FUNCTION__)
 
@@ -65,12 +68,15 @@
         ASSERT_PRINT(false, "This line should be unreachable"); \
         __builtin_unreachable();                                \
     } while (0)
+
 #else  // NDEBUG
 
+#define ALWAYS_INLINE __attribute__((always_inline)) inline
 #define DEBUG_INSTRUCTION(format, ...) static_cast<void>(0)
 #define ASSERT(cond) static_cast<void>(0)
 #define ASSERT_PRINT(cond, message) static_cast<void>(0)
 #define UNREACHABLE __builtin_unreachable
+
 #endif  // !NDEBUG
 
 #endif  // INCLUDE_MACROS_H_

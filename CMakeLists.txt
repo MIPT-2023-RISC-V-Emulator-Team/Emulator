@@ -39,9 +39,16 @@ set(ISA_FILE ${CMAKE_CURRENT_SOURCE_DIR}/isa/risc-v.yaml)
 set(GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
 
 add_custom_command(
-  OUTPUT ${GEN_DIR}/Decoder.cpp ${GEN_DIR}/Fields.h ${GEN_DIR}/Inctructions.h
+  OUTPUT ${GEN_DIR}/Decoder.cpp ${GEN_DIR}/Fields.h ${GEN_DIR}/Inctructions.h ${GEN_DIR}/InstructionTypes.h
   COMMAND ruby ${SRC_DIR}/decoder.rb --isa=${ISA_FILE} --gen=${GEN_DIR}
   DEPENDS ${ISA_FILE} ${SRC_DIR}/decoder.rb
+  VERBATIM
+)
+
+add_custom_command(
+  OUTPUT ${GEN_DIR}/Dispatcher.cpp
+  COMMAND ruby ${SRC_DIR}/dispatcher.rb --isa=${ISA_FILE} --gen=${GEN_DIR}
+  DEPENDS ${ISA_FILE} ${SRC_DIR}/dispatcher.rb
   VERBATIM
 )
 
@@ -49,12 +56,11 @@ add_executable(risc-v
     ${SRC_DIR}/risc-v.cpp
     ${SRC_DIR}/Hart.cpp
     ${SRC_DIR}/Memory.cpp
-    ${SRC_DIR}/Executor.cpp
-    ${GEN_DIR}/Decoder.cpp
-    ${SRC_DIR}/BasicBlock.cpp
     ${SRC_DIR}/Debug.cpp
     ${SRC_DIR}/ElfLoader.cpp
     ${SRC_DIR}/MMU.cpp
+    ${GEN_DIR}/Decoder.cpp
+    ${GEN_DIR}/Dispatcher.cpp
 )
 
 target_include_directories(risc-v

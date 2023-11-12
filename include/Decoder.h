@@ -5,6 +5,8 @@
 
 namespace RISCV {
 
+class DecodedInstruction;
+
 class Decoder {
 public:
     DecodedInstruction decodeInstruction(const EncodedInstruction encInstr) const;
