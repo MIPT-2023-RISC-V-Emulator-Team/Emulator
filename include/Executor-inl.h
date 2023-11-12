@@ -332,71 +332,101 @@ ALWAYS_INLINE void ExecutorSLLI(Hart* hart, const DecodedInstruction& instr) {
 ALWAYS_INLINE void ExecutorSLTI(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("slti    x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
 
+    SignedRegValue lhs = hart->getReg(instr.rs1);
+    SignedRegValue rhs = instr.imm;
+
+    SignedRegValue res = lhs < rhs;
+    hart->setReg(instr.rd, res);
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorSLTIU(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("sltiu   x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
 
+    RegValue lhs = hart->getReg(instr.rs1);
+    RegValue rhs = instr.imm;
+    RegValue res = lhs < rhs;
+    hart->setReg(instr.rd, res);
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorXORI(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("xori    x%d, x%d, %ld\n", instr.rd, instr.rs1, instr.imm);
 
+    RegValue res = hart->getReg(instr.rs1) ^ instr.imm ;
+    hart->setReg(instr.rd, res);
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorSRLI(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("srli    x%d, x%d, %d\n", instr.rd, instr.rs1, instr.shamt);
 
+    RegValue res = hart->getReg(instr.rs1) >> (instr.shamt);
+    hart->setReg(instr.rd, res);
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorSRAI(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("srai    x%d, x%d, %d\n", instr.rd, instr.rs1, instr.shamt);
 
+    SignedRegValue res = static_cast<SignedRegValue>(hart->getReg(instr.rs1) >> (instr.imm));
+    hart->setReg(instr.rd, res);
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorORI(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("ori     x%d, x%d, %ld\n", instr.rd, instr.rs1, instr.imm);
 
+    RegValue res = hart->getReg(instr.rs1) | instr.imm;
+    hart->setReg(instr.rd, res);
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorANDI(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("andi    x%d, x%d, %ld\n", instr.rd, instr.rs1, instr.imm);
 
+    RegValue res = hart->getReg(instr.rs1) & instr.imm;
+    hart->setReg(instr.rd, res);
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorADDIW(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("addiw   x%d, x%d, %ld\n", instr.rd, instr.rs1, instr.imm);
 
-    uint64_t sum = hart->getReg(instr.rs1) + instr.imm;
+    RegValue sum = hart->getReg(instr.rs1) + instr.imm;
     uint32_t sum32 = sum;
 
     hart->setReg(instr.rd, sext(sum32, 31));
-
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorSLLIW(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("slliw   x%d, x%d, %d\n", instr.rd, instr.rs1, instr.shamt);
 
+    RegValue res = hart->getReg(instr.rs1) << instr.shamt;
+    uint32_t res32 = res;
+
+    hart->setReg(instr.rd, sext(res32, 31));
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorSRLIW(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("srliw   x%d, x%d, %d\n", instr.rd, instr.rs1, instr.shamt);
 
+    RegValue res = hart->getReg(instr.rs1) >> instr.shamt;
+    uint32_t res32 = res;
+
+    hart->setReg(instr.rd, sext(res32, 31));
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorSRAIW(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("sraiw   x%d, x%d, %d\n", instr.rd, instr.rs1, instr.shamt);
 
+    int32_t rs1_signed32 = hart->getReg(instr.rs1);
+    int32_t res32 = static_cast<int32_t>(rs1_signed32 >> instr.imm);
+
+    hart->setReg(instr.rd, sext(res32, 31));
     hart->incrementPC();
 }
 
@@ -413,89 +443,139 @@ ALWAYS_INLINE void ExecutorADD(Hart* hart, const DecodedInstruction& instr) {
 ALWAYS_INLINE void ExecutorSLL(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("sll     x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
 
+    RegValue res = hart->getReg(instr.rs1) << hart->getReg(instr.rs2);
+    hart->setReg(instr.rd, res);
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorSLT(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("slt     x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
 
+    SignedRegValue lhs = hart->getReg(instr.rs1);
+    SignedRegValue rhs = hart->getReg(instr.rs2);
+    SignedRegValue res = lhs < rhs;
+    hart->setReg(instr.rd, res);
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorSLTU(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("sltu    x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
 
+    RegValue lhs = hart->getReg(instr.rs1);
+    RegValue rhs = hart->getReg(instr.rs2);
+    RegValue res = lhs < rhs;
+    hart->setReg(instr.rd, res);
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorXOR(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("xor     x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
 
+    RegValue res = hart->getReg(instr.rs1) ^ hart->getReg(instr.rs2);
+    hart->setReg(instr.rd, res);
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorSRL(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("srl     x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
 
+    RegValue res = hart->getReg(instr.rs1) >> hart->getReg(instr.rs2);
+    hart->setReg(instr.rd, res);
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorOR(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("or      x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
 
+    RegValue res = hart->getReg(instr.rs1) | hart->getReg(instr.rs2);
+    hart->setReg(instr.rd, res);
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorAND(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("and     x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
 
+    RegValue res = hart->getReg(instr.rs1) & hart->getReg(instr.rs2);
+    hart->setReg(instr.rd, res);
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorSUB(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("sub     x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
 
+    RegValue res = hart->getReg(instr.rs1) - hart->getReg(instr.rs2);
+    hart->setReg(instr.rd, res);
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorSRA(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("sra     x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
 
+    SignedRegValue lhs = hart->getReg(instr.rs1);
+    SignedRegValue rhs =  hart->getReg(instr.rs2);
+
+    SignedRegValue res = 0;
+
+    if (lhs < 0 && rhs > 0)
+        res = lhs >> rhs | ~(~0U >> rhs);
+    else
+        res = lhs >> rhs;
+
+    hart->setReg(instr.rd, res);
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorADDW(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("addw    x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
 
-    uint64_t sum = hart->getReg(instr.rs1) + hart->getReg(instr.rs2);
+    RegValue sum = hart->getReg(instr.rs1) + hart->getReg(instr.rs2);
     uint32_t sum32 = sum;
-
     hart->setReg(instr.rd, sext(sum32, 31));
-
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorSUBW(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("subw    x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
 
+    RegValue diff = hart->getReg(instr.rs1) - hart->getReg(instr.rs2);
+    uint32_t diff32 = diff;
+    hart->setReg(instr.rd, sext(diff32, 31));
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorSLLW(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("sllw    x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
 
+    RegValue res = hart->getReg(instr.rs1) << hart->getReg(instr.rs2);
+    uint32_t res32 = res;
+    hart->setReg(instr.rd, sext(res32, 31));
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorSRLW(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("srlw    x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
 
+    RegValue res = hart->getReg(instr.rs1) >> hart->getReg(instr.rs2);
+    uint32_t res32 = res;
+    hart->setReg(instr.rd, sext(res32, 31));
     hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorSRAW(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("sraw    x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
 
+    SignedRegValue lhs = hart->getReg(instr.rs1);
+    SignedRegValue rhs =  hart->getReg(instr.rs2);
+
+    SignedRegValue res = 0;
+
+    if (lhs < 0 && rhs > 0)
+        res = lhs >> rhs | ~(~0U >> rhs);
+    else
+        res = lhs >> rhs;
+
+    uint32_t res32 = res;
+    hart->setReg(instr.rd, sext(res32, 31));
     hart->incrementPC();
 }
 
