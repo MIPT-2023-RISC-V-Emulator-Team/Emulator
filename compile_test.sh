@@ -1,10 +1,14 @@
 #!/bin/bash
 
-script_dir=$(dirname "$(realpath $0)")
+args=("$@")
 
-riscv64-unknown-elf-gcc -S  ${script_dir}/test/test.c -o ${script_dir}/test/test.s
-riscv64-unknown-elf-as      ${script_dir}/test/test.s -o ${script_dir}/test/test.o
-riscv64-unknown-elf-ld      ${script_dir}/test/test.o -o ${script_dir}/test/test.exe --entry=main
+for src_file in "${args[@]}"
+do
+    src_file_no_ext=${src_file%.c}
+    riscv64-unknown-elf-gcc -S  ${src_file_no_ext}.c -o ${src_file_no_ext}.s
+    riscv64-unknown-elf-as      ${src_file_no_ext}.s -o ${src_file_no_ext}.o
+    riscv64-unknown-elf-ld      ${src_file_no_ext}.o -o ${src_file_no_ext}.exe --entry=main
 
-rm ${script_dir}/test/test.s
-rm ${script_dir}/test/test.o
+    rm ${src_file_no_ext}.s
+    rm ${src_file_no_ext}.o
+done

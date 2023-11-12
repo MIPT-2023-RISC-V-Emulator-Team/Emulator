@@ -40,7 +40,7 @@ void ExecutorJAL(Hart* hart, const DecodedInstruction& instr) {
 
     hart->setReg(instr.rd, hart->getPC() + INSTRUCTION_BYTESIZE);
 
-    const uint64_t nextPC = hart->getPC() + sext(instr.imm, instr.immSignBitNum);
+    const memory::VirtAddr nextPC = hart->getPC() + sext(instr.imm, instr.immSignBitNum);
     hart->setPC(nextPC);
 }
 
@@ -48,8 +48,9 @@ void ExecutorJALR(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION(
         "jalr    x%d, x%d, %ld\n", instr.rd, instr.rs1, sext(instr.imm, instr.immSignBitNum));
 
-    const uint64_t returnPC = hart->getPC() + INSTRUCTION_BYTESIZE;
-    const uint64_t nextPC = (hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum) & (~1));
+    const memory::VirtAddr returnPC = hart->getPC() + INSTRUCTION_BYTESIZE;
+    const memory::VirtAddr nextPC =
+        (hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum)) & ~1;
 
     hart->setReg(instr.rd, returnPC);
     hart->setPC(nextPC);
@@ -61,8 +62,11 @@ void ExecutorBEQ(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION(
         "beq     x%d, x%d, %ld\n", instr.rs1, instr.rs2, sext(instr.imm, instr.immSignBitNum));
 
-    if (hart->getReg(instr.rs1) == hart->getReg(instr.rs2)) {
-        const uint64_t nextPC = hart->getPC() + sext(instr.imm, instr.immSignBitNum);
+    const SignedRegValue lhs = hart->getReg(instr.rs1);
+    const SignedRegValue rhs = hart->getReg(instr.rs2);
+
+    if (lhs == rhs) {
+        const memory::VirtAddr nextPC = hart->getPC() + sext(instr.imm, instr.immSignBitNum);
         hart->setPC(nextPC);
 
         return;
@@ -76,8 +80,11 @@ void ExecutorBNE(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION(
         "bne     x%d, x%d, %ld\n", instr.rs1, instr.rs2, sext(instr.imm, instr.immSignBitNum));
 
-    if (hart->getReg(instr.rs1) != hart->getReg(instr.rs2)) {
-        const uint64_t nextPC = hart->getPC() + sext(instr.imm, instr.immSignBitNum);
+    const SignedRegValue lhs = hart->getReg(instr.rs1);
+    const SignedRegValue rhs = hart->getReg(instr.rs2);
+
+    if (lhs != rhs) {
+        const memory::VirtAddr nextPC = hart->getPC() + sext(instr.imm, instr.immSignBitNum);
         hart->setPC(nextPC);
 
         return;
@@ -91,8 +98,11 @@ void ExecutorBLT(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION(
         "blt     x%d, x%d, %ld\n", instr.rs1, instr.rs2, sext(instr.imm, instr.immSignBitNum));
 
-    if (static_cast<SignedRegValue>(hart->getReg(instr.rs1)) < hart->getReg(instr.rs2)) {
-        const uint64_t nextPC = hart->getPC() + sext(instr.imm, instr.immSignBitNum);
+    const SignedRegValue lhs = hart->getReg(instr.rs1);
+    const SignedRegValue rhs = hart->getReg(instr.rs2);
+
+    if (lhs < rhs) {
+        const memory::VirtAddr nextPC = hart->getPC() + sext(instr.imm, instr.immSignBitNum);
         hart->setPC(nextPC);
 
         return;
@@ -106,8 +116,11 @@ void ExecutorBGE(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION(
         "bge     x%d, x%d, %ld\n", instr.rs1, instr.rs2, sext(instr.imm, instr.immSignBitNum));
 
-    if (static_cast<SignedRegValue>(hart->getReg(instr.rs1)) >= hart->getReg(instr.rs2)) {
-        const uint64_t nextPC = hart->getPC() + sext(instr.imm, instr.immSignBitNum);
+    const SignedRegValue lhs = hart->getReg(instr.rs1);
+    const SignedRegValue rhs = hart->getReg(instr.rs2);
+
+    if (lhs >= rhs) {
+        const memory::VirtAddr nextPC = hart->getPC() + sext(instr.imm, instr.immSignBitNum);
         hart->setPC(nextPC);
 
         return;
@@ -121,8 +134,11 @@ void ExecutorBLTU(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION(
         "bltu    x%d, x%d, %ld\n", instr.rs1, instr.rs2, sext(instr.imm, instr.immSignBitNum));
 
-    if (hart->getReg(instr.rs1) < hart->getReg(instr.rs2)) {
-        const uint64_t nextPC = hart->getPC() + sext(instr.imm, instr.immSignBitNum);
+    const RegValue lhs = hart->getReg(instr.rs1);
+    const RegValue rhs = hart->getReg(instr.rs2);
+
+    if (lhs < rhs) {
+        const memory::VirtAddr nextPC = hart->getPC() + sext(instr.imm, instr.immSignBitNum);
         hart->setPC(nextPC);
 
         return;
@@ -136,8 +152,11 @@ void ExecutorBGEU(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION(
         "bgeu    x%d, x%d, %ld\n", instr.rs1, instr.rs2, sext(instr.imm, instr.immSignBitNum));
 
-    if (hart->getReg(instr.rs1) >= hart->getReg(instr.rs2)) {
-        const uint64_t nextPC = hart->getPC() + sext(instr.imm, instr.immSignBitNum);
+    const RegValue lhs = hart->getReg(instr.rs1);
+    const RegValue rhs = hart->getReg(instr.rs2);
+
+    if (lhs >= rhs) {
+        const memory::VirtAddr nextPC = hart->getPC() + sext(instr.imm, instr.immSignBitNum);
         hart->setPC(nextPC);
 
         return;
@@ -155,7 +174,12 @@ void ExecutorLB(Hart* hart, const DecodedInstruction& instr) {
 
     uint8_t loaded;
 
-    hart->mmu_.load8(hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum), &loaded);
+    memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
+    memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
+
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.read(paddr, 1, &loaded);
+
     hart->setReg(instr.rd, sext(loaded, 7));
     hart->incrementPC();
 }
@@ -166,7 +190,12 @@ void ExecutorLH(Hart* hart, const DecodedInstruction& instr) {
 
     uint16_t loaded;
 
-    hart->mmu_.load16(hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum), &loaded);
+    memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
+    memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
+
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.read(paddr, 2, &loaded);
+
     hart->setReg(instr.rd, sext(loaded, 15));
     hart->incrementPC();
 }
@@ -177,7 +206,12 @@ void ExecutorLW(Hart* hart, const DecodedInstruction& instr) {
 
     uint32_t loaded;
 
-    hart->mmu_.load32(hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum), &loaded);
+    memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
+    memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
+
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.read(paddr, 4, &loaded);
+
     hart->setReg(instr.rd, sext(loaded, 31));
     hart->incrementPC();
 }
@@ -188,7 +222,12 @@ void ExecutorLD(Hart* hart, const DecodedInstruction& instr) {
 
     uint64_t loaded;
 
-    hart->mmu_.load64(hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum), &loaded);
+    memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
+    memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
+
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.read(paddr, 8, &loaded);
+
     hart->setReg(instr.rd, loaded);
     hart->incrementPC();
 }
@@ -199,7 +238,12 @@ void ExecutorLBU(Hart* hart, const DecodedInstruction& instr) {
 
     uint8_t loaded;
 
-    hart->mmu_.load8(hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum), &loaded);
+    memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
+    memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
+
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.read(paddr, 1, &loaded);
+
     hart->setReg(instr.rd, loaded);
     hart->incrementPC();
 }
@@ -210,7 +254,12 @@ void ExecutorLHU(Hart* hart, const DecodedInstruction& instr) {
 
     uint16_t loaded;
 
-    hart->mmu_.load16(hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum), &loaded);
+    memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
+    memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
+
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.read(paddr, 2, &loaded);
+
     hart->setReg(instr.rd, loaded);
     hart->incrementPC();
 }
@@ -221,7 +270,12 @@ void ExecutorLWU(Hart* hart, const DecodedInstruction& instr) {
 
     uint32_t loaded;
 
-    hart->mmu_.load32(hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum), &loaded);
+    memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
+    memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
+
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.read(paddr, 4, &loaded);
+
     hart->setReg(instr.rd, loaded);
     hart->incrementPC();
 }
@@ -233,7 +287,13 @@ void ExecutorSB(Hart* hart, const DecodedInstruction& instr) {
         "sb      x%d, x%d, %ld\n", instr.rs1, instr.rs2, sext(instr.imm, instr.immSignBitNum));
 
     uint8_t stored = hart->getReg(instr.rs2) & 0xFF;
-    hart->mmu_.store8(hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum), stored);
+
+    memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
+    memory::PhysAddr paddr = hart->getPhysAddrW(vaddr);
+
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.write(paddr, 1, &stored);
+
     hart->incrementPC();
 }
 
@@ -242,7 +302,13 @@ void ExecutorSH(Hart* hart, const DecodedInstruction& instr) {
         "sh      x%d, x%d, %ld\n", instr.rs1, instr.rs2, sext(instr.imm, instr.immSignBitNum));
 
     uint16_t stored = hart->getReg(instr.rs2) & 0xFFFF;
-    hart->mmu_.store16(hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum), stored);
+
+    memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
+    memory::PhysAddr paddr = hart->getPhysAddrW(vaddr);
+
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.write(paddr, 2, &stored);
+
     hart->incrementPC();
 }
 
@@ -251,7 +317,13 @@ void ExecutorSW(Hart* hart, const DecodedInstruction& instr) {
         "sw      x%d, x%d, %ld\n", instr.rs1, instr.rs2, sext(instr.imm, instr.immSignBitNum));
 
     uint32_t stored = hart->getReg(instr.rs2) & 0xFFFFFFFF;
-    hart->mmu_.store32(hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum), stored);
+
+    memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
+    memory::PhysAddr paddr = hart->getPhysAddrW(vaddr);
+
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.write(paddr, 4, &stored);
+
     hart->incrementPC();
 }
 
@@ -260,7 +332,13 @@ void ExecutorSD(Hart* hart, const DecodedInstruction& instr) {
         "sd      x%d, x%d, %ld\n", instr.rs1, instr.rs2, sext(instr.imm, instr.immSignBitNum));
 
     uint64_t stored = hart->getReg(instr.rs2);
-    hart->mmu_.store64(hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum), stored);
+
+    memory::VirtAddr vaddr = hart->getReg(instr.rs1) + sext(instr.imm, instr.immSignBitNum);
+    memory::PhysAddr paddr = hart->getPhysAddrW(vaddr);
+
+    memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+    pmem.write(paddr, 8, &stored);
+
     hart->incrementPC();
 }
 
@@ -277,6 +355,9 @@ void ExecutorADDI(Hart* hart, const DecodedInstruction& instr) {
 
 void ExecutorSLLI(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("slli    x%d, x%d, %d\n", instr.rd, instr.rs1, instr.shamt);
+
+    uint64_t result = hart->getReg(instr.rs1) << instr.shamt;
+    hart->setReg(instr.rd, result);
 
     hart->incrementPC();
 }
@@ -360,6 +441,8 @@ void ExecutorSRAIW(Hart* hart, const DecodedInstruction& instr) {
 
 void ExecutorADD(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("add     x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
+
+    hart->setReg(instr.rd, hart->getReg(instr.rs1) + hart->getReg(instr.rs2));
 
     hart->incrementPC();
 }
@@ -464,6 +547,30 @@ void ExecutorFENCE(Hart* hart, const DecodedInstruction& instr) {
 void ExecutorECALL(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("ecall\n");
 
+    const long syscallNo = hart->getReg(RegisterType::A7);
+
+    switch (syscallNo) {
+        case 64: {
+            uint64_t vaddr = hart->getReg(RegisterType::A1);
+            uint64_t length = hart->getReg(RegisterType::A2);
+
+            memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
+
+            std::string outStr;
+            outStr.resize(length);
+
+            memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
+            pmem.read(paddr, length, outStr.data());
+            std::cout << outStr;
+
+            break;
+        }
+        default: {
+            std::cerr << "unknown syscall" << std::endl;
+            break;
+        }
+    }
+
     hart->incrementPC();
 }
 
@@ -494,7 +601,15 @@ void ExecutorMULHU(Hart* hart, const DecodedInstruction& instr) {
 }
 
 void ExecutorDIV(Hart* hart, const DecodedInstruction& instr) {
-    UNREACHABLE();
+    DEBUG_INSTRUCTION("div     x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
+
+    int64_t dividend = hart->getReg(instr.rs1);
+    int64_t divisor = hart->getReg(instr.rs2);
+
+    int64_t quot = dividend / divisor;
+    hart->setReg(instr.rd, quot);
+
+    hart->incrementPC();
 }
 
 void ExecutorDIVU(Hart* hart, const DecodedInstruction& instr) {
@@ -502,7 +617,15 @@ void ExecutorDIVU(Hart* hart, const DecodedInstruction& instr) {
 }
 
 void ExecutorREM(Hart* hart, const DecodedInstruction& instr) {
-    UNREACHABLE();
+    DEBUG_INSTRUCTION("rem     x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
+
+    int64_t dividend = hart->getReg(instr.rs1);
+    int64_t divisor = hart->getReg(instr.rs2);
+
+    int64_t rem = dividend % divisor;
+    hart->setReg(instr.rd, rem);
+
+    hart->incrementPC();
 }
 
 void ExecutorREMU(Hart* hart, const DecodedInstruction& instr) {

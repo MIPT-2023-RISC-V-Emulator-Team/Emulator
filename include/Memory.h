@@ -1,43 +1,48 @@
 #ifndef INCLUDE_MEMORY_H
 #define INCLUDE_MEMORY_H
 
-#include <array>
 #include <cstdint>
 #include <string>
-#include <unordered_map>
+#include <vector>
 
 #include "constants.h"
+#include "macros.h"
 
 namespace RISCV::memory {
 
-struct Page {
-    std::array<uint8_t, memory::PAGE_BYTESIZE> memory;
-};
+using PhysAddr = uint64_t;
+using VirtAddr = uint64_t;
 
-class MMU {
-public:
-    MMU();
-    ~MMU();
+template <typename T>
+static inline uint64_t getPageNumber(const T addr) {
+    return addr >> ADDRESS_PAGE_NUM_SHIFT;
+}
 
-    bool loadElfFile(const std::string& filename, uint64_t* pc);
-    uint64_t getStackAddress() const;
+template <typename T>
+static inline uint32_t getPageOffset(const T addr) {
+    return addr & ADDRESS_PAGE_OFFSET_MASK;
+}
 
-    bool load8(const uint64_t addr, uint8_t* value) const;
-    bool load16(const uint64_t addr, uint16_t* value) const;
-    bool load32(const uint64_t addr, uint32_t* value) const;
-    bool load64(const uint64_t addr, uint64_t* value) const;
-
-    bool store8(const uint64_t addr, uint8_t value);
-    bool store16(const uint64_t addr, uint16_t value);
-    bool store32(const uint64_t addr, uint32_t value);
-    bool store64(const uint64_t addr, uint64_t value);
-
+class PhysicalMemory final {
 private:
-    bool allocatePage(const uint32_t pageNum);
+    uint8_t* memory_ = nullptr;
+    std::vector<char> emptyPagesFlags_;
 
-    std::unordered_map<uint32_t, Page*> allocatedPhysPages_;
-    uint64_t stackAddress_ = DEFAULT_STACK_ADDRESS;
+public:
+    NO_COPY_SEMANTIC(PhysicalMemory);
+    NO_MOVE_SEMANTIC(PhysicalMemory);
+
+    bool allocatePage(const PhysAddr paddr);
+    uint64_t getEmptyPageNumber() const;
+
+    bool read(const PhysAddr paddr, const size_t size, void* value);
+    bool write(const PhysAddr paddr, const size_t size, const void* value);
+
+    PhysicalMemory();
+    ~PhysicalMemory();
 };
+
+PhysicalMemory& getPhysicalMemory();
 
 }  // namespace RISCV::memory
 
