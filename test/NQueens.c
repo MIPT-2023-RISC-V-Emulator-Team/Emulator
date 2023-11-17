@@ -1,7 +1,7 @@
 #include "util.h"
 
-#define N 18
- 
+#define N 20
+
 
 void printBoard(int board[N][N]) {
     for (int i = 0; i < N; i++) {

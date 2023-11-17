@@ -23,7 +23,7 @@ function (filter_items aItems aRegEx)
     # Provide output parameter
     set(${aItems} ${${aItems}} PARENT_SCOPE)
 endfunction (filter_items)
-file(GLOB_RECURSE EMULATOR_FILES *cpp *.h)
+file(GLOB_RECURSE EMULATOR_FILES src/*.cpp include/*.h)
 filter_items(EMULATOR_FILES "CMakeFiles/*")
 
 find_program(CLANG_FORMAT "clang-format" REQUIRED)
@@ -59,6 +59,8 @@ add_executable(risc-v
     ${SRC_DIR}/Debug.cpp
     ${SRC_DIR}/ElfLoader.cpp
     ${SRC_DIR}/MMU.cpp
+    ${SRC_DIR}/Compiler.cpp
+    ${SRC_DIR}/CompilerWorker.cpp
     ${GEN_DIR}/Decoder.cpp
     ${GEN_DIR}/Dispatcher.cpp
 )

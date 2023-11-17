@@ -95,7 +95,7 @@ EOT
 
 namespace RISCV {
 
-void Dispatcher::dispatchExecute(BasicBlock::EntryPoint instr_iter) {
+void Dispatcher::dispatchExecute(BasicBlock::BodyEntry instr_iter) {
 #{generate_dispatch_table(instructions)}
 
 #define DISPATCH()                          \\

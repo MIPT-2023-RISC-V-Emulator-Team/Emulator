@@ -1,0 +1,44 @@
+#include "Compiler.h"
+
+#include "Hart.h"
+
+namespace RISCV {
+
+bool Compiler::decrementHotnessCounter(BasicBlock& bb) {
+    auto status = bb.getCompilationStatus(std::memory_order_acquire);
+    switch (status) {
+        case CompilationStatus::NOT_COMPILED:
+            break;
+        case CompilationStatus::COMPILING:
+            return false;
+        case CompilationStatus::COMPILED:
+            return true;
+        default:
+            UNREACHABLE();
+    }
+
+    if (bb.decrementHotnessCounter()) {
+        return false;
+    }
+
+    bb.setCompilationStatus(CompilationStatus::COMPILING, std::memory_order_relaxed);
+    CompilerTask compiler_task{bb.getBody(), bb.getEntrypoint()};
+    worker_.addTask(std::move(compiler_task));
+    return false;
+}
+
+void Compiler::compileBasicBlock(CompilerTask&& task) {
+    CompiledEntry entry = nullptr;
+    for (auto&& instr : task.instrs) {
+        generateInstr(&entry, instr);
+    }
+    hart_->setBBEntry(task.entrypoint, entry);
+}
+
+void Compiler::generateInstr([[maybe_unused]] CompiledEntry* entry,
+                             [[maybe_unused]] const DecodedInstruction& instr) {
+    // TODO(all): implement codegen
+    // switch (instr.type)
+}
+
+}  // namespace RISCV

@@ -11,18 +11,24 @@ using namespace memory;
 class ElfLoader final {
 private:
     static ElfLoader* instancePtr;
-    ElfLoader(){};
+    ElfLoader() = default;
 
 public:
     bool loadElf(const std::string& filename, Hart& hart);
 
     ElfLoader(const ElfLoader& other) = delete;
 
-    static ElfLoader* getInstance() {
+    static ElfLoader* create() {
         if (!instancePtr)
             instancePtr = new ElfLoader();
 
         return instancePtr;
+    }
+
+    static void destroy() {
+        ASSERT(instancePtr != nullptr);
+        delete instancePtr;
+        instancePtr = nullptr;
     }
 };
 

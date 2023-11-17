@@ -11,7 +11,7 @@ class Dispatcher {
 public:
     Dispatcher(Hart* hart) : hart_(hart) {}
 
-    void dispatchExecute(BasicBlock::EntryPoint instr_iter);
+    void dispatchExecute(BasicBlock::BodyEntry instr_iter);
 
 private:
     Hart* hart_;

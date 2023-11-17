@@ -2,10 +2,12 @@
 #define INCLUDE_HART_H
 
 #include <array>
+#include <mutex>
 
 #include "BasicBlock.h"
 #include "Cache.h"
 #include "Common.h"
+#include "Compiler.h"
 #include "Decoder.h"
 #include "Dispatcher.h"
 #include "MMU.h"
@@ -15,6 +17,11 @@ namespace RISCV {
 class Hart final {
 public:
     static constexpr size_t BB_CACHE_CAPACITY = 1024;
+
+    using BBCache = LRUCache<BB_CACHE_CAPACITY, BasicBlock::Entrypoint, BasicBlock>;
+
+    Hart();
+    ~Hart();
 
     RegValue getReg(const RegisterType id) const {
         return regs_[id];
@@ -41,10 +48,28 @@ public:
         pc_ = newPC;
     }
 
-    const BasicBlock& getBasicBlock();
-    void executeBasicBlock(const BasicBlock& bb);
+    BasicBlock& getBasicBlock();
+    void executeBasicBlock(BasicBlock& bb);
 
-    Hart();
+    ALWAYS_INLINE auto cacheBasicBlock(BasicBlock::Entrypoint entrypoint, BasicBlock bb) {
+        // TODO(panferovi): find way to remove lock
+        std::lock_guard holder(bb_cache_lock_);
+        return bbCache_.insert(entrypoint, std::move(bb));
+    }
+
+    void setBBEntry(BasicBlock::Entrypoint entrypoint, BasicBlock::CompiledEntry entry) {
+        std::lock_guard holder(bb_cache_lock_);
+        auto bb = bbCache_.find(entrypoint);
+
+        if (UNLIKELY(bb == std::nullopt)) {
+            return;
+        }
+
+        auto& bbRef = bb->get();
+        bbRef.setCompiledEntry(entry);
+        // TODO(all): implement codegen and uncomment
+        // bbRef.setCompilationStatus(CompilationStatus::COMPILED, std::memory_order_release);
+    }
 
     const memory::MMU& getTranslator() const {
         return mmu_;
@@ -100,10 +125,12 @@ private:
     memory::MMU mmu_;
     memory::TLB tlb_;
 
-    LRUCache<BB_CACHE_CAPACITY, memory::VirtAddr, BasicBlock> bbCache_;
+    std::mutex bb_cache_lock_;
+    BBCache bbCache_;
 
     Decoder decoder_;
     Dispatcher dispatcher_;
+    Compiler compiler_;
 };
 
 }  // namespace RISCV

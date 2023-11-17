@@ -8,13 +8,13 @@ namespace RISCV {
 
 using namespace memory;
 
-const BasicBlock& Hart::getBasicBlock() {
+BasicBlock& Hart::getBasicBlock() {
     auto bb = bbCache_.find(pc_);
     if (bb != std::nullopt) {
         return *bb;
     }
     auto newBb = fetchBasicBlock();
-    const auto& bbRef = bbCache_.insert(pc_, std::move(newBb));
+    auto bbRef = cacheBasicBlock(pc_, std::move(newBb));
     return bbRef;
 }
 
@@ -63,18 +63,23 @@ BasicBlock Hart::fetchBasicBlock() {
 
     bbBody.emplace_back(DecodedInstruction{.type = BASIC_BLOCK_END});
 
-    return BasicBlock(std::move(bbBody));
+    return BasicBlock(std::move(bbBody), pc_);
 }
 
-void Hart::executeBasicBlock(const BasicBlock& bb) {
-    dispatcher_.dispatchExecute(bb.getEntryPoint());
+void Hart::executeBasicBlock(BasicBlock& bb) {
+    auto is_compiled = compiler_.decrementHotnessCounter(bb);
+    if (!is_compiled) {
+        dispatcher_.dispatchExecute(bb.getBodyEntry());
+        return;
+    }
+    bb.executeCompiled(this);
 }
 
 DecodedInstruction Hart::decode(const EncodedInstruction encInstr) const {
     return decoder_.decodeInstruction(encInstr);
 }
 
-Hart::Hart() : dispatcher_(this) {
+Hart::Hart() : dispatcher_(this), compiler_(this) {
     PhysicalMemory& pmem = getPhysicalMemory();
 
     /*
@@ -107,6 +112,12 @@ Hart::Hart() : dispatcher_(this) {
         pmem.allocatePage(stackPAddr);
         stackVAddr -= PAGE_BYTESIZE;
     }
+
+    compiler_.InitializeWorker();
+}
+
+Hart::~Hart() {
+    compiler_.FinalizeWorker();
 }
 
 }  // namespace RISCV

@@ -400,7 +400,7 @@ ALWAYS_INLINE void ExecutorSLTIU(Hart* hart, const DecodedInstruction& instr) {
 ALWAYS_INLINE void ExecutorXORI(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("xori    x%d, x%d, %ld\n", instr.rd, instr.rs1, instr.imm);
 
-    RegValue res = hart->getReg(instr.rs1) ^ instr.imm ;
+    RegValue res = hart->getReg(instr.rs1) ^ instr.imm;
     hart->setReg(instr.rd, res);
     hart->incrementPC();
 }
@@ -559,7 +559,7 @@ ALWAYS_INLINE void ExecutorSRA(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("sra     x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
 
     SignedRegValue lhs = hart->getReg(instr.rs1);
-    SignedRegValue rhs =  hart->getReg(instr.rs2);
+    SignedRegValue rhs = hart->getReg(instr.rs2);
 
     SignedRegValue res = 0;
 
@@ -612,7 +612,7 @@ ALWAYS_INLINE void ExecutorSRAW(Hart* hart, const DecodedInstruction& instr) {
     DEBUG_INSTRUCTION("sraw    x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
 
     SignedRegValue lhs = hart->getReg(instr.rs1);
-    SignedRegValue rhs =  hart->getReg(instr.rs2);
+    SignedRegValue rhs = hart->getReg(instr.rs2);
 
     SignedRegValue res = 0;
 

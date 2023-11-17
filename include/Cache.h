@@ -13,22 +13,17 @@ namespace RISCV {
 template <size_t CAPACITY, typename keyType, typename valType, bool byRef = true>
 class LRUCache {
 public:
-    using Iter = typename std::list<std::pair<keyType, valType>>::const_iterator;
-    using CRef = typename std::reference_wrapper<const valType>;
+    using Iter = typename std::list<std::pair<keyType, valType>>::iterator;
+    using Ref = typename std::reference_wrapper<valType>;
 
-    using RetType = std::conditional_t<byRef, CRef, const valType>;
+    using RetType = std::conditional_t<byRef, Ref, valType>;
 
     std::optional<RetType> find(const keyType key) const {
         auto item = selector_.find(key);
         if (item == selector_.cend()) {
             return std::nullopt;
         }
-
-        if constexpr (byRef) {
-            return std::cref(item->second->second);
-        } else {
-            return item->second->second;
-        }
+        return getRetType(item->second->second);
     }
 
     RetType insert(const keyType key, const valType val) {
@@ -39,17 +34,20 @@ public:
             storage_.pop_back();
         }
         ASSERT(storage_.size() < CAPACITY);
-        const auto& inserted = storage_.emplace_front(key, std::move(val));
-        selector_.emplace(key, storage_.cbegin());
-
-        if constexpr (byRef) {
-            return std::cref(inserted.second);
-        } else {
-            return inserted.second;
-        }
+        auto& inserted = storage_.emplace_front(key, std::move(val));
+        selector_.emplace(key, storage_.begin());
+        return getRetType(inserted.second);
     }
 
 private:
+    ALWAYS_INLINE RetType getRetType(valType& val) const {
+        if constexpr (byRef) {
+            return std::ref(val);
+        } else {
+            return val;
+        }
+    }
+
     std::list<std::pair<keyType, valType>> storage_;
     std::unordered_map<keyType, Iter> selector_;
 };
