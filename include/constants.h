@@ -121,6 +121,8 @@ enum RegisterType : uint8_t {
     T6 = X31
 };
 
+enum SyscallRV : uint32_t { SYS_WRITE = 64 };
+
 }  // namespace RISCV
 
 #endif  // INCLUDE_CONSTANTS_H

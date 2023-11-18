@@ -593,7 +593,7 @@ ALWAYS_INLINE void ExecutorECALL(Hart* hart, const DecodedInstruction& instr) {
     const long syscallNo = hart->getReg(RegisterType::A7);
 
     switch (syscallNo) {
-        case 64: {
+        case SyscallRV::SYS_WRITE: {
             uint64_t vaddr = hart->getReg(RegisterType::A1);
             uint64_t length = hart->getReg(RegisterType::A2);
 

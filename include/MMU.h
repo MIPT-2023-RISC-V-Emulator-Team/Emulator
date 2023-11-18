@@ -143,8 +143,8 @@ public:
 private:
     // For performance aspect we store translation mode and root table physical
     // address rather than SATP register itself
-    TranslationMode currTransMode_;
-    uint64_t rootTransTablePAddr_;
+    TranslationMode currTransMode_ = TranslationMode::TRANSLATION_MODE_BARE;
+    uint64_t rootTransTablePAddr_ = 0;
 
     bool isVirtAddrCanonical(const VirtAddr vaddr) const;
     void handleException(const Exception exception) const;

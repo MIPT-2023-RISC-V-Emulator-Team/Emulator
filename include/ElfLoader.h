@@ -3,6 +3,7 @@
 
 #include "Hart.h"
 #include "Memory.h"
+#include "macros.h"
 
 namespace RISCV {
 
@@ -16,7 +17,8 @@ private:
 public:
     bool loadElf(const std::string& filename, Hart& hart);
 
-    ElfLoader(const ElfLoader& other) = delete;
+    NO_COPY_SEMANTIC(ElfLoader);
+    NO_MOVE_SEMANTIC(ElfLoader);
 
     static ElfLoader* getInstance() {
         if (!instancePtr)
