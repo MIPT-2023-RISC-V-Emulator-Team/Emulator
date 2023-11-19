@@ -1,12 +1,14 @@
 #ifndef INCLUDE_COMPILER_H_
 #define INCLUDE_COMPILER_H_
 
-#include "BasicBlock.h"
-#include "CompilerWorker.h"
+#include "compiler/CompilerWorker.h"
+#include "simulator/BasicBlock.h"
 
 namespace RISCV {
-
 class Hart;
+}  // namespace RISCV
+
+namespace RISCV::compiler {
 
 class Compiler {
 public:
@@ -31,6 +33,6 @@ private:
     CompilerWorker worker_;
 };
 
-}  // namespace RISCV
+}  // namespace RISCV::compiler
 
 #endif  // INCLUDE_COMPILER_H_

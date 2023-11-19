@@ -112,7 +112,7 @@ EOT
 #ifndef GENERATED_FIELDS_H
 #define GENERATED_FIELDS_H
 
-#include "Common.h"
+#include "simulator/Common.h"
 
 namespace RISCV {
 #{generate_field(fields)}
@@ -189,8 +189,8 @@ EOT
 #define GENERATED_INSTRUCTIONS_H
 
 #include <cstdint>
-#include "Common.h"
-#include "DecodedInstruction.h"
+#include "simulator/Common.h"
+#include "simulator/DecodedInstruction.h"
 #include "generated/Fields.h"
 
 namespace RISCV {
@@ -277,8 +277,8 @@ EOT
   def generate_decoder(decodertree)
     decoder_file = File.new(@gen_dir + '/Decoder.cpp', 'w') 
     decode_method = <<-EOT
-#include "Decoder.h"
-#include "macros.h"
+#include "simulator/Decoder.h"
+#include "utils/macros.h"
 #include "generated/Instructions.h"
 
 namespace RISCV {

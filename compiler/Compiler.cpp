@@ -1,8 +1,8 @@
-#include "Compiler.h"
+#include "compiler/Compiler.h"
 
-#include "Hart.h"
+#include "simulator/Hart.h"
 
-namespace RISCV {
+namespace RISCV::compiler {
 
 bool Compiler::decrementHotnessCounter(BasicBlock& bb) {
     auto status = bb.getCompilationStatus(std::memory_order_acquire);
@@ -41,4 +41,4 @@ void Compiler::generateInstr([[maybe_unused]] CompiledEntry* entry,
     // switch (instr.type)
 }
 
-}  // namespace RISCV
+}  // namespace RISCV::compiler

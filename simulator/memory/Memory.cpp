@@ -1,10 +1,10 @@
-#include "Memory.h"
+#include "simulator/memory/Memory.h"
 
 #include <algorithm>
 #include <cstring>
 #include <string>
 
-#include "constants.h"
+#include "simulator/constants.h"
 
 namespace RISCV::memory {
 

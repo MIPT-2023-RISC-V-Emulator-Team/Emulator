@@ -7,10 +7,10 @@
 #include <optional>
 #include <thread>
 
-#include "BasicBlock.h"
-#include "macros.h"
+#include "simulator/BasicBlock.h"
+#include "utils/macros.h"
 
-namespace RISCV {
+namespace RISCV::compiler {
 
 class Compiler;
 
@@ -58,6 +58,6 @@ private:
     CompilerTaskQueue task_queue_;
 };
 
-}  // namespace RISCV
+}  // namespace RISCV::compiler
 
 #endif  // INCLUDE_COMPILER_WORKER_H_

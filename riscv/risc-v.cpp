@@ -2,8 +2,8 @@
 
 #include <chrono>
 
-#include "ElfLoader.h"
-#include "Hart.h"
+#include "simulator/ElfLoader.h"
+#include "simulator/Hart.h"
 
 /*
  * For host instruction counting

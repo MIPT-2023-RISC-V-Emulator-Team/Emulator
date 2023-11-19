@@ -1,7 +1,7 @@
 #ifndef INCLUDE_DISPATCHER_H
 #define INCLUDE_DISPATCHER_H
 
-#include "BasicBlock.h"
+#include "simulator/BasicBlock.h"
 
 namespace RISCV {
 

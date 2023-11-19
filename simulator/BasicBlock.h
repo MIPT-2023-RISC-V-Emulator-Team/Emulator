@@ -4,8 +4,8 @@
 #include <atomic>
 #include <vector>
 
-#include "DecodedInstruction.h"
-#include "macros.h"
+#include "simulator/DecodedInstruction.h"
+#include "utils/macros.h"
 
 namespace RISCV {
 

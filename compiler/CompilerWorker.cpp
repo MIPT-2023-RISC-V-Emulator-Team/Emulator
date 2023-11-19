@@ -1,8 +1,8 @@
-#include "CompilerWorker.h"
+#include "compiler/CompilerWorker.h"
 
-#include "Compiler.h"
+#include "compiler/Compiler.h"
 
-namespace RISCV {
+namespace RISCV::compiler {
 
 void CompilerTaskQueue::addTask(CompilerTask&& task) {
     bool is_empty = false;
@@ -61,4 +61,4 @@ void CompilerWorker::processTask() {
     compiler_->compileBasicBlock(std::move(*task));
 }
 
-}  // namespace RISCV
+}  // namespace RISCV::compiler

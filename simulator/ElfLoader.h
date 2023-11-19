@@ -1,8 +1,8 @@
 #ifndef ELF_LOADER_H
 #define ELF_LOADER_H
 
-#include "Hart.h"
-#include "Memory.h"
+#include "simulator/Hart.h"
+#include "simulator/memory/Memory.h"
 
 namespace RISCV {
 

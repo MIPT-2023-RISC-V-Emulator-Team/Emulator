@@ -6,7 +6,7 @@
 #include <optional>
 #include <unordered_map>
 
-#include "macros.h"
+#include "utils/macros.h"
 
 namespace RISCV {
 
@@ -15,7 +15,6 @@ class LRUCache {
 public:
     using Iter = typename std::list<std::pair<keyType, valType>>::iterator;
     using Ref = typename std::reference_wrapper<valType>;
-
     using RetType = std::conditional_t<byRef, Ref, valType>;
 
     std::optional<RetType> find(const keyType key) const {

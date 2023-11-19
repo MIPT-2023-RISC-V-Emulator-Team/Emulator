@@ -1,9 +1,9 @@
 #ifndef MMU_H
 #define MMU_H
 
-#include "Cache.h"
-#include "Common.h"
-#include "Memory.h"
+#include "simulator/Cache.h"
+#include "simulator/Common.h"
+#include "simulator/memory/Memory.h"
 
 namespace RISCV::memory {
 

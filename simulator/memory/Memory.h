@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 
-#include "constants.h"
-#include "macros.h"
+#include "simulator/constants.h"
+#include "utils/macros.h"
 
 namespace RISCV::memory {
 

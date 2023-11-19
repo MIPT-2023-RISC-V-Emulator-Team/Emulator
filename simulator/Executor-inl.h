@@ -1,6 +1,6 @@
-#include "DecodedInstruction.h"
-#include "Hart.h"
-#include "macros.h"
+#include "simulator/DecodedInstruction.h"
+#include "simulator/Hart.h"
+#include "utils/macros.h"
 
 namespace RISCV {
 

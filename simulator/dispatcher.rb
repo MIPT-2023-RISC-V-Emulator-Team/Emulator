@@ -90,8 +90,8 @@ EOT
     def generate_dispatcher(instructions)
       dispatcher_file = File.new(@gen_dir + '/Dispatcher.cpp', 'w') 
       dispatcher = <<-EOT
-#include "Dispatcher.h"
-#include "Executor-inl.h"
+#include "simulator/Dispatcher.h"
+#include "simulator/Executor-inl.h"
 
 namespace RISCV {
 

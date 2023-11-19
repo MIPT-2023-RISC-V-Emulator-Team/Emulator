@@ -4,13 +4,13 @@
 #include <array>
 #include <mutex>
 
-#include "BasicBlock.h"
-#include "Cache.h"
-#include "Common.h"
-#include "Compiler.h"
-#include "Decoder.h"
-#include "Dispatcher.h"
-#include "MMU.h"
+#include "compiler/Compiler.h"
+#include "simulator/BasicBlock.h"
+#include "simulator/Cache.h"
+#include "simulator/Common.h"
+#include "simulator/Decoder.h"
+#include "simulator/Dispatcher.h"
+#include "simulator/memory/MMU.h"
 
 namespace RISCV {
 
@@ -130,7 +130,7 @@ private:
 
     Decoder decoder_;
     Dispatcher dispatcher_;
-    Compiler compiler_;
+    compiler::Compiler compiler_;
 };
 
 }  // namespace RISCV
