@@ -1,5 +1,7 @@
 #include "compiler/Compiler.h"
 
+#include <asmjit/asmjit.h>
+
 #include "simulator/Hart.h"
 
 namespace RISCV::compiler {
@@ -38,6 +40,8 @@ void Compiler::compileBasicBlock(CompilerTask&& task) {
 void Compiler::generateInstr([[maybe_unused]] CompiledEntry* entry,
                              [[maybe_unused]] const DecodedInstruction& instr) {
     // TODO(all): implement codegen
+    // asmjit::JitRuntime rt;
+    // asmjit::CodeHolder code;
     // switch (instr.type)
 }
 

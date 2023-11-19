@@ -15,17 +15,17 @@ set(DECODER_OUTPUT
 )
 
 add_custom_command(
-  OUTPUT ${DECODER_OUTPUT}
-  COMMAND ruby ${CMAKE_CURRENT_SOURCE_DIR}/decoder.rb --isa=${ISA_FILE} --gen=${GEN_DIR}
-  DEPENDS ${ISA_FILE} decoder.rb
-  VERBATIM
+    OUTPUT ${DECODER_OUTPUT}
+    COMMAND ruby ${CMAKE_CURRENT_SOURCE_DIR}/decoder.rb --isa=${ISA_FILE} --gen=${GEN_DIR}
+    DEPENDS ${ISA_FILE} decoder.rb
+    VERBATIM
 )
 
 add_custom_command(
-  OUTPUT ${GEN_DIR}/Dispatcher.cpp
-  COMMAND ruby ${CMAKE_CURRENT_SOURCE_DIR}/dispatcher.rb --isa=${ISA_FILE} --gen=${GEN_DIR}
-  DEPENDS ${ISA_FILE} dispatcher.rb
-  VERBATIM
+    OUTPUT ${GEN_DIR}/Dispatcher.cpp
+    COMMAND ruby ${CMAKE_CURRENT_SOURCE_DIR}/dispatcher.rb --isa=${ISA_FILE} --gen=${GEN_DIR}
+    DEPENDS ${ISA_FILE} dispatcher.rb
+    VERBATIM
 )
 
 set(SIMULATOR_SRC

@@ -55,7 +55,7 @@ target_include_directories(risc-v
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(risc-v 
+target_link_libraries(risc-v
     PUBLIC simulator
     PUBLIC compiler
     PUBLIC utils
