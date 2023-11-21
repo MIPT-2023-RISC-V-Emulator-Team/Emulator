@@ -76,7 +76,7 @@ bool ElfLoader::loadElf(const std::string& filename, Hart& hart) {
         const VirtAddr segmentStart = phdr.p_vaddr;
         const uint64_t segmentSize = phdr.p_memsz;
 
-        MemoryRequest request;
+        MemoryRequest request = 0;
         if (phdr.p_flags & PF_R) {
             request |= MemoryRequestBits::R;
         }

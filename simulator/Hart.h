@@ -75,39 +75,21 @@ public:
         return mmu_;
     }
 
-    inline memory::PhysAddr getPhysAddrR(const memory::VirtAddr vaddr) {
+    template <memory::MemoryType type>
+    inline memory::PhysAddr getPhysAddr(const memory::VirtAddr vaddr) {
         memory::PhysAddr paddr;
 
         // Try TLB
         const uint64_t vpn = getPartialBits<12, 63>(vaddr);
-        auto tlbEntry = tlb_.findR(vpn);
+        auto tlbEntry = tlb_.find<type>(vpn);
         if (tlbEntry != std::nullopt) {
             // TLB hit
             paddr = (*tlbEntry) * memory::PAGE_BYTESIZE;
             paddr += memory::getPageOffset(vaddr);
         } else {
             // TLB miss, translate address in usual way
-            paddr = mmu_.getPhysAddrR(vaddr);
-            tlb_.insertR(vpn, memory::getPageNumber(paddr));
-        }
-
-        return paddr;
-    }
-
-    inline memory::PhysAddr getPhysAddrW(const memory::VirtAddr vaddr) {
-        memory::PhysAddr paddr;
-
-        // Try TLB
-        const uint64_t vpn = getPartialBits<12, 63>(vaddr);
-        auto tlbEntry = tlb_.findW(vpn);
-        if (tlbEntry != std::nullopt) {
-            // TLB hit
-            paddr = (*tlbEntry) * memory::PAGE_BYTESIZE;
-            paddr += memory::getPageOffset(vaddr);
-        } else {
-            // TLB miss, translate address in usual way
-            paddr = mmu_.getPhysAddrW(vaddr);
-            tlb_.insertW(vpn, memory::getPageNumber(paddr));
+            paddr = mmu_.getPhysAddr<type>(vaddr);
+            tlb_.insert<type>(vpn, memory::getPageNumber(paddr));
         }
 
         return paddr;

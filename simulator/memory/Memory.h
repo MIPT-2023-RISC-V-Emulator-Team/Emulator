@@ -10,6 +10,8 @@
 
 namespace RISCV::memory {
 
+enum class MemoryType : uint8_t { IMem, RMem, WMem };
+
 using PhysAddr = uint64_t;
 using VirtAddr = uint64_t;
 

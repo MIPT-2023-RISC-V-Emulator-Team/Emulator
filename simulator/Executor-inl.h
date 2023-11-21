@@ -1,5 +1,6 @@
 #include "simulator/DecodedInstruction.h"
 #include "simulator/Hart.h"
+#include "simulator/memory/Memory.h"
 #include "utils/macros.h"
 
 namespace RISCV {
@@ -153,7 +154,7 @@ ALWAYS_INLINE void ExecutorLB(Hart* hart, const DecodedInstruction& instr) {
     uint8_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + instr.imm;
-    memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
+    memory::PhysAddr paddr = hart->getPhysAddr<memory::MemoryType::RMem>(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.read(paddr, sizeof(loaded), &loaded);
@@ -174,7 +175,7 @@ ALWAYS_INLINE void ExecutorLH(Hart* hart, const DecodedInstruction& instr) {
         std::exit(EXIT_FAILURE);
     }
 
-    memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
+    memory::PhysAddr paddr = hart->getPhysAddr<memory::MemoryType::RMem>(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.read(paddr, sizeof(loaded), &loaded);
@@ -195,7 +196,7 @@ ALWAYS_INLINE void ExecutorLW(Hart* hart, const DecodedInstruction& instr) {
         std::exit(EXIT_FAILURE);
     }
 
-    memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
+    memory::PhysAddr paddr = hart->getPhysAddr<memory::MemoryType::RMem>(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.read(paddr, sizeof(loaded), &loaded);
@@ -216,7 +217,7 @@ ALWAYS_INLINE void ExecutorLD(Hart* hart, const DecodedInstruction& instr) {
         std::exit(EXIT_FAILURE);
     }
 
-    memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
+    memory::PhysAddr paddr = hart->getPhysAddr<memory::MemoryType::RMem>(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.read(paddr, sizeof(loaded), &loaded);
@@ -231,7 +232,7 @@ ALWAYS_INLINE void ExecutorLBU(Hart* hart, const DecodedInstruction& instr) {
     uint8_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + instr.imm;
-    memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
+    memory::PhysAddr paddr = hart->getPhysAddr<memory::MemoryType::RMem>(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.read(paddr, sizeof(loaded), &loaded);
@@ -252,7 +253,7 @@ ALWAYS_INLINE void ExecutorLHU(Hart* hart, const DecodedInstruction& instr) {
         std::exit(EXIT_FAILURE);
     }
 
-    memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
+    memory::PhysAddr paddr = hart->getPhysAddr<memory::MemoryType::RMem>(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.read(paddr, sizeof(loaded), &loaded);
@@ -273,7 +274,7 @@ ALWAYS_INLINE void ExecutorLWU(Hart* hart, const DecodedInstruction& instr) {
         std::exit(EXIT_FAILURE);
     }
 
-    memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
+    memory::PhysAddr paddr = hart->getPhysAddr<memory::MemoryType::RMem>(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.read(paddr, sizeof(loaded), &loaded);
@@ -290,7 +291,7 @@ ALWAYS_INLINE void ExecutorSB(Hart* hart, const DecodedInstruction& instr) {
     uint8_t stored = hart->getReg(instr.rs2) & 0xFF;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + instr.imm;
-    memory::PhysAddr paddr = hart->getPhysAddrW(vaddr);
+    memory::PhysAddr paddr = hart->getPhysAddr<memory::MemoryType::WMem>(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.write(paddr, sizeof(stored), &stored);
@@ -310,7 +311,7 @@ ALWAYS_INLINE void ExecutorSH(Hart* hart, const DecodedInstruction& instr) {
         std::exit(EXIT_FAILURE);
     }
 
-    memory::PhysAddr paddr = hart->getPhysAddrW(vaddr);
+    memory::PhysAddr paddr = hart->getPhysAddr<memory::MemoryType::WMem>(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.write(paddr, sizeof(stored), &stored);
@@ -330,7 +331,7 @@ ALWAYS_INLINE void ExecutorSW(Hart* hart, const DecodedInstruction& instr) {
         std::exit(EXIT_FAILURE);
     }
 
-    memory::PhysAddr paddr = hart->getPhysAddrW(vaddr);
+    memory::PhysAddr paddr = hart->getPhysAddr<memory::MemoryType::WMem>(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.write(paddr, sizeof(stored), &stored);
@@ -349,7 +350,8 @@ ALWAYS_INLINE void ExecutorSD(Hart* hart, const DecodedInstruction& instr) {
         std::cerr << "Error: unaligned memory access" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    memory::PhysAddr paddr = hart->getPhysAddrW(vaddr);
+
+    memory::PhysAddr paddr = hart->getPhysAddr<memory::MemoryType::WMem>(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.write(paddr, sizeof(stored), &stored);
@@ -644,7 +646,7 @@ ALWAYS_INLINE void ExecutorECALL(Hart* hart, const DecodedInstruction& instr) {
             uint64_t vaddr = hart->getReg(RegisterType::A1);
             uint64_t length = hart->getReg(RegisterType::A2);
 
-            memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
+            memory::PhysAddr paddr = hart->getPhysAddr<memory::MemoryType::RMem>(vaddr);
 
             std::string outStr;
             outStr.resize(length);

@@ -12,21 +12,21 @@ bool Compiler::decrementHotnessCounter(BasicBlock& bb) {
         case CompilationStatus::NOT_COMPILED:
             break;
         case CompilationStatus::COMPILING:
-            return false;
-        case CompilationStatus::COMPILED:
             return true;
+        case CompilationStatus::COMPILED:
+            return false;
         default:
             UNREACHABLE();
     }
 
     if (bb.decrementHotnessCounter()) {
-        return false;
+        return true;
     }
 
     bb.setCompilationStatus(CompilationStatus::COMPILING, std::memory_order_relaxed);
     CompilerTask compiler_task{bb.getBody(), bb.getEntrypoint()};
     worker_.addTask(std::move(compiler_task));
-    return false;
+    return true;
 }
 
 void Compiler::compileBasicBlock(CompilerTask&& task) {

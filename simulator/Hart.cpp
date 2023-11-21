@@ -27,20 +27,7 @@ BasicBlock Hart::fetchBasicBlock() {
     constexpr const size_t maxBasicBlockBytesize = INSTRUCTION_BYTESIZE * BasicBlock::MAX_SIZE;
 
     PhysicalMemory& pmem = getPhysicalMemory();
-    PhysAddr paddr;
-
-    // Try TLB
-    const uint64_t vpn = getPartialBits<12, 63>(pc_);
-    auto tlbEntry = tlb_.findI(vpn);
-    if (tlbEntry != std::nullopt) {
-        // TLB hit
-        paddr = (*tlbEntry) * PAGE_BYTESIZE;
-        paddr += getPageOffset(pc_);
-    } else {
-        // TLB miss, translate address in usual way
-        paddr = mmu_.getPhysAddrI(pc_);
-        tlb_.insertI(vpn, getPageNumber(paddr));
-    }
+    PhysAddr paddr = getPhysAddr<memory::MemoryType::IMem>(pc_);
 
     const uint32_t pageOffset = getPageOffset(paddr);
     size_t readBytesize = PAGE_BYTESIZE - pageOffset;
@@ -68,8 +55,8 @@ BasicBlock Hart::fetchBasicBlock() {
 }
 
 void Hart::executeBasicBlock(BasicBlock& bb) {
-    auto is_compiled = compiler_.decrementHotnessCounter(bb);
-    if (!is_compiled) {
+    auto is_not_compiled = compiler_.decrementHotnessCounter(bb);
+    if (is_not_compiled) {
         dispatcher_.dispatchExecute(bb.getBodyEntry());
         return;
     }
