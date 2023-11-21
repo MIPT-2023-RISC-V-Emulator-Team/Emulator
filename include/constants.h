@@ -22,7 +22,7 @@ static constexpr uint32_t ADDRESS_PAGE_NUM_SHIFT = 12;
 static constexpr uint32_t ADDRESS_PAGE_OFFSET_MASK = 0xFFF;
 
 static constexpr uint32_t STACK_BYTESIZE = 1 << 24;  // 16 MiB
-static constexpr uint64_t DEFAULT_STACK_ADDRESS = 0x3FFFFC00 - 1;
+static constexpr uint64_t DEFAULT_STACK_ADDRESS = 0x3FFFFC00;
 
 }  // namespace memory
 

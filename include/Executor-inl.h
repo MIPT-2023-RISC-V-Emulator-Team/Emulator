@@ -156,7 +156,7 @@ ALWAYS_INLINE void ExecutorLB(Hart* hart, const DecodedInstruction& instr) {
     memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
-    pmem.read(paddr, 1, &loaded);
+    pmem.read(paddr, sizeof(loaded), &loaded);
 
     hart->setReg(instr.rd, sext(loaded, 7));
     hart->incrementPC();
@@ -168,10 +168,16 @@ ALWAYS_INLINE void ExecutorLH(Hart* hart, const DecodedInstruction& instr) {
     uint16_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + instr.imm;
+
+    if (vaddr % (sizeof(loaded))) {
+        std::cerr << "Error: unaligned memory access" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
     memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
-    pmem.read(paddr, 2, &loaded);
+    pmem.read(paddr, sizeof(loaded), &loaded);
 
     hart->setReg(instr.rd, sext(loaded, 15));
     hart->incrementPC();
@@ -183,10 +189,16 @@ ALWAYS_INLINE void ExecutorLW(Hart* hart, const DecodedInstruction& instr) {
     uint32_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + instr.imm;
+
+    if (vaddr % (sizeof(loaded))) {
+        std::cerr << "Error: unaligned memory access" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
     memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
-    pmem.read(paddr, 4, &loaded);
+    pmem.read(paddr, sizeof(loaded), &loaded);
 
     hart->setReg(instr.rd, sext(loaded, 31));
     hart->incrementPC();
@@ -198,10 +210,16 @@ ALWAYS_INLINE void ExecutorLD(Hart* hart, const DecodedInstruction& instr) {
     uint64_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + instr.imm;
+
+    if (vaddr % (sizeof(loaded))) {
+        std::cerr << "Error: unaligned memory access" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
     memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
-    pmem.read(paddr, 8, &loaded);
+    pmem.read(paddr, sizeof(loaded), &loaded);
 
     hart->setReg(instr.rd, loaded);
     hart->incrementPC();
@@ -216,7 +234,7 @@ ALWAYS_INLINE void ExecutorLBU(Hart* hart, const DecodedInstruction& instr) {
     memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
-    pmem.read(paddr, 1, &loaded);
+    pmem.read(paddr, sizeof(loaded), &loaded);
 
     hart->setReg(instr.rd, loaded);
     hart->incrementPC();
@@ -228,10 +246,16 @@ ALWAYS_INLINE void ExecutorLHU(Hart* hart, const DecodedInstruction& instr) {
     uint16_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + instr.imm;
+
+    if (vaddr % (sizeof(loaded))) {
+        std::cerr << "Error: unaligned memory access" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
     memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
-    pmem.read(paddr, 2, &loaded);
+    pmem.read(paddr, sizeof(loaded), &loaded);
 
     hart->setReg(instr.rd, loaded);
     hart->incrementPC();
@@ -243,10 +267,16 @@ ALWAYS_INLINE void ExecutorLWU(Hart* hart, const DecodedInstruction& instr) {
     uint32_t loaded;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + instr.imm;
+
+    if (vaddr % (sizeof(loaded))) {
+        std::cerr << "Error: unaligned memory access" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
     memory::PhysAddr paddr = hart->getPhysAddrR(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
-    pmem.read(paddr, 4, &loaded);
+    pmem.read(paddr, sizeof(loaded), &loaded);
 
     hart->setReg(instr.rd, loaded);
     hart->incrementPC();
@@ -263,7 +293,7 @@ ALWAYS_INLINE void ExecutorSB(Hart* hart, const DecodedInstruction& instr) {
     memory::PhysAddr paddr = hart->getPhysAddrW(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
-    pmem.write(paddr, 1, &stored);
+    pmem.write(paddr, sizeof(stored), &stored);
 
     hart->incrementPC();
 }
@@ -274,10 +304,16 @@ ALWAYS_INLINE void ExecutorSH(Hart* hart, const DecodedInstruction& instr) {
     uint16_t stored = hart->getReg(instr.rs2) & 0xFFFF;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + instr.imm;
+
+    if (vaddr % (sizeof(stored))) {
+        std::cerr << "Error: unaligned memory access" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
     memory::PhysAddr paddr = hart->getPhysAddrW(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
-    pmem.write(paddr, 2, &stored);
+    pmem.write(paddr, sizeof(stored), &stored);
 
     hart->incrementPC();
 }
@@ -288,10 +324,16 @@ ALWAYS_INLINE void ExecutorSW(Hart* hart, const DecodedInstruction& instr) {
     uint32_t stored = hart->getReg(instr.rs2) & 0xFFFFFFFF;
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + instr.imm;
+
+    if (vaddr % (sizeof(stored))) {
+        std::cerr << "Error: unaligned memory access" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
     memory::PhysAddr paddr = hart->getPhysAddrW(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
-    pmem.write(paddr, 4, &stored);
+    pmem.write(paddr, sizeof(stored), &stored);
 
     hart->incrementPC();
 }
@@ -302,10 +344,15 @@ ALWAYS_INLINE void ExecutorSD(Hart* hart, const DecodedInstruction& instr) {
     uint64_t stored = hart->getReg(instr.rs2);
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + instr.imm;
+
+    if (vaddr % (sizeof(stored))) {
+        std::cerr << "Error: unaligned memory access" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
     memory::PhysAddr paddr = hart->getPhysAddrW(vaddr);
 
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
-    pmem.write(paddr, 8, &stored);
+    pmem.write(paddr, sizeof(stored), &stored);
 
     hart->incrementPC();
 }
