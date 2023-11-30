@@ -1,8 +1,8 @@
 #ifndef INCLUDE_DECODE_INSCTRUCTION_H
 #define INCLUDE_DECODE_INSCTRUCTION_H
 
-#include "constants.h"
 #include "generated/InstructionTypes.h"
+#include "simulator/constants.h"
 
 namespace RISCV {
 

@@ -1,7 +1,7 @@
 #ifndef INCLUDE_DISPATCHER_H
 #define INCLUDE_DISPATCHER_H
 
-#include "BasicBlock.h"
+#include "simulator/BasicBlock.h"
 
 namespace RISCV {
 
@@ -11,7 +11,7 @@ class Dispatcher {
 public:
     Dispatcher(Hart* hart) : hart_(hart) {}
 
-    void dispatchExecute(BasicBlock::EntryPoint instr_iter);
+    void dispatchExecute(BasicBlock::BodyEntry instr_iter);
 
 private:
     Hart* hart_;

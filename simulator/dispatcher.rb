@@ -90,12 +90,12 @@ EOT
     def generate_dispatcher(instructions)
       dispatcher_file = File.new(@gen_dir + '/Dispatcher.cpp', 'w') 
       dispatcher = <<-EOT
-#include "Dispatcher.h"
-#include "Executor-inl.h"
+#include "simulator/Dispatcher.h"
+#include "simulator/Executor-inl.h"
 
 namespace RISCV {
 
-void Dispatcher::dispatchExecute(BasicBlock::EntryPoint instr_iter) {
+void Dispatcher::dispatchExecute(BasicBlock::BodyEntry instr_iter) {
 #{generate_dispatch_table(instructions)}
 
 #define DISPATCH()                          \\

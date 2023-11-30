@@ -1,9 +1,9 @@
 #ifndef MMU_H
 #define MMU_H
 
-#include "Cache.h"
-#include "Common.h"
-#include "Memory.h"
+#include "simulator/Cache.h"
+#include "simulator/Common.h"
+#include "simulator/memory/Memory.h"
 
 namespace RISCV::memory {
 
@@ -67,25 +67,27 @@ public:
 
     static constexpr const uint64_t ALL_PERMS_MASK = 0b1110;
 
-    inline std::optional<uint64_t> findI(const uint64_t vpn) const {
-        return iTLB_.find(vpn);
-    }
-    inline void insertI(const uint64_t vpn, const uint64_t ppn) {
-        iTLB_.insert(vpn, ppn);
-    }
-
-    inline std::optional<uint64_t> findR(const uint64_t vpn) const {
-        return rTLB_.find(vpn);
-    }
-    inline void insertR(const uint64_t vpn, const uint64_t ppn) {
-        rTLB_.insert(vpn, ppn);
-    }
-
-    inline std::optional<uint64_t> findW(const uint64_t vpn) const {
+    template <MemoryType type>
+    ALWAYS_INLINE std::optional<uint64_t> find(const uint64_t vpn) const {
+        if constexpr (type == MemoryType::IMem) {
+            return iTLB_.find(vpn);
+        } else if constexpr (type == MemoryType::RMem) {
+            return rTLB_.find(vpn);
+        }
+        ASSERT(type == MemoryType::WMem);
         return wTLB_.find(vpn);
     }
-    inline void insertW(const uint64_t vpn, const uint64_t ppn) {
-        wTLB_.insert(vpn, ppn);
+
+    template <MemoryType type>
+    ALWAYS_INLINE void insert(const uint64_t vpn, const uint64_t ppn) {
+        if constexpr (type == MemoryType::IMem) {
+            iTLB_.insert(vpn, ppn);
+        } else if constexpr (type == MemoryType::RMem) {
+            rTLB_.insert(vpn, ppn);
+        } else {
+            ASSERT(type == MemoryType::WMem);
+            wTLB_.insert(vpn, ppn);
+        }
     }
 
 private:
@@ -123,15 +125,14 @@ public:
 
     void setSATPReg(const RegValue satp);
 
-    inline PhysAddr getPhysAddrI(const VirtAddr vaddr) const {
-        return getPhysAddr<MemoryRequestBits::R | MemoryRequestBits::X>(vaddr);
-    }
-
-    inline PhysAddr getPhysAddrR(const VirtAddr vaddr) const {
-        return getPhysAddr<MemoryRequestBits::R>(vaddr);
-    }
-
-    inline PhysAddr getPhysAddrW(const VirtAddr vaddr) const {
+    template <MemoryType type>
+    ALWAYS_INLINE PhysAddr getPhysAddr(const VirtAddr vaddr) const {
+        if constexpr (type == memory::MemoryType::IMem) {
+            return getPhysAddr<MemoryRequestBits::R | MemoryRequestBits::X>(vaddr);
+        } else if constexpr (type == memory::MemoryType::RMem) {
+            return getPhysAddr<MemoryRequestBits::R>(vaddr);
+        }
+        ASSERT(type == memory::MemoryType::WMem);
         return getPhysAddr<MemoryRequestBits::W>(vaddr);
     }
 

@@ -2,8 +2,8 @@
 
 #include <chrono>
 
-#include "ElfLoader.h"
-#include "Hart.h"
+#include "simulator/ElfLoader.h"
+#include "simulator/Hart.h"
 
 /*
  * For host instruction counting
@@ -52,12 +52,12 @@ bool endHostInstructionCount(int* fd, size_t* instructionCount) {
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
-        fprintf(stdout, "Usage: %s <elf_filename>\n", argv[0]);
+        std::cout << "Usage: " << argv[0] << "<elf_filename>\n";
         return -1;
     }
 
     RISCV::Hart CPU;
-    RISCV::ElfLoader* elfLoader = RISCV::ElfLoader::getInstance();
+    RISCV::ElfLoader* elfLoader = RISCV::ElfLoader::create();
 
     const std::string redColor("\033[0;31m");
     const std::string greenColor("\033[0;32m");
@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
     size_t hostInstructions = 0;
     auto executeStart = std::chrono::high_resolution_clock::now();
     while (CPU.getPC() != 0) {
-        const auto& bb = CPU.getBasicBlock();
+        auto& bb = CPU.getBasicBlock();
         CPU.executeBasicBlock(bb);
         instrCount += bb.getSize();
     }
@@ -113,6 +113,8 @@ int main(int argc, char* argv[]) {
         std::cerr << yellowColor << "Warning: unable to count host instructions" << defaultColor
                   << std::endl;
     }
+
+    RISCV::ElfLoader::destroy();
 
     return 0;
 }

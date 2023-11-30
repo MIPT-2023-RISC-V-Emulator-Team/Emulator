@@ -1,10 +1,10 @@
-#include "Memory.h"
+#include "simulator/memory/Memory.h"
 
 #include <algorithm>
 #include <cstring>
 #include <string>
 
-#include "constants.h"
+#include "simulator/constants.h"
 
 namespace RISCV::memory {
 
@@ -42,10 +42,8 @@ bool PhysicalMemory::write(const PhysAddr paddr, const size_t size, const void* 
     return true;
 }
 
-PhysicalMemory::PhysicalMemory() {
-    memory_ = new uint8_t[PHYS_MEMORY_BYTESIZE];
-    emptyPagesFlags_.resize(PHYS_PAGE_COUNT);
-    std::fill(emptyPagesFlags_.begin(), emptyPagesFlags_.end(), 1);
+PhysicalMemory::PhysicalMemory() : emptyPagesFlags_(PHYS_PAGE_COUNT, 1) {
+    memory_ = new uint8_t[PHYS_MEMORY_BYTESIZE]{};
 }
 
 PhysicalMemory::~PhysicalMemory() {

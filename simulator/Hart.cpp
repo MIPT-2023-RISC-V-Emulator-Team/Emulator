@@ -1,20 +1,21 @@
-#include "Hart.h"
+#include "simulator/Hart.h"
 
 #include <iostream>
 
-#include "macros.h"
+#include "compiler/Compiler.h"
+#include "utils/macros.h"
 
 namespace RISCV {
 
 using namespace memory;
 
-const BasicBlock& Hart::getBasicBlock() {
+BasicBlock& Hart::getBasicBlock() {
     auto bb = bbCache_.find(pc_);
     if (bb != std::nullopt) {
         return *bb;
     }
     auto newBb = fetchBasicBlock();
-    const auto& bbRef = bbCache_.insert(pc_, std::move(newBb));
+    auto bbRef = cacheBasicBlock(pc_, std::move(newBb));
     return bbRef;
 }
 
@@ -26,20 +27,7 @@ BasicBlock Hart::fetchBasicBlock() {
     constexpr const size_t maxBasicBlockBytesize = INSTRUCTION_BYTESIZE * BasicBlock::MAX_SIZE;
 
     PhysicalMemory& pmem = getPhysicalMemory();
-    PhysAddr paddr;
-
-    // Try TLB
-    const uint64_t vpn = getPartialBits<12, 63>(pc_);
-    auto tlbEntry = tlb_.findI(vpn);
-    if (tlbEntry != std::nullopt) {
-        // TLB hit
-        paddr = (*tlbEntry) * PAGE_BYTESIZE;
-        paddr += getPageOffset(pc_);
-    } else {
-        // TLB miss, translate address in usual way
-        paddr = mmu_.getPhysAddrI(pc_);
-        tlb_.insertI(vpn, getPageNumber(paddr));
-    }
+    PhysAddr paddr = getPhysAddr<memory::MemoryType::IMem>(pc_);
 
     const uint32_t pageOffset = getPageOffset(paddr);
     size_t readBytesize = PAGE_BYTESIZE - pageOffset;
@@ -63,18 +51,23 @@ BasicBlock Hart::fetchBasicBlock() {
 
     bbBody.emplace_back(DecodedInstruction{.type = BASIC_BLOCK_END});
 
-    return BasicBlock(std::move(bbBody));
+    return BasicBlock(std::move(bbBody), pc_);
 }
 
-void Hart::executeBasicBlock(const BasicBlock& bb) {
-    dispatcher_.dispatchExecute(bb.getEntryPoint());
+void Hart::executeBasicBlock(BasicBlock& bb) {
+    auto is_not_compiled = compiler_.decrementHotnessCounter(bb);
+    if (is_not_compiled) {
+        dispatcher_.dispatchExecute(bb.getBodyEntry());
+        return;
+    }
+    bb.executeCompiled(this);
 }
 
 DecodedInstruction Hart::decode(const EncodedInstruction encInstr) const {
     return decoder_.decodeInstruction(encInstr);
 }
 
-Hart::Hart() : dispatcher_(this) {
+Hart::Hart() : dispatcher_(this), compiler_(this) {
     PhysicalMemory& pmem = getPhysicalMemory();
 
     /*
@@ -107,6 +100,12 @@ Hart::Hart() : dispatcher_(this) {
         pmem.allocatePage(stackPAddr);
         stackVAddr -= PAGE_BYTESIZE;
     }
+
+    compiler_.InitializeWorker();
+}
+
+Hart::~Hart() {
+    compiler_.FinalizeWorker();
 }
 
 }  // namespace RISCV

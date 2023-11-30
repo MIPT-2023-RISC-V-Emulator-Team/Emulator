@@ -1,7 +1,7 @@
 #ifndef DECODER_H
 #define DECODER_H
 
-#include "Common.h"
+#include "simulator/Common.h"
 
 namespace RISCV {
 
