@@ -7,8 +7,7 @@
 
 namespace RISCV::memory {
 
-class PTE final {
-public:
+struct PTE final {
     enum Attribute : uint64_t {
         V = 1 << 0,
         R = 1 << 1,
@@ -24,27 +23,26 @@ public:
 
     template <typename T>
     inline bool getAttribute(const T attr) const {
-        return value_ & attr;
+        return value & attr;
     }
 
     inline void setAttribute(const Attribute attr) {
-        value_ = value_ | attr;
+        value = value | attr;
     }
 
     inline void resetAttribute(const Attribute attr) {
-        value_ = value_ & ~attr;
+        value = value & ~attr;
     }
 
     inline uint64_t getPPN() const {
-        return getPartialBitsShifted<10, 53>(value_);
+        return getPartialBitsShifted<10, 53>(value);
     }
 
     inline void setPPN(const uint64_t ppn) {
-        value_ = (value_ & ~ppnMask) | makePartialBits<10, 53>(ppn);
+        value = (value & ~ppnMask) | makePartialBits<10, 53>(ppn);
     }
 
-private:
-    uint64_t value_;
+    uint64_t value;
 };
 
 using MemoryRequest = uint8_t;
@@ -147,8 +145,51 @@ private:
     TranslationMode currTransMode_;
     uint64_t rootTransTablePAddr_;
 
-    bool isVirtAddrCanonical(const VirtAddr vaddr) const;
     void handleException(const Exception exception) const;
+
+    template<TranslationMode transMode>
+    ALWAYS_INLINE bool isVirtAddrCanonical(const VirtAddr vaddr) const {
+        if constexpr (transMode == TranslationMode::TRANSLATION_MODE_BARE) {
+            // Always canonical for bare translation
+            return true;
+        }
+
+        if constexpr (transMode == TranslationMode::TRANSLATION_MODE_SV64) {
+            // Always canonical for SV64
+            return true;
+        }
+
+        if constexpr (transMode == TranslationMode::TRANSLATION_MODE_SV57) {
+            // Bits [63: 56]
+            static constexpr const uint64_t ADDRESS_UPPER_BITS_MASK_SV57 = 0xFF00000000000000;
+            const uint64_t anded = vaddr & ADDRESS_UPPER_BITS_MASK_SV57;
+            if (anded == 0 || anded == ADDRESS_UPPER_BITS_MASK_SV57) {
+                return true;
+            }
+            return false;
+        }
+
+        if constexpr (transMode == TranslationMode::TRANSLATION_MODE_SV48) {
+            // Bits [63: 47]
+            static constexpr const uint64_t ADDRESS_UPPER_BITS_MASK_SV48 = 0xFFFF800000000000;
+            const uint64_t anded = vaddr & ADDRESS_UPPER_BITS_MASK_SV48;
+            if (anded == 0 || anded == ADDRESS_UPPER_BITS_MASK_SV48) {
+                return true;
+            }
+            return false;
+        }
+
+        if constexpr (transMode == TranslationMode::TRANSLATION_MODE_SV39) {
+            // Bits [63: 38]
+            static constexpr const uint64_t ADDRESS_UPPER_BITS_MASK_SV39 = 0xFFFFFFC000000000;
+            const uint64_t anded = vaddr & ADDRESS_UPPER_BITS_MASK_SV39;
+            if (anded == 0 || anded == ADDRESS_UPPER_BITS_MASK_SV39) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     template <MemoryRequest request>
     inline void checkPermissions(const PTE pte) const {
@@ -171,145 +212,95 @@ private:
         }
     }
 
+
+    template<MemoryRequest request, uint32_t maxDepth, uint32_t currDepth = 1>
+    PhysAddr pageTableWalk(const uint64_t a, const VirtAddr vaddr) const {
+        constexpr uint8_t low  = 12 + (maxDepth - currDepth) * 9;
+        constexpr uint8_t high = low + 8;
+
+        uint32_t vpn = getPartialBitsShifted<low, high>(vaddr);
+
+        PhysicalMemory& pmem = getPhysicalMemory();
+
+        PTE pte;
+        pmem.read(a + vpn * PTE_SIZE, sizeof(pte.value), &pte.value);
+
+        if (!pte.getAttribute(PTE::Attribute::V)) {
+            handleException(Exception::NOT_VALID);
+        }
+        if (!pte.getAttribute(PTE::Attribute::R) && pte.getAttribute(PTE::Attribute::W)) {
+            handleException(Exception::WRITE_NO_READ);
+        }
+
+        if (!pte.getAttribute(PTE::Attribute::R | PTE::Attribute::X)) {
+            if constexpr (currDepth == maxDepth) {
+                // No leaf PTE page fault
+                handleException(Exception::NO_LEAF_PTE);
+            }
+            else {
+                // Continue page walk
+                return pageTableWalk<request, maxDepth, currDepth + 1>(pte.getPPN() * PAGE_BYTESIZE, vaddr);
+            }
+        }
+        else {
+            // Found leaf pte
+            PhysAddr paddr;
+
+            if constexpr (currDepth == maxDepth) {
+                // Check permissions
+                checkPermissions<request>(pte);
+
+                paddr = pte.getPPN() * PAGE_BYTESIZE;
+                paddr += getPageOffset(vaddr);
+                return paddr;
+            }
+
+            // Superpage
+            constexpr uint64_t mask = (1 << (maxDepth - currDepth)) - 1;
+            if ((pte.getPPN() & mask) != 0) {
+                handleException(Exception::MISALIGNED_SUPERPAGE);
+            }
+
+            // Check permissions
+            checkPermissions<request>(pte);
+
+            paddr = ((pte.getPPN() & ~mask) | (vpn & mask)) * PAGE_BYTESIZE;
+            paddr += getPageOffset(vaddr);
+            return paddr;
+        }
+        return 0;
+    }
+
     template <MemoryRequest request>
     PhysAddr getPhysAddr(const VirtAddr vaddr) const {
-        PhysAddr paddr;
-
         switch (currTransMode_) {
             case TranslationMode::TRANSLATION_MODE_BARE: {
-                paddr = vaddr;
-                break;
-            }
-            case TranslationMode::TRANSLATION_MODE_SV39: {
-                // Unsupported yet
-                handleException(Exception::UNSUPPORTED);
-                break;
-            }
-            case TranslationMode::TRANSLATION_MODE_SV48: {
-                if (!isVirtAddrCanonical(vaddr)) {
-                    handleException(Exception::NONCANONICAL_ADDRESS);
-                }
-
-                PhysicalMemory& pmem = getPhysicalMemory();
-
-                uint64_t a = rootTransTablePAddr_;
-                uint32_t vpn3 = getPartialBitsShifted<39, 47>(vaddr);
-                PTE pte3;
-                pmem.read(a + vpn3 * PTE_SIZE, sizeof(pte3), &pte3);
-
-                if (!pte3.getAttribute(PTE::Attribute::V)) {
-                    handleException(Exception::NOT_VALID);
-                }
-                if (!pte3.getAttribute(PTE::Attribute::R) && pte3.getAttribute(PTE::Attribute::W)) {
-                    handleException(Exception::WRITE_NO_READ);
-                }
-
-                if (!pte3.getAttribute(PTE::Attribute::R | PTE::Attribute::X)) {
-                    a = pte3.getPPN() * PAGE_BYTESIZE;
-                    uint32_t vpn2 = getPartialBitsShifted<30, 38>(vaddr);
-                    PTE pte2;
-                    pmem.read(a + vpn2 * PTE_SIZE, sizeof(pte2), &pte2);
-
-                    if (!pte2.getAttribute(PTE::Attribute::V)) {
-                        handleException(Exception::NOT_VALID);
-                    }
-                    if (!pte2.getAttribute(PTE::Attribute::R) &&
-                        pte2.getAttribute(PTE::Attribute::W)) {
-                        handleException(Exception::WRITE_NO_READ);
-                    }
-
-                    if (!pte2.getAttribute(PTE::Attribute::R | PTE::Attribute::X)) {
-                        a = pte2.getPPN() * PAGE_BYTESIZE;
-                        uint32_t vpn1 = getPartialBitsShifted<21, 29>(vaddr);
-                        PTE pte1;
-                        pmem.read(a + vpn1 * PTE_SIZE, sizeof(pte1), &pte1);
-
-                        if (!pte1.getAttribute(PTE::Attribute::V)) {
-                            handleException(Exception::NOT_VALID);
-                        }
-                        if (!pte1.getAttribute(PTE::Attribute::R) &&
-                            pte1.getAttribute(PTE::Attribute::W)) {
-                            handleException(Exception::WRITE_NO_READ);
-                        }
-
-                        if (!pte1.getAttribute(PTE::Attribute::R | PTE::Attribute::X)) {
-                            a = pte1.getPPN() * PAGE_BYTESIZE;
-                            uint32_t vpn0 = getPartialBitsShifted<12, 20>(vaddr);
-                            PTE pte0;
-                            pmem.read(a + vpn0 * PTE_SIZE, sizeof(pte0), &pte0);
-
-                            if (!pte0.getAttribute(PTE::Attribute::V)) {
-                                handleException(Exception::NOT_VALID);
-                            }
-                            if (!pte0.getAttribute(PTE::Attribute::R) &&
-                                pte0.getAttribute(PTE::Attribute::W)) {
-                                handleException(Exception::WRITE_NO_READ);
-                            }
-
-                            if (!pte0.getAttribute(PTE::Attribute::R | PTE::Attribute::X)) {
-                                // No leaf PTE page fault
-                                handleException(Exception::NO_LEAF_PTE);
-                            } else {
-                                // Check permissions
-                                checkPermissions<request>(pte0);
-
-                                paddr = pte0.getPPN() * PAGE_BYTESIZE;
-                                paddr += getPageOffset(vaddr);
-                            }
-                        } else {
-                            // Superpage
-                            uint64_t mask = 0b1;
-                            if ((pte1.getPPN() & mask) != 0) {
-                                handleException(Exception::MISALIGNED_SUPERPAGE);
-                            }
-
-                            // Check permissions
-                            checkPermissions<request>(pte1);
-
-                            paddr = ((pte1.getPPN() & ~mask) | (vpn1 & mask)) * PAGE_BYTESIZE;
-                            paddr += getPageOffset(vaddr);
-                        }
-                    } else {
-                        // Superpage
-                        uint64_t mask = 0b11;
-                        if ((pte2.getPPN() & mask) != 0) {
-                            handleException(Exception::MISALIGNED_SUPERPAGE);
-                        }
-
-                        // Check permissions
-                        checkPermissions<request>(pte2);
-
-                        paddr = ((pte2.getPPN() & ~mask) | (vpn2 & mask)) * PAGE_BYTESIZE;
-                        paddr += getPageOffset(vaddr);
-                    }
-                } else {
-                    // Superpage
-                    uint64_t mask = 0b111;
-                    if ((pte3.getPPN() & mask) != 0) {
-                        handleException(Exception::MISALIGNED_SUPERPAGE);
-                    }
-
-                    // Check permissions
-                    checkPermissions<request>(pte3);
-
-                    paddr = ((pte3.getPPN() & ~mask) | (vpn3 & mask)) * PAGE_BYTESIZE;
-                    paddr += getPageOffset(vaddr);
-                }
-                break;
-            }
-            case TranslationMode::TRANSLATION_MODE_SV57: {
-                // Unsupported yet
-                handleException(Exception::UNSUPPORTED);
-                break;
+                return vaddr;
             }
             case TranslationMode::TRANSLATION_MODE_SV64: {
-                // Unsupported yet
-                handleException(Exception::UNSUPPORTED);
-                break;
+                return pageTableWalk<request, 6>(rootTransTablePAddr_, vaddr);
+            }
+            case TranslationMode::TRANSLATION_MODE_SV57: {
+                if (!isVirtAddrCanonical<TranslationMode::TRANSLATION_MODE_SV57>(vaddr)) {
+                    handleException(Exception::NONCANONICAL_ADDRESS);
+                }
+                return pageTableWalk<request, 5>(rootTransTablePAddr_, vaddr);
+            }
+            case TranslationMode::TRANSLATION_MODE_SV48: {
+                if (!isVirtAddrCanonical<TranslationMode::TRANSLATION_MODE_SV48>(vaddr)) {
+                    handleException(Exception::NONCANONICAL_ADDRESS);
+                }
+                return pageTableWalk<request, 4>(rootTransTablePAddr_, vaddr);
+            }
+            case TranslationMode::TRANSLATION_MODE_SV39: {
+                if (!isVirtAddrCanonical<TranslationMode::TRANSLATION_MODE_SV39>(vaddr)) {
+                    handleException(Exception::NONCANONICAL_ADDRESS);
+                }
+                return pageTableWalk<request, 3>(rootTransTablePAddr_, vaddr);
             }
         }
 
-        return paddr;
+        return 0;
     }
 };
 

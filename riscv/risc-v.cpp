@@ -96,8 +96,10 @@ int main(int argc, char* argv[]) {
 
     std::cout << "==============================================================================="
               << std::endl;
-    std::cout << greenColor << "Interpreting ELF file " << argv[1] << " has finished\n"
+    std::cout << greenColor << "Interpreting ELF file " << argv[1] << " has finished"
               << defaultColor << std::endl;
+
+    std::cout << "Return value of the program: " << CPU.getReg(RISCV::RegisterType::A0) << std::endl << std::endl;
 
     std::cout << "Simulated instruction count: " << instrCount << std::endl;
     std::cout << "Average MIPS:                " << static_cast<float>(instrCount) / microseconds

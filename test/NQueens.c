@@ -10,9 +10,11 @@ void printBoard(int board[N][N]) {
             if (board[i][j] == 1) {
                 cell[0] = '@';
             }
-            printString(cell, 3);
+            putchar(cell[0]);
+            putchar(cell[1]);
+            putchar(cell[2]);
         }
-        printString("\n", sizeof("\n"));
+        putchar('\n');
     }
 }
 
@@ -57,11 +59,11 @@ int main() {
     int board[N][N]; 
 
     if (solveNQUtil(board, 0) == 1) {
-        printString("Solution exists!\n", sizeof("Solution exists!\n"));
+        puts("Solution exists!");
         printBoard(board);
     }
     else {
-        printString("Solution does not exist!\n", sizeof("Solution does not exist!\n"));
+        puts("Solution does not exist!");
     }
     return 0;
 }

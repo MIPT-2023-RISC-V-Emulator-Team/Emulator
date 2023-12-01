@@ -17,6 +17,7 @@ struct DecodedInstruction {
             case InstructionType::BGE:
             case InstructionType::BLTU:
             case InstructionType::BGEU:
+            case InstructionType::ECALL:
                 return true;
             default:
                 return false;

@@ -11,147 +11,151 @@ void MMU::setSATPReg(const RegValue satp) {
     rootTransTablePAddr_ = getPartialBitsShifted<0, 43>(satp) * PAGE_BYTESIZE;
 }
 
-bool MMU::isVirtAddrCanonical(const VirtAddr vaddr) const {
+PhysAddr MMU::getPhysAddrWithAllocation(const VirtAddr vaddr, const MemoryRequest request) const {
+    PhysAddr paddr;
+    PhysicalMemory& pmem = getPhysicalMemory();
+    PTE pte[6];
+
+    // Since this function is called only at the beginning of the program several times
+    // We can use switch twice without thinking about performance aspect
     switch (currTransMode_) {
         case TranslationMode::TRANSLATION_MODE_BARE: {
-            // Always canonical for bare translation
-            return true;
+            return vaddr;
         }
-        case TranslationMode::TRANSLATION_MODE_SV39: {
-            // Unsupported yet
-            handleException(Exception::UNSUPPORTED);
+        case TranslationMode::TRANSLATION_MODE_SV64: {
+            break;
+        }
+        case TranslationMode::TRANSLATION_MODE_SV57: {
+            if (!isVirtAddrCanonical<TranslationMode::TRANSLATION_MODE_SV57>(vaddr)) {
+                handleException(Exception::NONCANONICAL_ADDRESS);
+            }
+            pte[5].setPPN(getPageNumber(rootTransTablePAddr_));
             break;
         }
         case TranslationMode::TRANSLATION_MODE_SV48: {
-            // Bits [63: 47]
-            static constexpr const uint64_t ADDRESS_UPPER_BITS_MASK_SV48 = 0xFFFF800000000000;
-            const uint64_t anded = vaddr & ADDRESS_UPPER_BITS_MASK_SV48;
-            if (anded == 0 || anded == ADDRESS_UPPER_BITS_MASK_SV48) {
-                return true;
+            if (!isVirtAddrCanonical<TranslationMode::TRANSLATION_MODE_SV48>(vaddr)) {
+                handleException(Exception::NONCANONICAL_ADDRESS);
             }
-            return false;
-        }
-        case TranslationMode::TRANSLATION_MODE_SV57: {
-            // Unsupported yet
-            handleException(Exception::UNSUPPORTED);
+            pte[4].setPPN(getPageNumber(rootTransTablePAddr_));
             break;
         }
-        case TranslationMode::TRANSLATION_MODE_SV64: {
-            // Unsupported yet
-            handleException(Exception::UNSUPPORTED);
+        case TranslationMode::TRANSLATION_MODE_SV39: {
+            if (!isVirtAddrCanonical<TranslationMode::TRANSLATION_MODE_SV39>(vaddr)) {
+                handleException(Exception::NONCANONICAL_ADDRESS);
+            }
+            pte[3].setPPN(getPageNumber(rootTransTablePAddr_));
             break;
         }
     }
 
-    return false;
-}
-
-PhysAddr MMU::getPhysAddrWithAllocation(const VirtAddr vaddr, const MemoryRequest request) const {
-    PhysAddr paddr;
-
+    // Allow fallthrough to process every page walk step by step
     switch (currTransMode_) {
-        case TranslationMode::TRANSLATION_MODE_BARE: {
-            paddr = vaddr;
-            break;
-        }
-        case TranslationMode::TRANSLATION_MODE_SV39: {
-            // Unsupported yet
-            handleException(Exception::UNSUPPORTED);
-            break;
-        }
-        case TranslationMode::TRANSLATION_MODE_SV48: {
-            if (!isVirtAddrCanonical(vaddr)) {
-                handleException(Exception::NONCANONICAL_ADDRESS);
-            }
-
-            PhysicalMemory& pmem = getPhysicalMemory();
-
+        case TranslationMode::TRANSLATION_MODE_SV64: {
             uint64_t a = rootTransTablePAddr_;
-            uint32_t vpn3 = getPartialBitsShifted<39, 47>(vaddr);
-            PTE pte3;
-            PhysAddr paddr3 = a + vpn3 * PTE_SIZE;
-            pmem.read(paddr3, sizeof(pte3), &pte3);
+            uint32_t vpn5 = getPartialBitsShifted<57, 63>(vaddr);
+            PhysAddr paddr5 = a + vpn5 * PTE_SIZE;
+            pmem.read(paddr5, sizeof(pte[5].value), &pte[5].value);
 
-            if (!pte3.getAttribute(PTE::Attribute::V)) {
+            if (!pte[5].getAttribute(PTE::Attribute::V)) {
                 uint64_t pageNum = pmem.getEmptyPageNumber();
                 pmem.allocatePage(pageNum * PAGE_BYTESIZE);
 
-                pte3.setPPN(pageNum);
-                pte3.setAttribute(PTE::Attribute::V);
+                pte[5].setPPN(pageNum);
+                pte[5].setAttribute(PTE::Attribute::V);
 
-                pmem.write(paddr3, sizeof(pte3), &pte3);
+                pmem.write(paddr5, sizeof(pte[5].value), &pte[5].value);
             }
-
-            a = pte3.getPPN() * PAGE_BYTESIZE;
-            uint32_t vpn2 = getPartialBitsShifted<30, 38>(vaddr);
-            PTE pte2;
-            PhysAddr paddr2 = a + vpn2 * PTE_SIZE;
-            pmem.read(paddr2, sizeof(pte2), &pte2);
-
-            if (!pte2.getAttribute(PTE::Attribute::V)) {
-                uint64_t pageNum = pmem.getEmptyPageNumber();
-                pmem.allocatePage(pageNum * PAGE_BYTESIZE);
-
-                pte2.setPPN(pageNum);
-                pte2.setAttribute(PTE::Attribute::V);
-
-                pmem.write(paddr2, sizeof(pte2), &pte2);
-            }
-
-            a = pte2.getPPN() * PAGE_BYTESIZE;
-            uint32_t vpn1 = getPartialBitsShifted<21, 29>(vaddr);
-            PTE pte1;
-            PhysAddr paddr1 = a + vpn1 * PTE_SIZE;
-            pmem.read(paddr1, sizeof(pte1), &pte1);
-
-            if (!pte1.getAttribute(PTE::Attribute::V)) {
-                uint64_t pageNum = pmem.getEmptyPageNumber();
-                pmem.allocatePage(pageNum * PAGE_BYTESIZE);
-
-                pte1.setPPN(pageNum);
-                pte1.setAttribute(PTE::Attribute::V);
-
-                pmem.write(paddr1, sizeof(pte1), &pte1);
-            }
-
-            a = pte1.getPPN() * PAGE_BYTESIZE;
-            uint32_t vpn0 = getPartialBitsShifted<12, 20>(vaddr);
-            PTE pte0;
-            PhysAddr paddr0 = a + vpn0 * PTE_SIZE;
-            pmem.read(paddr0, sizeof(pte0), &pte0);
-
-            if (!pte0.getAttribute(PTE::Attribute::V)) {
-                uint64_t pageNum = pmem.getEmptyPageNumber();
-                pmem.allocatePage(pageNum * PAGE_BYTESIZE);
-
-                pte0.setPPN(pageNum);
-                pte0.setAttribute(PTE::Attribute::V);
-
-                if (request & MemoryRequestBits::R) {
-                    pte0.setAttribute(PTE::R);
-                }
-                if (request & MemoryRequestBits::W) {
-                    pte0.setAttribute(PTE::W);
-                }
-                if (request & MemoryRequestBits::X) {
-                    pte0.setAttribute(PTE::X);
-                }
-
-                pmem.write(paddr0, sizeof(pte0), &pte0);
-            }
-
-            paddr = pte0.getPPN() * PAGE_BYTESIZE;
-            paddr += getPageOffset(vaddr);
-            break;
         }
         case TranslationMode::TRANSLATION_MODE_SV57: {
-            // Unsupported yet
-            handleException(Exception::UNSUPPORTED);
-            break;
+            uint64_t a = pte[5].getPPN() * PAGE_BYTESIZE;
+            uint32_t vpn4 = getPartialBitsShifted<48, 56>(vaddr);
+            PhysAddr paddr4 = a + vpn4 * PTE_SIZE;
+            pmem.read(paddr4, sizeof(pte[4].value), &pte[4].value);
+
+            if (!pte[4].getAttribute(PTE::Attribute::V)) {
+                uint64_t pageNum = pmem.getEmptyPageNumber();
+                pmem.allocatePage(pageNum * PAGE_BYTESIZE);
+
+                pte[4].setPPN(pageNum);
+                pte[4].setAttribute(PTE::Attribute::V);
+
+                pmem.write(paddr4, sizeof(pte[4].value), &pte[4].value);
+            }
         }
-        case TranslationMode::TRANSLATION_MODE_SV64: {
-            // Unsupported yet
-            handleException(Exception::UNSUPPORTED);
+        case TranslationMode::TRANSLATION_MODE_SV48: {
+            uint64_t a = pte[4].getPPN() * PAGE_BYTESIZE;
+            uint32_t vpn3 = getPartialBitsShifted<39, 47>(vaddr);
+            PhysAddr paddr3 = a + vpn3 * PTE_SIZE;
+            pmem.read(paddr3, sizeof(pte[3].value), &pte[3].value);
+
+            if (!pte[3].getAttribute(PTE::Attribute::V)) {
+                uint64_t pageNum = pmem.getEmptyPageNumber();
+                pmem.allocatePage(pageNum * PAGE_BYTESIZE);
+
+                pte[3].setPPN(pageNum);
+                pte[3].setAttribute(PTE::Attribute::V);
+
+                pmem.write(paddr3, sizeof(pte[3].value), &pte[3].value);
+            }
+        }
+        case TranslationMode::TRANSLATION_MODE_SV39: {
+            uint64_t a = pte[3].getPPN() * PAGE_BYTESIZE;
+            uint32_t vpn2 = getPartialBitsShifted<30, 38>(vaddr);
+            PhysAddr paddr2 = a + vpn2 * PTE_SIZE;
+            pmem.read(paddr2, sizeof(pte[2].value), &pte[2].value);
+
+            if (!pte[2].getAttribute(PTE::Attribute::V)) {
+                uint64_t pageNum = pmem.getEmptyPageNumber();
+                pmem.allocatePage(pageNum * PAGE_BYTESIZE);
+
+                pte[2].setPPN(pageNum);
+                pte[2].setAttribute(PTE::Attribute::V);
+
+                pmem.write(paddr2, sizeof(pte[2].value), &pte[2].value);
+            }
+
+            a = pte[2].getPPN() * PAGE_BYTESIZE;
+            uint32_t vpn1 = getPartialBitsShifted<21, 29>(vaddr);
+            PhysAddr paddr1 = a + vpn1 * PTE_SIZE;
+            pmem.read(paddr1, sizeof(pte[1].value), &pte[1].value);
+
+            if (!pte[1].getAttribute(PTE::Attribute::V)) {
+                uint64_t pageNum = pmem.getEmptyPageNumber();
+                pmem.allocatePage(pageNum * PAGE_BYTESIZE);
+
+                pte[1].setPPN(pageNum);
+                pte[1].setAttribute(PTE::Attribute::V);
+
+                pmem.write(paddr1, sizeof(pte[1].value), &pte[1].value);
+            }
+
+            a = pte[1].getPPN() * PAGE_BYTESIZE;
+            uint32_t vpn0 = getPartialBitsShifted<12, 20>(vaddr);
+            PhysAddr paddr0 = a + vpn0 * PTE_SIZE;
+            pmem.read(paddr0, sizeof(pte[0].value), &pte[0].value);
+
+            if (!pte[0].getAttribute(PTE::Attribute::V)) {
+                uint64_t pageNum = pmem.getEmptyPageNumber();
+                pmem.allocatePage(pageNum * PAGE_BYTESIZE);
+
+                pte[0].setPPN(pageNum);
+                pte[0].setAttribute(PTE::Attribute::V);
+
+                if (request & MemoryRequestBits::R) {
+                    pte[0].setAttribute(PTE::R);
+                }
+                if (request & MemoryRequestBits::W) {
+                    pte[0].setAttribute(PTE::W);
+                }
+                if (request & MemoryRequestBits::X) {
+                    pte[0].setAttribute(PTE::X);
+                }
+
+                pmem.write(paddr0, sizeof(pte[0].value), &pte[0].value);
+            }
+
+            paddr = pte[0].getPPN() * PAGE_BYTESIZE;
+            paddr += getPageOffset(vaddr);
             break;
         }
     }
