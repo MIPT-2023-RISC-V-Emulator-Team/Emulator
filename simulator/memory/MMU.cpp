@@ -1,8 +1,16 @@
-#include "simulator/memory/MMU.h"
+#include <simulator/memory/MMU.h>
 
 #include <algorithm>
 
 namespace RISCV::memory {
+
+MMU::MMU() {
+    setExceptionHandler(defaultMMUExceptionHandler);
+}
+
+void MMU::setExceptionHandler(MMUExceptionHandler handler) {
+    exceptionHandler_ = handler;
+}
 
 // For performance aspect we store translation mode and root table physical
 // address rather than SATP register itself
@@ -27,21 +35,27 @@ PhysAddr MMU::getPhysAddrWithAllocation(const VirtAddr vaddr, const MemoryReques
         }
         case TranslationMode::TRANSLATION_MODE_SV57: {
             if (!isVirtAddrCanonical<TranslationMode::TRANSLATION_MODE_SV57>(vaddr)) {
-                handleException(Exception::NONCANONICAL_ADDRESS);
+                if (!exceptionHandler_(Exception::NONCANONICAL_ADDRESS)) {
+                    return 0;
+                }
             }
             pte[5].setPPN(getPageNumber(rootTransTablePAddr_));
             break;
         }
         case TranslationMode::TRANSLATION_MODE_SV48: {
             if (!isVirtAddrCanonical<TranslationMode::TRANSLATION_MODE_SV48>(vaddr)) {
-                handleException(Exception::NONCANONICAL_ADDRESS);
+                if (!exceptionHandler_(Exception::NONCANONICAL_ADDRESS)) {
+                    return 0;
+                }
             }
             pte[4].setPPN(getPageNumber(rootTransTablePAddr_));
             break;
         }
         case TranslationMode::TRANSLATION_MODE_SV39: {
             if (!isVirtAddrCanonical<TranslationMode::TRANSLATION_MODE_SV39>(vaddr)) {
-                handleException(Exception::NONCANONICAL_ADDRESS);
+                if (!exceptionHandler_(Exception::NONCANONICAL_ADDRESS)) {
+                    return 0;
+                }
             }
             pte[3].setPPN(getPageNumber(rootTransTablePAddr_));
             break;
@@ -58,7 +72,7 @@ PhysAddr MMU::getPhysAddrWithAllocation(const VirtAddr vaddr, const MemoryReques
 
             if (!pte[5].getAttribute(PTE::Attribute::V)) {
                 uint64_t pageNum = pmem.getEmptyPageNumber();
-                pmem.allocatePage(pageNum * PAGE_BYTESIZE);
+                pmem.allocatePage(pageNum);
 
                 pte[5].setPPN(pageNum);
                 pte[5].setAttribute(PTE::Attribute::V);
@@ -74,7 +88,7 @@ PhysAddr MMU::getPhysAddrWithAllocation(const VirtAddr vaddr, const MemoryReques
 
             if (!pte[4].getAttribute(PTE::Attribute::V)) {
                 uint64_t pageNum = pmem.getEmptyPageNumber();
-                pmem.allocatePage(pageNum * PAGE_BYTESIZE);
+                pmem.allocatePage(pageNum);
 
                 pte[4].setPPN(pageNum);
                 pte[4].setAttribute(PTE::Attribute::V);
@@ -90,7 +104,7 @@ PhysAddr MMU::getPhysAddrWithAllocation(const VirtAddr vaddr, const MemoryReques
 
             if (!pte[3].getAttribute(PTE::Attribute::V)) {
                 uint64_t pageNum = pmem.getEmptyPageNumber();
-                pmem.allocatePage(pageNum * PAGE_BYTESIZE);
+                pmem.allocatePage(pageNum);
 
                 pte[3].setPPN(pageNum);
                 pte[3].setAttribute(PTE::Attribute::V);
@@ -106,7 +120,7 @@ PhysAddr MMU::getPhysAddrWithAllocation(const VirtAddr vaddr, const MemoryReques
 
             if (!pte[2].getAttribute(PTE::Attribute::V)) {
                 uint64_t pageNum = pmem.getEmptyPageNumber();
-                pmem.allocatePage(pageNum * PAGE_BYTESIZE);
+                pmem.allocatePage(pageNum);
 
                 pte[2].setPPN(pageNum);
                 pte[2].setAttribute(PTE::Attribute::V);
@@ -121,7 +135,7 @@ PhysAddr MMU::getPhysAddrWithAllocation(const VirtAddr vaddr, const MemoryReques
 
             if (!pte[1].getAttribute(PTE::Attribute::V)) {
                 uint64_t pageNum = pmem.getEmptyPageNumber();
-                pmem.allocatePage(pageNum * PAGE_BYTESIZE);
+                pmem.allocatePage(pageNum);
 
                 pte[1].setPPN(pageNum);
                 pte[1].setAttribute(PTE::Attribute::V);
@@ -136,7 +150,7 @@ PhysAddr MMU::getPhysAddrWithAllocation(const VirtAddr vaddr, const MemoryReques
 
             if (!pte[0].getAttribute(PTE::Attribute::V)) {
                 uint64_t pageNum = pmem.getEmptyPageNumber();
-                pmem.allocatePage(pageNum * PAGE_BYTESIZE);
+                pmem.allocatePage(pageNum);
 
                 pte[0].setPPN(pageNum);
                 pte[0].setAttribute(PTE::Attribute::V);
@@ -163,46 +177,46 @@ PhysAddr MMU::getPhysAddrWithAllocation(const VirtAddr vaddr, const MemoryReques
     return paddr;
 }
 
-void MMU::handleException(const Exception exception) const {
+bool defaultMMUExceptionHandler(const MMU::Exception exception) {
     /*
      * Just print the error now, implement real handling in future
      */
 
     std::cerr << "MMU exception occured: ";
     switch (exception) {
-        case Exception::NOT_VALID: {
+        case MMU::Exception::PTE_NOT_VALID: {
             std::cerr << "invalid page table entry" << std::endl;
             break;
         }
-        case Exception::WRITE_NO_READ: {
+        case MMU::Exception::WRITE_NO_READ: {
             std::cerr << "writtable page not readable" << std::endl;
             break;
         }
-        case Exception::NO_READ_PERM: {
+        case MMU::Exception::NO_READ_PERM: {
             std::cerr << "no read permission" << std::endl;
             break;
         }
-        case Exception::NO_WRITE_PERM: {
+        case MMU::Exception::NO_WRITE_PERM: {
             std::cerr << "no write permission" << std::endl;
             break;
         }
-        case Exception::NO_EXECUTE_PERM: {
+        case MMU::Exception::NO_EXECUTE_PERM: {
             std::cerr << "no execute permission" << std::endl;
             break;
         }
-        case Exception::NO_LEAF_PTE: {
+        case MMU::Exception::NO_LEAF_PTE: {
             std::cerr << "no leaf pte found" << std::endl;
             break;
         }
-        case Exception::MISALIGNED_SUPERPAGE: {
+        case MMU::Exception::MISALIGNED_SUPERPAGE: {
             std::cerr << "misaligned superpage" << std::endl;
             break;
         }
-        case Exception::NONCANONICAL_ADDRESS: {
+        case MMU::Exception::NONCANONICAL_ADDRESS: {
             std::cerr << "noncanonical address" << std::endl;
             break;
         }
-        case Exception::UNSUPPORTED: {
+        case MMU::Exception::UNSUPPORTED: {
             std::cerr << "unsupported feature" << std::endl;
             break;
         }
@@ -212,6 +226,7 @@ void MMU::handleException(const Exception exception) const {
         }
     }
     std::exit(EXIT_FAILURE);
+    return false;
 }
 
 }  // namespace RISCV::memory

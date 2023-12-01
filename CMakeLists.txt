@@ -44,8 +44,10 @@ add_custom_target(format
     ${EMULATOR_FILES}
 )
 
+add_subdirectory(googletest)
 add_subdirectory(simulator)
 add_subdirectory(compiler)
+add_subdirectory(test/mmu)
 
 add_library(utils utils/Debug.cpp)
 

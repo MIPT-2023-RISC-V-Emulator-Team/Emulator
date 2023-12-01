@@ -85,7 +85,7 @@ Hart::Hart() : dispatcher_(this), compiler_(this) {
                                makePartialBits<44, 59>(satpAsid) | makePartialBits<0, 43>(satpPPN);
 
     mmu_.setSATPReg(csrRegs_[CSR_SATP_INDEX]);
-    pmem.allocatePage(satpPPN * PAGE_BYTESIZE);
+    pmem.allocatePage(satpPPN);
 
     /*
      *  Initialize stack
@@ -97,7 +97,7 @@ Hart::Hart() : dispatcher_(this), compiler_(this) {
     constexpr const size_t stackPages = STACK_BYTESIZE / PAGE_BYTESIZE;
     for (size_t i = 0; i < stackPages; ++i) {
         PhysAddr stackPAddr = mmu_.getPhysAddrWithAllocation(stackVAddr);
-        pmem.allocatePage(stackPAddr);
+        pmem.allocatePage(getPageNumber(stackPAddr));
         stackVAddr -= PAGE_BYTESIZE;
     }
 

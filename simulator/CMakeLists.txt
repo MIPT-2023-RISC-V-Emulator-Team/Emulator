@@ -14,15 +14,13 @@ set(DECODER_OUTPUT
     ${GEN_DIR}/Decoder.cpp
 )
 
-add_custom_command(
-    OUTPUT ${DECODER_OUTPUT}
+execute_process(
     COMMAND ruby ${CMAKE_CURRENT_SOURCE_DIR}/decoder.rb --isa=${ISA_FILE} --gen=${GEN_DIR}
     DEPENDS ${ISA_FILE} decoder.rb
     VERBATIM
 )
 
-add_custom_command(
-    OUTPUT ${GEN_DIR}/Dispatcher.cpp
+execute_process(
     COMMAND ruby ${CMAKE_CURRENT_SOURCE_DIR}/dispatcher.rb --isa=${ISA_FILE} --gen=${GEN_DIR}
     DEPENDS ${ISA_FILE} dispatcher.rb
     VERBATIM

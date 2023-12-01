@@ -1,9 +1,9 @@
 #ifndef MMU_H
 #define MMU_H
 
-#include "simulator/Cache.h"
-#include "simulator/Common.h"
-#include "simulator/memory/Memory.h"
+#include <simulator/Cache.h>
+#include <simulator/Common.h>
+#include <simulator/memory/Memory.h>
 
 namespace RISCV::memory {
 
@@ -42,7 +42,7 @@ struct PTE final {
         value = (value & ~ppnMask) | makePartialBits<10, 53>(ppn);
     }
 
-    uint64_t value;
+    uint64_t value = 0;
 };
 
 using MemoryRequest = uint8_t;
@@ -101,6 +101,7 @@ private:
     LRUCache<wTLB_CACHE_CAPACITY, uint64_t, uint64_t, false> wTLB_;
 };
 
+
 class MMU final {
 public:
     enum Exception : uint8_t {
@@ -108,7 +109,7 @@ public:
 
         NONCANONICAL_ADDRESS,
 
-        NOT_VALID,
+        PTE_NOT_VALID,
         WRITE_NO_READ,
 
         NO_READ_PERM,
@@ -120,6 +121,9 @@ public:
 
         UNSUPPORTED
     };
+
+    using MMUExceptionHandler = bool(*)(const Exception exception);
+
 
     void setSATPReg(const RegValue satp);
 
@@ -139,13 +143,17 @@ public:
                                                                      MemoryRequestBits::W |
                                                                      MemoryRequestBits::X) const;
 
+    void setExceptionHandler(MMUExceptionHandler handler);
+
+    MMU();
+
 private:
     // For performance aspect we store translation mode and root table physical
     // address rather than SATP register itself
     TranslationMode currTransMode_;
     uint64_t rootTransTablePAddr_;
 
-    void handleException(const Exception exception) const;
+    MMUExceptionHandler exceptionHandler_;
 
     template<TranslationMode transMode>
     ALWAYS_INLINE bool isVirtAddrCanonical(const VirtAddr vaddr) const {
@@ -192,24 +200,32 @@ private:
     }
 
     template <MemoryRequest request>
-    inline void checkPermissions(const PTE pte) const {
+    inline bool checkPermissions(const PTE pte) const {
         if constexpr (request & MemoryRequestBits::R) {
             if (!pte.getAttribute(PTE::Attribute::R)) {
-                handleException(Exception::NO_READ_PERM);
+                if (!exceptionHandler_(Exception::NO_READ_PERM)) {
+                    return false;
+                }
             }
         }
 
         if constexpr (request & MemoryRequestBits::W) {
             if (!pte.getAttribute(PTE::Attribute::W)) {
-                handleException(Exception::NO_WRITE_PERM);
+                if (!exceptionHandler_(Exception::NO_WRITE_PERM)) {
+                    return false;
+                }
             }
         }
 
         if constexpr (request & MemoryRequestBits::X) {
             if (!pte.getAttribute(PTE::Attribute::X)) {
-                handleException(Exception::NO_EXECUTE_PERM);
+                if (!exceptionHandler_(Exception::NO_EXECUTE_PERM)) {
+                    return false;
+                }
             }
         }
+
+        return true;
     }
 
 
@@ -226,16 +242,22 @@ private:
         pmem.read(a + vpn * PTE_SIZE, sizeof(pte.value), &pte.value);
 
         if (!pte.getAttribute(PTE::Attribute::V)) {
-            handleException(Exception::NOT_VALID);
+            if (!exceptionHandler_(Exception::PTE_NOT_VALID)) {
+                return 0;
+            }
         }
         if (!pte.getAttribute(PTE::Attribute::R) && pte.getAttribute(PTE::Attribute::W)) {
-            handleException(Exception::WRITE_NO_READ);
+            if (!exceptionHandler_(Exception::WRITE_NO_READ)) {
+                return 0;
+            }
         }
 
         if (!pte.getAttribute(PTE::Attribute::R | PTE::Attribute::X)) {
             if constexpr (currDepth == maxDepth) {
                 // No leaf PTE page fault
-                handleException(Exception::NO_LEAF_PTE);
+                if (!exceptionHandler_(Exception::NO_LEAF_PTE)) {
+                    return 0;
+                }
             }
             else {
                 // Continue page walk
@@ -248,7 +270,9 @@ private:
 
             if constexpr (currDepth == maxDepth) {
                 // Check permissions
-                checkPermissions<request>(pte);
+                if (!checkPermissions<request>(pte)) {
+                    return 0;
+                }
 
                 paddr = pte.getPPN() * PAGE_BYTESIZE;
                 paddr += getPageOffset(vaddr);
@@ -258,11 +282,15 @@ private:
             // Superpage
             constexpr uint64_t mask = (1 << (maxDepth - currDepth)) - 1;
             if ((pte.getPPN() & mask) != 0) {
-                handleException(Exception::MISALIGNED_SUPERPAGE);
+                if (!exceptionHandler_(Exception::MISALIGNED_SUPERPAGE)) {
+                    return 0;
+                }
             }
 
             // Check permissions
-            checkPermissions<request>(pte);
+            if (!checkPermissions<request>(pte)) {
+                return 0;
+            }
 
             paddr = ((pte.getPPN() & ~mask) | (vpn & mask)) * PAGE_BYTESIZE;
             paddr += getPageOffset(vaddr);
@@ -282,19 +310,25 @@ private:
             }
             case TranslationMode::TRANSLATION_MODE_SV57: {
                 if (!isVirtAddrCanonical<TranslationMode::TRANSLATION_MODE_SV57>(vaddr)) {
-                    handleException(Exception::NONCANONICAL_ADDRESS);
+                    if (!exceptionHandler_(Exception::NONCANONICAL_ADDRESS)) {
+                        return 0;
+                    }
                 }
                 return pageTableWalk<request, 5>(rootTransTablePAddr_, vaddr);
             }
             case TranslationMode::TRANSLATION_MODE_SV48: {
                 if (!isVirtAddrCanonical<TranslationMode::TRANSLATION_MODE_SV48>(vaddr)) {
-                    handleException(Exception::NONCANONICAL_ADDRESS);
+                    if (!exceptionHandler_(Exception::NONCANONICAL_ADDRESS)) {
+                        return 0;
+                    }
                 }
                 return pageTableWalk<request, 4>(rootTransTablePAddr_, vaddr);
             }
             case TranslationMode::TRANSLATION_MODE_SV39: {
                 if (!isVirtAddrCanonical<TranslationMode::TRANSLATION_MODE_SV39>(vaddr)) {
-                    handleException(Exception::NONCANONICAL_ADDRESS);
+                    if (!exceptionHandler_(Exception::NONCANONICAL_ADDRESS)) {
+                        return 0;
+                    }
                 }
                 return pageTableWalk<request, 3>(rootTransTablePAddr_, vaddr);
             }
@@ -303,6 +337,9 @@ private:
         return 0;
     }
 };
+
+
+bool defaultMMUExceptionHandler(const MMU::Exception exception);
 
 }  // namespace RISCV::memory
 
