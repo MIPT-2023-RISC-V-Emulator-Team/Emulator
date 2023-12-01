@@ -1,3 +1,6 @@
+#ifndef CTESTS_CLIB_H
+#define CTESTS_CLIB_H
+
 #pragma GCC system_header
 
 #define NULL (void*)0
@@ -234,3 +237,5 @@ int scanf(char * str, ...) {
 void exit(int status) {
     __internal_syscall(SYSCALL_RV_SYS_EXIT, status & 0xFF, 0, 0, 0, 0, 0);
 }
+
+#endif  // CTESTS_CLIB_H

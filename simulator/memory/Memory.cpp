@@ -1,23 +1,20 @@
-#include "simulator/memory/Memory.h"
+#include <simulator/memory/Memory.h>
 
 #include <algorithm>
 #include <cstring>
 #include <string>
 
-#include "simulator/constants.h"
+#include <simulator/constants.h>
 
 namespace RISCV::memory {
 
 PhysicalMemory g_physicalMemory;
 
-bool PhysicalMemory::allocatePage(const PhysAddr paddr) {
-    uint64_t pageNum = getPageNumber(paddr);
+bool PhysicalMemory::allocatePage(const uint64_t pageNum) {
     if (pageNum >= PHYS_PAGE_COUNT) {
         std::cerr << "invalid address" << std::endl;
         return false;
     }
-
-    static std::vector<uint32_t> allocatedPages_;
 
     if (std::find(allocatedPages_.begin(), allocatedPages_.end(), pageNum) ==
         allocatedPages_.end()) {
@@ -25,6 +22,25 @@ bool PhysicalMemory::allocatePage(const PhysAddr paddr) {
         emptyPagesFlags_[pageNum] = 0;
     }
     return true;
+}
+
+bool PhysicalMemory::freePage(const uint64_t pageNum) {
+    if (pageNum >= PHYS_PAGE_COUNT) {
+        std::cerr << "invalid address" << std::endl;
+        return false;
+    }
+
+    if (auto it = std::find(allocatedPages_.begin(), allocatedPages_.end(), pageNum); it != allocatedPages_.end()) {
+        allocatedPages_.erase(it);
+    }
+    emptyPagesFlags_[pageNum] = 1;
+    return true;
+}
+
+void PhysicalMemory::freeAllPages() {
+    allocatedPages_.clear();
+    std::fill(emptyPagesFlags_.begin(), emptyPagesFlags_.end(), 1);
+    std::fill(memory_, memory_ + PHYS_MEMORY_BYTESIZE, 0);
 }
 
 uint64_t PhysicalMemory::getEmptyPageNumber() const {

@@ -148,7 +148,7 @@ EOT
         field_name = 'imm'
         if sext_instructions.include? instruction.mnemonic
           instr_field << " "*8 + "decInstr.#{field_name} = " \
-                         "sext(#{field.capitalize}::getValue(encInstr), #{field.capitalize}::SIGNEDBIT);\n"
+                         "sext<#{field.capitalize}::SIGNEDBIT>(#{field.capitalize}::getValue(encInstr));\n"
         end
       elsif
         instr_field << " "*8 + "decInstr.#{field_name} = " \

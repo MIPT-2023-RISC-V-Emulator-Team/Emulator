@@ -1,13 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(RISC-V VERSION 1.0 DESCRIPTION "RISC-V Emulator")
-
 set(ASMJIT_EMBED TRUE)
 
 add_definitions(-DASMJIT_STATIC)
 
 # TODO(panferovi): find universal way to integrate with third-party
-set(ASMJIT_DIR "../asmjit")
+set(ASMJIT_DIR ${SRC_DIR}/asmjit)
 include("${ASMJIT_DIR}/CMakeLists.txt")
 
 set(COMPILER_SRC

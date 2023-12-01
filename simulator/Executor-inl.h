@@ -161,7 +161,7 @@ ALWAYS_INLINE void ExecutorLB(Hart* hart, const DecodedInstruction& instr) {
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.read(paddr, sizeof(loaded), &loaded);
 
-    hart->setReg(instr.rd, sext(loaded, 7));
+    hart->setReg(instr.rd, sext<7>(loaded));
     hart->incrementPC();
 }
 
@@ -182,7 +182,7 @@ ALWAYS_INLINE void ExecutorLH(Hart* hart, const DecodedInstruction& instr) {
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.read(paddr, sizeof(loaded), &loaded);
 
-    hart->setReg(instr.rd, sext(loaded, 15));
+    hart->setReg(instr.rd, sext<15>(loaded));
     hart->incrementPC();
 }
 
@@ -203,7 +203,7 @@ ALWAYS_INLINE void ExecutorLW(Hart* hart, const DecodedInstruction& instr) {
     memory::PhysicalMemory& pmem = memory::getPhysicalMemory();
     pmem.read(paddr, sizeof(loaded), &loaded);
 
-    hart->setReg(instr.rd, sext(loaded, 31));
+    hart->setReg(instr.rd, sext<31>(loaded));
     hart->incrementPC();
 }
 
@@ -447,7 +447,7 @@ ALWAYS_INLINE void ExecutorADDIW(Hart* hart, const DecodedInstruction& instr) {
     RegValue sum = hart->getReg(instr.rs1) + instr.imm;
     uint32_t sum32 = sum;
 
-    hart->setReg(instr.rd, sext(sum32, 31));
+    hart->setReg(instr.rd, sext<31>(sum32));
     hart->incrementPC();
 }
 
@@ -457,7 +457,7 @@ ALWAYS_INLINE void ExecutorSLLIW(Hart* hart, const DecodedInstruction& instr) {
     RegValue res = hart->getReg(instr.rs1) << instr.shamt;
     uint32_t res32 = res;
 
-    hart->setReg(instr.rd, sext(res32, 31));
+    hart->setReg(instr.rd, sext<31>(res32));
     hart->incrementPC();
 }
 
@@ -467,7 +467,7 @@ ALWAYS_INLINE void ExecutorSRLIW(Hart* hart, const DecodedInstruction& instr) {
     RegValue res = hart->getReg(instr.rs1) >> instr.shamt;
     uint32_t res32 = res;
 
-    hart->setReg(instr.rd, sext(res32, 31));
+    hart->setReg(instr.rd, sext<31>(res32));
     hart->incrementPC();
 }
 
@@ -477,7 +477,7 @@ ALWAYS_INLINE void ExecutorSRAIW(Hart* hart, const DecodedInstruction& instr) {
     int32_t rs1_signed32 = hart->getReg(instr.rs1);
     int32_t res32 = static_cast<int32_t>(rs1_signed32 >> instr.imm);
 
-    hart->setReg(instr.rd, sext(res32, 31));
+    hart->setReg(instr.rd, sext<31>(res32));
     hart->incrementPC();
 }
 
@@ -581,7 +581,7 @@ ALWAYS_INLINE void ExecutorADDW(Hart* hart, const DecodedInstruction& instr) {
 
     RegValue sum = hart->getReg(instr.rs1) + hart->getReg(instr.rs2);
     uint32_t sum32 = sum;
-    hart->setReg(instr.rd, sext(sum32, 31));
+    hart->setReg(instr.rd, sext<31>(sum32));
     hart->incrementPC();
 }
 
@@ -590,7 +590,7 @@ ALWAYS_INLINE void ExecutorSUBW(Hart* hart, const DecodedInstruction& instr) {
 
     RegValue diff = hart->getReg(instr.rs1) - hart->getReg(instr.rs2);
     uint32_t diff32 = diff;
-    hart->setReg(instr.rd, sext(diff32, 31));
+    hart->setReg(instr.rd, sext<31>(diff32));
     hart->incrementPC();
 }
 
@@ -599,7 +599,7 @@ ALWAYS_INLINE void ExecutorSLLW(Hart* hart, const DecodedInstruction& instr) {
 
     RegValue res = hart->getReg(instr.rs1) << hart->getReg(instr.rs2);
     uint32_t res32 = res;
-    hart->setReg(instr.rd, sext(res32, 31));
+    hart->setReg(instr.rd, sext<31>(res32));
     hart->incrementPC();
 }
 
@@ -608,7 +608,7 @@ ALWAYS_INLINE void ExecutorSRLW(Hart* hart, const DecodedInstruction& instr) {
 
     RegValue res = hart->getReg(instr.rs1) >> hart->getReg(instr.rs2);
     uint32_t res32 = res;
-    hart->setReg(instr.rd, sext(res32, 31));
+    hart->setReg(instr.rd, sext<31>(res32));
     hart->incrementPC();
 }
 
@@ -626,7 +626,7 @@ ALWAYS_INLINE void ExecutorSRAW(Hart* hart, const DecodedInstruction& instr) {
         res = lhs >> rhs;
 
     uint32_t res32 = res;
-    hart->setReg(instr.rd, sext(res32, 31));
+    hart->setReg(instr.rd, sext<31>(res32));
     hart->incrementPC();
 }
 
@@ -1082,7 +1082,7 @@ ALWAYS_INLINE void ExecutorDIVW(Hart* hart, const DecodedInstruction& instr) {
     int32_t divisor32 = hart->getReg(instr.rs2);
 
     int32_t quot32 = dividend32 / divisor32;
-    hart->setReg(instr.rd, sext(quot32, 31));
+    hart->setReg(instr.rd, sext<31>(quot32));
 
     hart->incrementPC();
 }
@@ -1094,7 +1094,7 @@ ALWAYS_INLINE void ExecutorDIVUW(Hart* hart, const DecodedInstruction& instr) {
     uint32_t divisor32 = hart->getReg(instr.rs2);
 
     uint32_t quot32 = dividend32 / divisor32;
-    hart->setReg(instr.rd, sext(quot32, 31));
+    hart->setReg(instr.rd, sext<31>(quot32));
 
     hart->incrementPC();
 }
@@ -1106,7 +1106,7 @@ ALWAYS_INLINE void ExecutorREMW(Hart* hart, const DecodedInstruction& instr) {
     int32_t divisor32 = hart->getReg(instr.rs2);
 
     int32_t rem32 = dividend32 % divisor32;
-    hart->setReg(instr.rd, sext(rem32, 31));
+    hart->setReg(instr.rd, sext<31>(rem32));
 
     hart->incrementPC();
 }
@@ -1118,7 +1118,7 @@ ALWAYS_INLINE void ExecutorREMUW(Hart* hart, const DecodedInstruction& instr) {
     uint32_t divisor32 = hart->getReg(instr.rs2);
 
     uint32_t rem32 = dividend32 % divisor32;
-    hart->setReg(instr.rd, sext(rem32, 31));
+    hart->setReg(instr.rd, sext<31>(rem32));
 
     hart->incrementPC();
 }

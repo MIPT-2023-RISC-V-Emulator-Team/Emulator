@@ -47,9 +47,14 @@ inline constexpr uint32_t getOpcodeBits() {
 }
 
 // Sign Extend. signBitNum = 0, 1, 2, ..., 31 from right to left
-static inline uint64_t sext(const uint32_t val, const uint8_t signBitNum) {
-    const uint64_t tmp = val;
-    return ~(((tmp & (1 << signBitNum)) - 1)) | tmp;
+template<uint8_t signBitNum>
+static inline uint64_t sext(const uint32_t val) {
+    constexpr uint64_t upperBitsAllOnes = ~((1ULL << signBitNum + 1) - 1);
+    constexpr uint32_t signBit = 1 << signBitNum;
+    if (val & signBit) {
+        return upperBitsAllOnes | val;
+    }
+    return val;
 }
 
 // Zero Extend

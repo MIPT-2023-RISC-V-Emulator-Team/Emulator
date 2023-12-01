@@ -29,12 +29,15 @@ class PhysicalMemory final {
 private:
     uint8_t* memory_ = nullptr;
     std::vector<char> emptyPagesFlags_;
+    std::vector<uint32_t> allocatedPages_;
 
 public:
     NO_COPY_SEMANTIC(PhysicalMemory);
     NO_MOVE_SEMANTIC(PhysicalMemory);
 
-    bool allocatePage(const PhysAddr paddr);
+    bool allocatePage(const uint64_t pageNum);
+    bool freePage(const uint64_t pageNum);
+    void freeAllPages();
     uint64_t getEmptyPageNumber() const;
 
     bool read(const PhysAddr paddr, const size_t size, void* value);
