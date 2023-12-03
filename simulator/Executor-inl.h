@@ -1008,19 +1008,57 @@ ALWAYS_INLINE void ExecutorFENCEI(Hart* hart, const DecodedInstruction& instr) {
 }
 
 ALWAYS_INLINE void ExecutorMUL(Hart* hart, const DecodedInstruction& instr) {
-    UNREACHABLE();
+    DEBUG_INSTRUCTION("mul     x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
+
+    uint64_t rs1_l = hart->getReg(instr.rs1) & 0xFFFFFFFF;
+    uint64_t rs2_l = hart->getReg(instr.rs2) & 0xFFFFFFFF;
+
+    uint64_t prod = rs1_l * rs2_l;
+    hart->setReg(instr.rd, prod);
+
+    hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorMULH(Hart* hart, const DecodedInstruction& instr) {
-    UNREACHABLE();
+    DEBUG_INSTRUCTION("mulh    x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
+
+    uint64_t rs1_l = hart->getReg(instr.rs1) & 0xFFFFFFFF;
+    int64_t rs1_h = (hart->getReg(instr.rs1) & ~0xFFFFFFFF) >> 32;
+    uint64_t rs2_l = hart->getReg(instr.rs2) & 0xFFFFFFFF;
+    int64_t rs2_h = (hart->getReg(instr.rs2) & ~0xFFFFFFFF) >> 32;
+
+    int64_t prod = rs1_h * rs2_h + (rs1_h * rs2_l + rs1_l * rs2_h) >> 32;
+    hart->setReg(instr.rd, prod);
+
+    hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorMULHSU(Hart* hart, const DecodedInstruction& instr) {
-    UNREACHABLE();
+    DEBUG_INSTRUCTION("mulhsu  x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
+
+    uint64_t rs1_l = hart->getReg(instr.rs1) & 0xFFFFFFFF;
+    int64_t rs1_h = (hart->getReg(instr.rs1) & ~0xFFFFFFFF) >> 32;
+    uint64_t rs2_l = hart->getReg(instr.rs2) & 0xFFFFFFFF;
+    uint64_t rs2_h = (hart->getReg(instr.rs2) & ~0xFFFFFFFF) >> 32;
+
+    int64_t prod = rs1_h * rs2_h + (rs1_h * rs2_l + rs1_l * rs2_h) >> 32;
+    hart->setReg(instr.rd, prod);
+
+    hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorMULHU(Hart* hart, const DecodedInstruction& instr) {
-    UNREACHABLE();
+    DEBUG_INSTRUCTION("mulhu   x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
+
+    uint64_t rs1_l = hart->getReg(instr.rs1) & 0xFFFFFFFF;
+    uint64_t rs1_h = (hart->getReg(instr.rs1) & ~0xFFFFFFFF) >> 32;
+    uint64_t rs2_l = hart->getReg(instr.rs2) & 0xFFFFFFFF;
+    uint64_t rs2_h = (hart->getReg(instr.rs2) & ~0xFFFFFFFF) >> 32;
+
+    uint64_t prod = rs1_h * rs2_h + (rs1_h * rs2_l + rs1_l * rs2_h) >> 32;
+    hart->setReg(instr.rd, prod);
+
+    hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorDIV(Hart* hart, const DecodedInstruction& instr) {
@@ -1072,7 +1110,15 @@ ALWAYS_INLINE void ExecutorREMU(Hart* hart, const DecodedInstruction& instr) {
 }
 
 ALWAYS_INLINE void ExecutorMULW(Hart* hart, const DecodedInstruction& instr) {
-    UNREACHABLE();
+    DEBUG_INSTRUCTION("mulw    x%d, x%d, x%d\n", instr.rd, instr.rs1, instr.rs2);
+
+    uint64_t rs1_l = hart->getReg(instr.rs1) & 0xFFFFFFFF;
+    uint64_t rs2_l = hart->getReg(instr.rs2) & 0xFFFFFFFF;
+
+    uint32_t prod = rs1_l * rs2_l;
+    hart->setReg(instr.rd, sext<31>(prod));
+
+    hart->incrementPC();
 }
 
 ALWAYS_INLINE void ExecutorDIVW(Hart* hart, const DecodedInstruction& instr) {
