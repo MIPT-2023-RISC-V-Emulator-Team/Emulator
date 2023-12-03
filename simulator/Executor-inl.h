@@ -172,7 +172,7 @@ ALWAYS_INLINE void ExecutorLH(Hart* hart, const DecodedInstruction& instr) {
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + instr.imm;
 
-    if (vaddr % (sizeof(loaded))) {
+    if (UNLIKELY(vaddr % sizeof(loaded))) {
         std::cerr << "Error: unaligned memory access" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -193,7 +193,7 @@ ALWAYS_INLINE void ExecutorLW(Hart* hart, const DecodedInstruction& instr) {
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + instr.imm;
 
-    if (vaddr % (sizeof(loaded))) {
+    if (UNLIKELY(vaddr % sizeof(loaded))) {
         std::cerr << "Error: unaligned memory access" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -214,7 +214,7 @@ ALWAYS_INLINE void ExecutorLD(Hart* hart, const DecodedInstruction& instr) {
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + instr.imm;
 
-    if (vaddr % (sizeof(loaded))) {
+    if (UNLIKELY(vaddr % sizeof(loaded))) {
         std::cerr << "Error: unaligned memory access" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -250,7 +250,7 @@ ALWAYS_INLINE void ExecutorLHU(Hart* hart, const DecodedInstruction& instr) {
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + instr.imm;
 
-    if (vaddr % (sizeof(loaded))) {
+    if (UNLIKELY(vaddr % sizeof(loaded))) {
         std::cerr << "Error: unaligned memory access" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -271,7 +271,7 @@ ALWAYS_INLINE void ExecutorLWU(Hart* hart, const DecodedInstruction& instr) {
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + instr.imm;
 
-    if (vaddr % (sizeof(loaded))) {
+    if (UNLIKELY(vaddr % sizeof(loaded))) {
         std::cerr << "Error: unaligned memory access" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -308,7 +308,7 @@ ALWAYS_INLINE void ExecutorSH(Hart* hart, const DecodedInstruction& instr) {
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + instr.imm;
 
-    if (vaddr % (sizeof(stored))) {
+    if (UNLIKELY(vaddr % sizeof(stored))) {
         std::cerr << "Error: unaligned memory access" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -328,7 +328,7 @@ ALWAYS_INLINE void ExecutorSW(Hart* hart, const DecodedInstruction& instr) {
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + instr.imm;
 
-    if (vaddr % (sizeof(stored))) {
+    if (UNLIKELY(vaddr % sizeof(stored))) {
         std::cerr << "Error: unaligned memory access" << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -348,7 +348,7 @@ ALWAYS_INLINE void ExecutorSD(Hart* hart, const DecodedInstruction& instr) {
 
     memory::VirtAddr vaddr = hart->getReg(instr.rs1) + instr.imm;
 
-    if (vaddr % (sizeof(stored))) {
+    if (UNLIKELY(vaddr % sizeof(stored))) {
         std::cerr << "Error: unaligned memory access" << std::endl;
         std::exit(EXIT_FAILURE);
     }

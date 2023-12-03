@@ -53,17 +53,12 @@ enum MemoryRequestBits : MemoryRequest {
     X = PTE::Attribute::X
 };
 
+
 class TLB final {
 public:
-    static constexpr const size_t iTLB_CACHE_CAPACITY = 256;
-    static constexpr const size_t rTLB_CACHE_CAPACITY = 128;
-    static constexpr const size_t wTLB_CACHE_CAPACITY = 128;
-
-    static constexpr const uint64_t INSTRUCTION_MASK = 0b1010;
-    static constexpr const uint64_t READ_MASK = 0b0010;
-    static constexpr const uint64_t WRITE_MASK = 0b0100;
-
-    static constexpr const uint64_t ALL_PERMS_MASK = 0b1110;
+    static constexpr const size_t iTLB_CACHE_CAPACITY = 4096;
+    static constexpr const size_t rTLB_CACHE_CAPACITY = 2048;
+    static constexpr const size_t wTLB_CACHE_CAPACITY = 2048;
 
     template <MemoryType type>
     ALWAYS_INLINE std::optional<uint64_t> find(const uint64_t vpn) const {
@@ -89,16 +84,34 @@ public:
     }
 
 private:
-    /*
-     * Approximate TLB caches with simple LRU cache
-     * Use vaddr[63:12] as tag for the cache
-     */
+
+    template<size_t CAPACITY>
+    class TLBCache {
+    public:
+        static constexpr const uint64_t checkBits = CAPACITY - 1;
+
+        std::optional<uint64_t> find(const uint64_t vpn) const {
+            const std::pair<uint64_t, uint64_t> vpn_ppn = storage_[vpn & checkBits];
+            if (LIKELY(vpn_ppn.first == vpn)) {
+                return vpn_ppn.second;
+            }
+            return std::nullopt;
+        }
+
+        void insert(const uint64_t vpn, const uint64_t ppn) {
+            storage_[vpn & checkBits] = std::pair(vpn, ppn);
+        }
+
+    private:
+        std::pair<uint64_t, uint64_t> storage_[CAPACITY] = {};
+    };
+
     // iTLB
-    LRUCache<iTLB_CACHE_CAPACITY, uint64_t, uint64_t, false> iTLB_;
+    TLBCache<iTLB_CACHE_CAPACITY> iTLB_;
 
     // dTLB
-    LRUCache<rTLB_CACHE_CAPACITY, uint64_t, uint64_t, false> rTLB_;
-    LRUCache<wTLB_CACHE_CAPACITY, uint64_t, uint64_t, false> wTLB_;
+    TLBCache<rTLB_CACHE_CAPACITY> rTLB_;
+    TLBCache<wTLB_CACHE_CAPACITY> wTLB_;
 };
 
 
@@ -200,7 +213,7 @@ private:
     }
 
     template <MemoryRequest request>
-    inline bool checkPermissions(const PTE pte) const {
+    ALWAYS_INLINE bool checkPermissions(const PTE pte) const {
         if constexpr (request & MemoryRequestBits::R) {
             if (!pte.getAttribute(PTE::Attribute::R)) {
                 if (!exceptionHandler_(Exception::NO_READ_PERM)) {
@@ -230,7 +243,7 @@ private:
 
 
     template<MemoryRequest request, uint32_t maxDepth, uint32_t currDepth = 1>
-    PhysAddr pageTableWalk(const uint64_t a, const VirtAddr vaddr) const {
+    ALWAYS_INLINE PhysAddr pageTableWalk(const uint64_t a, const VirtAddr vaddr) const {
         constexpr uint8_t low  = 12 + (maxDepth - currDepth) * 9;
         constexpr uint8_t high = low + 8;
 
