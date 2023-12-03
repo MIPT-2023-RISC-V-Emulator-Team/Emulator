@@ -21,6 +21,11 @@ static inline uint64_t getPageNumber(const T addr) {
 }
 
 template <typename T>
+static inline uint64_t getPageNumberUnshifted(const T addr) {
+    return addr & ~ADDRESS_PAGE_OFFSET_MASK;
+}
+
+template <typename T>
 static inline uint32_t getPageOffset(const T addr) {
     return addr & ADDRESS_PAGE_OFFSET_MASK;
 }

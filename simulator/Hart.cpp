@@ -11,7 +11,7 @@ using namespace memory;
 
 BasicBlock& Hart::getBasicBlock() {
     auto bb = bbCache_.find(pc_);
-    if (bb != std::nullopt) {
+    if (LIKELY(bb != std::nullopt)) {
         return *bb;
     }
     auto newBb = fetchBasicBlock();
@@ -44,7 +44,7 @@ BasicBlock Hart::fetchBasicBlock() {
     pmem.read(paddr, readBytesize, encInstr);
     for (size_t i = 0; i < readInstructions; ++i) {
         auto& decInstr = bbBody.emplace_back(decode(encInstr[i]));
-        if (decInstr.isJumpInstruction()) {
+        if (UNLIKELY(decInstr.isJumpInstruction())) {
             break;
         }
     }

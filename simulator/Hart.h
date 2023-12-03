@@ -76,20 +76,20 @@ public:
     }
 
     template <memory::MemoryType type>
-    inline memory::PhysAddr getPhysAddr(const memory::VirtAddr vaddr) {
+    ALWAYS_INLINE memory::PhysAddr getPhysAddr(const memory::VirtAddr vaddr) {
         memory::PhysAddr paddr;
 
         // Try TLB
-        const uint64_t vpn = getPartialBits<12, 63>(vaddr);
+        const uint64_t vpn = memory::getPageNumberUnshifted(vaddr);
         auto tlbEntry = tlb_.find<type>(vpn);
-        if (tlbEntry != std::nullopt) {
+        if (LIKELY(tlbEntry != std::nullopt)) {
             // TLB hit
-            paddr = (*tlbEntry) * memory::PAGE_BYTESIZE;
+            paddr = *tlbEntry;
             paddr += memory::getPageOffset(vaddr);
         } else {
             // TLB miss, translate address in usual way
             paddr = mmu_.getPhysAddr<type>(vaddr);
-            tlb_.insert<type>(vpn, memory::getPageNumber(paddr));
+            tlb_.insert<type>(vpn, memory::getPageNumberUnshifted(paddr));
         }
 
         return paddr;

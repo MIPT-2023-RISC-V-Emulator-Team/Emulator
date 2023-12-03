@@ -19,7 +19,7 @@ public:
 
     std::optional<RetType> find(const keyType key) const {
         auto item = selector_.find(key);
-        if (item == selector_.cend()) {
+        if (UNLIKELY(item == selector_.cend())) {
             return std::nullopt;
         }
         return getRetType(item->second->second);
@@ -27,7 +27,7 @@ public:
 
     RetType insert(const keyType key, const valType val) {
         ASSERT(selector_.find(key) == selector_.cend());
-        if (storage_.size() == CAPACITY) {
+        if (LIKELY(storage_.size() == CAPACITY)) {
             auto& last = storage_.back();
             selector_.erase(last.first);
             storage_.pop_back();
