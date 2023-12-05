@@ -92,8 +92,8 @@ private:
             return std::nullopt;
         }
 
-        void insert(const uint64_t vpn, const uint64_t ppn) {
-            storage_[vpn & checkBits] = std::pair(vpn, ppn);
+        void insert(const uint64_t vpn, const uint64_t ppnUnshifted) {
+            storage_[vpn & checkBits] = std::pair(vpn, ppnUnshifted);
         }
 
     private:
