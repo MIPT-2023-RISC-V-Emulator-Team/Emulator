@@ -80,7 +80,7 @@ public:
         memory::PhysAddr paddr;
 
         // Try TLB
-        const uint64_t vpn = memory::getPageNumberUnshifted(vaddr);
+        const uint64_t vpn = memory::getPageNumber(vaddr);
         auto tlbEntry = tlb_.find<type>(vpn);
         if (LIKELY(tlbEntry != std::nullopt)) {
             // TLB hit
