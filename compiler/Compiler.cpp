@@ -6,7 +6,7 @@
 
 namespace RISCV::compiler {
 
-bool Compiler::decrementHotnessCounter(BasicBlock& bb) {
+bool Compiler::decrementHotnessCounter(BasicBlock &bb) {
     auto status = bb.getCompilationStatus(std::memory_order_acquire);
     switch (status) {
         case CompilationStatus::NOT_COMPILED:
@@ -29,16 +29,15 @@ bool Compiler::decrementHotnessCounter(BasicBlock& bb) {
     return true;
 }
 
-void Compiler::compileBasicBlock(CompilerTask&& task) {
+void Compiler::compileBasicBlock(CompilerTask &&task) {
     CompiledEntry entry = nullptr;
-    for (auto&& instr : task.instrs) {
+    for (auto &&instr : task.instrs) {
         generateInstr(&entry, instr);
     }
     hart_->setBBEntry(task.entrypoint, entry);
 }
 
-void Compiler::generateInstr([[maybe_unused]] CompiledEntry* entry,
-                             [[maybe_unused]] const DecodedInstruction& instr) {
+void Compiler::generateInstr([[maybe_unused]] CompiledEntry *entry, [[maybe_unused]] const DecodedInstruction &instr) {
     // TODO(all): implement codegen
     // asmjit::JitRuntime rt;
     // asmjit::CodeHolder code;

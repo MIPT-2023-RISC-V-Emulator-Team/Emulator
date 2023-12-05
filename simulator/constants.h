@@ -248,7 +248,6 @@ enum SyscallRV : uint32_t {
     CLOCK_GETRES = 406,
     CLOCK_NANOSLEEP = 407,
 
-
     SYSLOG = 116,
     PTRACE = 117,
     SCHED_SETPARAM = 118,

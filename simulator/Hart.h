@@ -48,8 +48,8 @@ public:
         pc_ = newPC;
     }
 
-    BasicBlock& getBasicBlock();
-    void executeBasicBlock(BasicBlock& bb);
+    BasicBlock &getBasicBlock();
+    void executeBasicBlock(BasicBlock &bb);
 
     ALWAYS_INLINE auto cacheBasicBlock(BasicBlock::Entrypoint entrypoint, BasicBlock bb) {
         // TODO(panferovi): find way to remove lock
@@ -65,13 +65,13 @@ public:
             return;
         }
 
-        auto& bbRef = bb->get();
+        auto &bbRef = bb->get();
         bbRef.setCompiledEntry(entry);
         // TODO(all): implement codegen and uncomment
         // bbRef.setCompilationStatus(CompilationStatus::COMPILED, std::memory_order_release);
     }
 
-    const memory::MMU& getTranslator() const {
+    const memory::MMU &getTranslator() const {
         return mmu_;
     }
 

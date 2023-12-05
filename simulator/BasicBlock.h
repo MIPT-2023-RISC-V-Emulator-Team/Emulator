@@ -18,7 +18,7 @@ public:
     using Body = std::vector<DecodedInstruction>;
     using BodyEntry = Body::const_iterator;
     using Entrypoint = uint64_t;
-    using CompiledEntry = void (*)(Hart*);
+    using CompiledEntry = void (*)(Hart *);
 
     // Fastest
     static constexpr size_t MAX_SIZE = 9;
@@ -28,14 +28,14 @@ public:
         ASSERT(body_.back().type == BASIC_BLOCK_END);
     }
 
-    BasicBlock(const BasicBlock& bb)
+    BasicBlock(const BasicBlock &bb)
         : body_(bb.body_),
           entrypoint_(bb.entrypoint_),
           hotness_counter_(bb.hotness_counter_),
           compiled_entry_(bb.compiled_entry_),
           compilation_status_(bb.compilation_status_.load(std::memory_order_relaxed)) {}
 
-    BasicBlock(BasicBlock&& bb)
+    BasicBlock(BasicBlock &&bb)
         : body_(std::move(bb.body_)),
           entrypoint_(bb.entrypoint_),
           hotness_counter_(bb.hotness_counter_),
@@ -60,7 +60,7 @@ public:
         return entrypoint_;
     }
 
-    ALWAYS_INLINE void executeCompiled(Hart* hart) const {
+    ALWAYS_INLINE void executeCompiled(Hart *hart) const {
         compiled_entry_(hart);
     }
 
@@ -68,8 +68,7 @@ public:
         return compilation_status_.load(memory_order);
     }
 
-    ALWAYS_INLINE void setCompilationStatus(CompilationStatus status,
-                                            std::memory_order memory_order) {
+    ALWAYS_INLINE void setCompilationStatus(CompilationStatus status, std::memory_order memory_order) {
         compilation_status_.store(status, memory_order);
     }
 

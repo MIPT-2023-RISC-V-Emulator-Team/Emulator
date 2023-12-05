@@ -4,7 +4,7 @@
 
 namespace RISCV::compiler {
 
-void CompilerTaskQueue::addTask(CompilerTask&& task) {
+void CompilerTaskQueue::addTask(CompilerTask &&task) {
     bool is_empty = false;
     {
         std::unique_lock holder(queue_lock_);

@@ -9,12 +9,12 @@ class Hart;
 
 class Dispatcher {
 public:
-    Dispatcher(Hart* hart) : hart_(hart) {}
+    Dispatcher(Hart *hart) : hart_(hart) {}
 
     void dispatchExecute(BasicBlock::BodyEntry instr_iter);
 
 private:
-    Hart* hart_;
+    Hart *hart_;
 };
 
 }  // namespace RISCV

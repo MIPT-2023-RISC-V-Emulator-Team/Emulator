@@ -8,7 +8,7 @@ namespace RISCV {
 
 class OSHelper final {
 private:
-    static OSHelper* instancePtr;
+    static OSHelper *instancePtr;
     OSHelper() = default;
 
 public:
@@ -16,9 +16,9 @@ public:
     bool allocateStack(Hart &hart, const memory::VirtAddr stackAddr, const size_t stackSize);
     bool setupCmdArgs(Hart &hart, int argc, char **argv, char **envp);
 
-    OSHelper(const OSHelper& other) = delete;
+    OSHelper(const OSHelper &other) = delete;
 
-    static OSHelper* create() {
+    static OSHelper *create() {
         if (!instancePtr)
             instancePtr = new OSHelper();
 

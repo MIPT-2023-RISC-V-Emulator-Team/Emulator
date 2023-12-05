@@ -47,12 +47,7 @@ struct PTE final {
 
 using MemoryRequest = uint8_t;
 
-enum MemoryRequestBits : MemoryRequest {
-    R = PTE::Attribute::R,
-    W = PTE::Attribute::W,
-    X = PTE::Attribute::X
-};
-
+enum MemoryRequestBits : MemoryRequest { R = PTE::Attribute::R, W = PTE::Attribute::W, X = PTE::Attribute::X };
 
 class TLB final {
 public:
@@ -84,8 +79,7 @@ public:
     }
 
 private:
-
-    template<size_t CAPACITY>
+    template <size_t CAPACITY>
     class TLBCache {
     public:
         static constexpr const uint64_t checkBits = CAPACITY - 1;
@@ -114,7 +108,6 @@ private:
     TLBCache<wTLB_CACHE_CAPACITY> wTLB_;
 };
 
-
 class MMU final {
 public:
     enum Exception : uint8_t {
@@ -135,8 +128,7 @@ public:
         UNSUPPORTED
     };
 
-    using MMUExceptionHandler = bool(*)(const Exception exception);
-
+    using MMUExceptionHandler = bool (*)(const Exception exception);
 
     void setSATPReg(const RegValue satp);
 
@@ -152,8 +144,7 @@ public:
     }
 
     PhysAddr getPhysAddrWithAllocation(const VirtAddr vaddr,
-                                       const MemoryRequest request = MemoryRequestBits::R |
-                                                                     MemoryRequestBits::W |
+                                       const MemoryRequest request = MemoryRequestBits::R | MemoryRequestBits::W |
                                                                      MemoryRequestBits::X) const;
 
     void setExceptionHandler(MMUExceptionHandler handler);
@@ -168,7 +159,7 @@ private:
 
     MMUExceptionHandler exceptionHandler_;
 
-    template<TranslationMode transMode>
+    template <TranslationMode transMode>
     ALWAYS_INLINE bool isVirtAddrCanonical(const VirtAddr vaddr) const {
         if constexpr (transMode == TranslationMode::TRANSLATION_MODE_BARE) {
             // Always canonical for bare translation
@@ -241,15 +232,14 @@ private:
         return true;
     }
 
-
-    template<MemoryRequest request, uint32_t maxDepth, uint32_t currDepth = 1>
+    template <MemoryRequest request, uint32_t maxDepth, uint32_t currDepth = 1>
     ALWAYS_INLINE PhysAddr pageTableWalk(const uint64_t a, const VirtAddr vaddr) const {
-        constexpr uint8_t low  = 12 + (maxDepth - currDepth) * 9;
+        constexpr uint8_t low = 12 + (maxDepth - currDepth) * 9;
         constexpr uint8_t high = low + 8;
 
         uint32_t vpn = getPartialBitsShifted<low, high>(vaddr);
 
-        PhysicalMemory& pmem = getPhysicalMemory();
+        PhysicalMemory &pmem = getPhysicalMemory();
 
         PTE pte;
         pmem.read(a + vpn * PTE_SIZE, sizeof(pte.value), &pte.value);
@@ -271,13 +261,11 @@ private:
                 if (!exceptionHandler_(Exception::NO_LEAF_PTE)) {
                     return 0;
                 }
-            }
-            else {
+            } else {
                 // Continue page walk
                 return pageTableWalk<request, maxDepth, currDepth + 1>(pte.getPPN() * PAGE_BYTESIZE, vaddr);
             }
-        }
-        else {
+        } else {
             // Found leaf pte
             PhysAddr paddr;
 
@@ -350,7 +338,6 @@ private:
         return 0;
     }
 };
-
 
 bool defaultMMUExceptionHandler(const MMU::Exception exception);
 

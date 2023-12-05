@@ -47,7 +47,7 @@ inline constexpr uint32_t getOpcodeBits() {
 }
 
 // Sign Extend. signBitNum = 0, 1, 2, ..., 31 from right to left
-template<uint8_t signBitNum>
+template <uint8_t signBitNum>
 static inline uint64_t sext(const uint32_t val) {
     constexpr uint64_t upperBitsAllOnes = ~((1ULL << signBitNum + 1) - 1);
     constexpr uint32_t signBit = 1 << signBitNum;

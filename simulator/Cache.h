@@ -28,18 +28,18 @@ public:
     RetType insert(const keyType key, const valType val) {
         ASSERT(selector_.find(key) == selector_.cend());
         if (LIKELY(storage_.size() == CAPACITY)) {
-            auto& last = storage_.back();
+            auto &last = storage_.back();
             selector_.erase(last.first);
             storage_.pop_back();
         }
         ASSERT(storage_.size() < CAPACITY);
-        auto& inserted = storage_.emplace_front(key, std::move(val));
+        auto &inserted = storage_.emplace_front(key, std::move(val));
         selector_.emplace(key, storage_.begin());
         return getRetType(inserted.second);
     }
 
 private:
-    ALWAYS_INLINE RetType getRetType(valType& val) const {
+    ALWAYS_INLINE RetType getRetType(valType &val) const {
         if constexpr (byRef) {
             return std::ref(val);
         } else {
