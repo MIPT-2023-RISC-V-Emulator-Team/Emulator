@@ -87,20 +87,6 @@ Hart::Hart() : dispatcher_(this), compiler_(this) {
     mmu_.setSATPReg(csrRegs_[CSR_SATP_INDEX]);
     pmem.allocatePage(satpPPN);
 
-    /*
-     *  Initialize stack
-     */
-
-    regs_[RegisterType::SP] = DEFAULT_STACK_ADDRESS;
-
-    VirtAddr stackVAddr = regs_[RegisterType::SP];
-    constexpr const size_t stackPages = STACK_BYTESIZE / PAGE_BYTESIZE;
-    for (size_t i = 0; i < stackPages; ++i) {
-        PhysAddr stackPAddr = mmu_.getPhysAddrWithAllocation(stackVAddr);
-        pmem.allocatePage(getPageNumber(stackPAddr));
-        stackVAddr -= PAGE_BYTESIZE;
-    }
-
     compiler_.InitializeWorker();
 }
 
