@@ -28,7 +28,7 @@ execute_process(
 
 set(SIMULATOR_SRC
     Hart.cpp
-    ElfLoader.cpp
+    OSHelper.cpp
     memory/Memory.cpp
     memory/MMU.cpp
     ${GEN_DIR}/Decoder.cpp
