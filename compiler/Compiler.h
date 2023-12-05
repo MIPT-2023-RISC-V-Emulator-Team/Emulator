@@ -14,7 +14,7 @@ class Compiler {
 public:
     using CompiledEntry = BasicBlock::CompiledEntry;
 
-    Compiler(Hart* hart) : hart_(hart), worker_(this) {}
+    Compiler(Hart *hart) : hart_(hart), worker_(this) {}
 
     void InitializeWorker() {
         worker_.Initialize();
@@ -24,12 +24,12 @@ public:
         worker_.Finalize();
     }
 
-    bool decrementHotnessCounter(BasicBlock& bb);
-    void compileBasicBlock(CompilerTask&& task);
-    void generateInstr(CompiledEntry* entry, const DecodedInstruction& instr);
+    bool decrementHotnessCounter(BasicBlock &bb);
+    void compileBasicBlock(CompilerTask &&task);
+    void generateInstr(CompiledEntry *entry, const DecodedInstruction &instr);
 
 private:
-    Hart* hart_;
+    Hart *hart_;
     CompilerWorker worker_;
 };
 

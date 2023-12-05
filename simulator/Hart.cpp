@@ -9,7 +9,7 @@ namespace RISCV {
 
 using namespace memory;
 
-BasicBlock& Hart::getBasicBlock() {
+BasicBlock &Hart::getBasicBlock() {
     auto bb = bbCache_.find(pc_);
     if (LIKELY(bb != std::nullopt)) {
         return *bb;
@@ -26,7 +26,7 @@ BasicBlock Hart::fetchBasicBlock() {
 
     constexpr const size_t maxBasicBlockBytesize = INSTRUCTION_BYTESIZE * BasicBlock::MAX_SIZE;
 
-    PhysicalMemory& pmem = getPhysicalMemory();
+    PhysicalMemory &pmem = getPhysicalMemory();
     PhysAddr paddr = getPhysAddr<memory::MemoryType::IMem>(pc_);
 
     const uint32_t pageOffset = getPageOffset(paddr);
@@ -43,7 +43,7 @@ BasicBlock Hart::fetchBasicBlock() {
 
     pmem.read(paddr, readBytesize, encInstr);
     for (size_t i = 0; i < readInstructions; ++i) {
-        auto& decInstr = bbBody.emplace_back(decode(encInstr[i]));
+        auto &decInstr = bbBody.emplace_back(decode(encInstr[i]));
         if (UNLIKELY(decInstr.isJumpInstruction())) {
             break;
         }
@@ -54,7 +54,7 @@ BasicBlock Hart::fetchBasicBlock() {
     return BasicBlock(std::move(bbBody), pc_);
 }
 
-void Hart::executeBasicBlock(BasicBlock& bb) {
+void Hart::executeBasicBlock(BasicBlock &bb) {
     auto is_not_compiled = compiler_.decrementHotnessCounter(bb);
     if (is_not_compiled) {
         dispatcher_.dispatchExecute(bb.getBodyEntry());
@@ -68,7 +68,7 @@ DecodedInstruction Hart::decode(const EncodedInstruction encInstr) const {
 }
 
 Hart::Hart() : dispatcher_(this), compiler_(this) {
-    PhysicalMemory& pmem = getPhysicalMemory();
+    PhysicalMemory &pmem = getPhysicalMemory();
 
     /*
      *  Initialize CSR
@@ -81,8 +81,8 @@ Hart::Hart() : dispatcher_(this), compiler_(this) {
     // Root table ppn
     const uint64_t satpPPN = pmem.getEmptyPageNumber();
 
-    csrRegs_[CSR_SATP_INDEX] = makePartialBits<60, 63, uint64_t>(satpMode) |
-                               makePartialBits<44, 59>(satpAsid) | makePartialBits<0, 43>(satpPPN);
+    csrRegs_[CSR_SATP_INDEX] = makePartialBits<60, 63, uint64_t>(satpMode) | makePartialBits<44, 59>(satpAsid) |
+                               makePartialBits<0, 43>(satpPPN);
 
     mmu_.setSATPReg(csrRegs_[CSR_SATP_INDEX]);
     pmem.allocatePage(satpPPN);

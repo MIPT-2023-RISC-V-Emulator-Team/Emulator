@@ -26,7 +26,7 @@ public:
 
 class CompilerTaskQueue {
 public:
-    void addTask(CompilerTask&& task);
+    void addTask(CompilerTask &&task);
     std::optional<CompilerTask> getTask();
 
     void close();
@@ -41,19 +41,19 @@ private:
 
 class CompilerWorker {
 public:
-    CompilerWorker(Compiler* compiler) : compiler_(compiler) {}
+    CompilerWorker(Compiler *compiler) : compiler_(compiler) {}
 
     void Initialize();
     void Finalize();
 
     void processTask();
 
-    ALWAYS_INLINE void addTask(CompilerTask&& task) {
+    ALWAYS_INLINE void addTask(CompilerTask &&task) {
         task_queue_.addTask(std::move(task));
     }
 
 private:
-    Compiler* compiler_;
+    Compiler *compiler_;
     std::thread worker_thread_;
     CompilerTaskQueue task_queue_;
 };

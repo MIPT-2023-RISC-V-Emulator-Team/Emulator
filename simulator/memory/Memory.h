@@ -32,7 +32,7 @@ static inline uint32_t getPageOffset(const T addr) {
 
 class PhysicalMemory final {
 private:
-    uint8_t* memory_ = nullptr;
+    uint8_t *memory_ = nullptr;
     std::vector<char> emptyPagesFlags_;
     std::vector<uint32_t> allocatedPages_;
 
@@ -45,14 +45,14 @@ public:
     void freeAllPages();
     uint64_t getEmptyPageNumber() const;
 
-    bool read(const PhysAddr paddr, const size_t size, void* value);
-    bool write(const PhysAddr paddr, const size_t size, const void* value);
+    bool read(const PhysAddr paddr, const size_t size, void *value);
+    bool write(const PhysAddr paddr, const size_t size, const void *value);
 
     PhysicalMemory();
     ~PhysicalMemory();
 };
 
-PhysicalMemory& getPhysicalMemory();
+PhysicalMemory &getPhysicalMemory();
 
 }  // namespace RISCV::memory
 

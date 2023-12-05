@@ -15,7 +15,7 @@ namespace RISCV {
 
 using namespace memory;
 
-OSHelper* OSHelper::instancePtr = nullptr;
+OSHelper *OSHelper::instancePtr = nullptr;
 
 bool OSHelper::loadElfFile(Hart &hart, const std::string &filename) {
     int fd = open(filename.c_str(), O_RDONLY);
@@ -29,7 +29,7 @@ bool OSHelper::loadElfFile(Hart &hart, const std::string &filename) {
         return false;
     }
 
-    Elf* elf = elf_begin(fd, ELF_C_READ, nullptr);
+    Elf *elf = elf_begin(fd, ELF_C_READ, nullptr);
     if (!elf) {
         fprintf(stderr, "elf_begin() failed\n");
         return false;
@@ -57,7 +57,7 @@ bool OSHelper::loadElfFile(Hart &hart, const std::string &filename) {
         return false;
     }
 
-    void* fileBuffer = mmap(NULL, fileStat.st_size, PROT_READ, MAP_SHARED, fd, 0);
+    void *fileBuffer = mmap(NULL, fileStat.st_size, PROT_READ, MAP_SHARED, fd, 0);
     if (fileBuffer == NULL) {
         fprintf(stderr, "mmap() failed\n");
         return false;
@@ -70,8 +70,8 @@ bool OSHelper::loadElfFile(Hart &hart, const std::string &filename) {
         if (phdr.p_type != PT_LOAD)
             continue;
 
-        const MMU& translator = hart.getTranslator();
-        PhysicalMemory& pmem = getPhysicalMemory();
+        const MMU &translator = hart.getTranslator();
+        PhysicalMemory &pmem = getPhysicalMemory();
 
         const VirtAddr segmentStart = phdr.p_vaddr;
         const uint64_t segmentSize = phdr.p_memsz;
@@ -88,14 +88,13 @@ bool OSHelper::loadElfFile(Hart &hart, const std::string &filename) {
         }
 
         const PhysAddr paddrStart = translator.getPhysAddrWithAllocation(segmentStart, request);
-        const PhysAddr paddrEnd =
-            translator.getPhysAddrWithAllocation(segmentStart + segmentSize - 1, request);
+        const PhysAddr paddrEnd = translator.getPhysAddrWithAllocation(segmentStart + segmentSize - 1, request);
 
         // If segment occupies only one page of memory
         if (getPageNumber(paddrStart) == getPageNumber(paddrEnd)) {
             // Use phdr.p_filesz because remaining information will be filled with zeros as supposed
             // to be
-            if (!pmem.write(paddrStart, phdr.p_filesz, (uint8_t*)fileBuffer + phdr.p_offset)) {
+            if (!pmem.write(paddrStart, phdr.p_filesz, (uint8_t *)fileBuffer + phdr.p_offset)) {
                 munmap(fileBuffer, fileStat.st_size);
                 elf_end(elf);
                 close(fd);
@@ -112,7 +111,7 @@ bool OSHelper::loadElfFile(Hart &hart, const std::string &filename) {
         size_t addressIncrementSize = copyBytesize;
         for (VirtAddr currVirtAddr = segmentStart; currVirtAddr < segmentStart + segmentSize;) {
             PhysAddr currPhysAddr = translator.getPhysAddrWithAllocation(currVirtAddr, request);
-            pmem.write(currPhysAddr, copyBytesize, (uint8_t*)fileBuffer + fileOffset);
+            pmem.write(currPhysAddr, copyBytesize, (uint8_t *)fileBuffer + fileOffset);
 
             fileOffset += copyBytesize;
             leftBytesize -= copyBytesize;
@@ -137,10 +136,9 @@ bool OSHelper::loadElfFile(Hart &hart, const std::string &filename) {
     return true;
 }
 
-
 bool OSHelper::allocateStack(Hart &hart, const VirtAddr stackAddr, const size_t stackSize) {
-    const MMU& translator = hart.getTranslator();
-    PhysicalMemory& pmem = getPhysicalMemory();
+    const MMU &translator = hart.getTranslator();
+    PhysicalMemory &pmem = getPhysicalMemory();
 
     hart.setReg(RegisterType::SP, stackAddr);
     VirtAddr stackVAddr = stackAddr;
@@ -157,7 +155,6 @@ bool OSHelper::allocateStack(Hart &hart, const VirtAddr stackAddr, const size_t 
     return true;
 }
 
-
 bool OSHelper::setupCmdArgs(Hart &hart, int argc, char **argv, char **envp) {
     VirtAddr virtSP = hart.getReg(RegisterType::SP);
     PhysAddr physSP = 0;
@@ -168,7 +165,7 @@ bool OSHelper::setupCmdArgs(Hart &hart, int argc, char **argv, char **envp) {
     VirtAddr uargvStart = 0;
     VirtAddr uenvpStart = 0;
 
-    PhysicalMemory& pmem = getPhysicalMemory();
+    PhysicalMemory &pmem = getPhysicalMemory();
     const MMU &translator = hart.getTranslator();
 
     int uargc = argc - 1;
@@ -180,7 +177,6 @@ bool OSHelper::setupCmdArgs(Hart &hart, int argc, char **argv, char **envp) {
     // Put envp on the stack
     uenvp.resize(uenvc);
     for (int i = uenvc - 1; i >= 0; --i) {
-
         // Account for '\0'
         size_t len = std::strlen(envp[i]) + 1;
         virtSP -= len;
@@ -193,8 +189,7 @@ bool OSHelper::setupCmdArgs(Hart &hart, int argc, char **argv, char **envp) {
         if (vpnStart == vpnEnd) {
             physSP = translator.getPhysAddrWithAllocation(virtSP);
             pmem.write(physSP, len, envp[i]);
-        }
-        else {
+        } else {
             // String occupies two or more pages of memory
             uint32_t copyBytesize = PAGE_BYTESIZE - getPageOffset(virtSP);
             uint32_t leftBytesize = len;
@@ -220,7 +215,6 @@ bool OSHelper::setupCmdArgs(Hart &hart, int argc, char **argv, char **envp) {
     // Put argv on the stack
     uargv.resize(uargc);
     for (int i = uargc - 1; i >= 0; --i) {
-
         // Account for '\0'
         size_t len = std::strlen(argv[i + 1]) + 1;
         virtSP -= len;
@@ -233,8 +227,7 @@ bool OSHelper::setupCmdArgs(Hart &hart, int argc, char **argv, char **envp) {
         if (vpnStart == vpnEnd) {
             physSP = translator.getPhysAddrWithAllocation(virtSP);
             pmem.write(physSP, len, argv[i + 1]);
-        }
-        else {
+        } else {
             // String occupies two or more pages of memory
             uint32_t copyBytesize = PAGE_BYTESIZE - getPageOffset(virtSP);
             uint32_t leftBytesize = len;
@@ -263,7 +256,6 @@ bool OSHelper::setupCmdArgs(Hart &hart, int argc, char **argv, char **envp) {
     physSP = translator.getPhysAddrWithAllocation(virtSP);
     pmem.write(physSP, sizeof(uargc), &uargc);
 
-
     // Now put pointers for argv
 
     // NULL at the end. Already zero-ed out
@@ -275,7 +267,6 @@ bool OSHelper::setupCmdArgs(Hart &hart, int argc, char **argv, char **envp) {
     }
     uargvStart = virtSP;
 
-
     // Now put pointers for envp
 
     // NULL at the end. Already zero-ed out
@@ -286,7 +277,6 @@ bool OSHelper::setupCmdArgs(Hart &hart, int argc, char **argv, char **envp) {
         pmem.write(physSP, sizeof(uenvp[i]), &uenvp[i]);
     }
     uenvpStart = virtSP;
-
 
     virtSP -= virtSP & 0xFFF;
     hart.setReg(RegisterType::SP, virtSP);

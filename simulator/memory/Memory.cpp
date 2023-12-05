@@ -1,10 +1,9 @@
+#include <simulator/constants.h>
 #include <simulator/memory/Memory.h>
 
 #include <algorithm>
 #include <cstring>
 #include <string>
-
-#include <simulator/constants.h>
 
 namespace RISCV::memory {
 
@@ -16,8 +15,7 @@ bool PhysicalMemory::allocatePage(const uint64_t pageNum) {
         return false;
     }
 
-    if (std::find(allocatedPages_.begin(), allocatedPages_.end(), pageNum) ==
-        allocatedPages_.end()) {
+    if (std::find(allocatedPages_.begin(), allocatedPages_.end(), pageNum) == allocatedPages_.end()) {
         allocatedPages_.push_back(pageNum);
         emptyPagesFlags_[pageNum] = 0;
     }
@@ -48,12 +46,12 @@ uint64_t PhysicalMemory::getEmptyPageNumber() const {
     return it - emptyPagesFlags_.begin();
 }
 
-bool PhysicalMemory::read(const PhysAddr paddr, const size_t size, void* value) {
+bool PhysicalMemory::read(const PhysAddr paddr, const size_t size, void *value) {
     std::memcpy(value, memory_ + paddr, size);
     return true;
 }
 
-bool PhysicalMemory::write(const PhysAddr paddr, const size_t size, const void* value) {
+bool PhysicalMemory::write(const PhysAddr paddr, const size_t size, const void *value) {
     std::memcpy(memory_ + paddr, value, size);
     return true;
 }
@@ -66,7 +64,7 @@ PhysicalMemory::~PhysicalMemory() {
     delete[] memory_;
 }
 
-PhysicalMemory& getPhysicalMemory() {
+PhysicalMemory &getPhysicalMemory() {
     return g_physicalMemory;
 }
 

@@ -14,12 +14,12 @@ BinPackArguments: false
 BinPackParameters: false
 BreakConstructorInitializers: BeforeColon
 BreakBeforeTernaryOperators: false
-ColumnLimit: 100
+ColumnLimit: 120
 CommentPragmas: NOLINT:.*
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 Cpp11BracedListStyle: true
 DerivePointerAlignment: false
 FixNamespaceComments: true
-PointerAlignment: Left
+PointerAlignment: Right
 IndentWidth: 4
 TabWidth: 4

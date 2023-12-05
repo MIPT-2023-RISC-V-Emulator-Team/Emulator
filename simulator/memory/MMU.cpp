@@ -21,7 +21,7 @@ void MMU::setSATPReg(const RegValue satp) {
 
 PhysAddr MMU::getPhysAddrWithAllocation(const VirtAddr vaddr, const MemoryRequest request) const {
     PhysAddr paddr;
-    PhysicalMemory& pmem = getPhysicalMemory();
+    PhysicalMemory &pmem = getPhysicalMemory();
     PTE pte[6];
 
     // Since this function is called only at the beginning of the program several times
