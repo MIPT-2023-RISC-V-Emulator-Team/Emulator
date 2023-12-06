@@ -2,6 +2,7 @@
 #define INCLUDE_MEMORY_H
 
 #include <cstdint>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -45,8 +46,15 @@ public:
     void freeAllPages();
     uint64_t getEmptyPageNumber() const;
 
-    bool read(const PhysAddr paddr, const size_t size, void *value);
-    bool write(const PhysAddr paddr, const size_t size, const void *value);
+    inline bool read(const PhysAddr paddr, const size_t size, void *value) {
+        std::memcpy(value, memory_ + paddr, size);
+        return true;
+    }
+
+    inline bool write(const PhysAddr paddr, const size_t size, const void *value) {
+        std::memcpy(memory_ + paddr, value, size);
+        return true;
+    }
 
     PhysicalMemory();
     ~PhysicalMemory();

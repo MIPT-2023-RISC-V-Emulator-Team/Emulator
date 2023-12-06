@@ -42,7 +42,18 @@ public:
           compiled_entry_(bb.compiled_entry_),
           compilation_status_(bb.compilation_status_.load(std::memory_order_relaxed)) {}
 
+    BasicBlock() = default;
+
     ~BasicBlock() = default;
+
+    BasicBlock &operator=(BasicBlock &&bb) {
+        body_ = std::move(bb.body_);
+        entrypoint_ = std::move(bb.entrypoint_);
+        hotness_counter_ = std::move(bb.hotness_counter_);
+        compiled_entry_ = std::move(bb.compiled_entry_);
+        compilation_status_ = std::move(bb.compilation_status_.load(std::memory_order_relaxed));
+        return *this;
+    }
 
     ALWAYS_INLINE size_t getSize() const {
         return body_.size();

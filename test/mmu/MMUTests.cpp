@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <simulator/memory/MMU.h>
+#include "simulator/memory/MMU.h"
 
 using namespace RISCV;
 using namespace RISCV::memory;

@@ -30,8 +30,11 @@ static constexpr uint64_t DEFAULT_STACK_ADDRESS = 0x3FFFFC00;
 static constexpr uint32_t CSR_COUNT = 4096;
 static constexpr uint32_t CSR_SATP_INDEX = 0x180;
 
-// Sv48 mode
+// Translation modes
+static constexpr uint8_t PTE_LEVELS_SV39 = 3;
 static constexpr uint8_t PTE_LEVELS_SV48 = 4;
+static constexpr uint8_t PTE_LEVELS_SV57 = 5;
+static constexpr uint8_t PTE_LEVELS_SV64 = 6;
 static constexpr uint8_t PTE_SIZE = 8;
 
 enum TranslationMode : uint64_t {

@@ -1,9 +1,9 @@
 #ifndef MMU_H
 #define MMU_H
 
-#include <simulator/Cache.h>
-#include <simulator/Common.h>
-#include <simulator/memory/Memory.h>
+#include "simulator/Cache.h"
+#include "simulator/Common.h"
+#include "simulator/memory/Memory.h"
 
 namespace RISCV::memory {
 
@@ -85,7 +85,7 @@ private:
         static constexpr const uint64_t checkBits = CAPACITY - 1;
 
         std::optional<uint64_t> find(const uint64_t vpn) const {
-            const std::pair<uint64_t, uint64_t> vpn_ppn = storage_[vpn & checkBits];
+            const std::pair<uint64_t, uint64_t> &vpn_ppn = storage_[vpn & checkBits];
             if (LIKELY(vpn_ppn.first == vpn)) {
                 return vpn_ppn.second;
             }
@@ -307,7 +307,7 @@ private:
                 return vaddr;
             }
             case TranslationMode::TRANSLATION_MODE_SV64: {
-                return pageTableWalk<request, 6>(rootTransTablePAddr_, vaddr);
+                return pageTableWalk<request, PTE_LEVELS_SV64>(rootTransTablePAddr_, vaddr);
             }
             case TranslationMode::TRANSLATION_MODE_SV57: {
                 if (!isVirtAddrCanonical<TranslationMode::TRANSLATION_MODE_SV57>(vaddr)) {
@@ -315,7 +315,7 @@ private:
                         return 0;
                     }
                 }
-                return pageTableWalk<request, 5>(rootTransTablePAddr_, vaddr);
+                return pageTableWalk<request, PTE_LEVELS_SV57>(rootTransTablePAddr_, vaddr);
             }
             case TranslationMode::TRANSLATION_MODE_SV48: {
                 if (!isVirtAddrCanonical<TranslationMode::TRANSLATION_MODE_SV48>(vaddr)) {
@@ -323,7 +323,7 @@ private:
                         return 0;
                     }
                 }
-                return pageTableWalk<request, 4>(rootTransTablePAddr_, vaddr);
+                return pageTableWalk<request, PTE_LEVELS_SV48>(rootTransTablePAddr_, vaddr);
             }
             case TranslationMode::TRANSLATION_MODE_SV39: {
                 if (!isVirtAddrCanonical<TranslationMode::TRANSLATION_MODE_SV39>(vaddr)) {
@@ -331,7 +331,7 @@ private:
                         return 0;
                     }
                 }
-                return pageTableWalk<request, 3>(rootTransTablePAddr_, vaddr);
+                return pageTableWalk<request, PTE_LEVELS_SV39>(rootTransTablePAddr_, vaddr);
             }
         }
 

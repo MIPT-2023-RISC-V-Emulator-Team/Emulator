@@ -9,35 +9,24 @@ namespace RISCV {
 
 using namespace memory;
 
-BasicBlock &Hart::getBasicBlock() {
-    auto bb = bbCache_.find(pc_);
-    if (LIKELY(bb != std::nullopt)) {
-        return *bb;
-    }
-    auto newBb = fetchBasicBlock();
-    auto bbRef = cacheBasicBlock(pc_, std::move(newBb));
-    return bbRef;
-}
-
 BasicBlock Hart::fetchBasicBlock() {
     EncodedInstruction encInstr[BasicBlock::MAX_SIZE];
     std::vector<DecodedInstruction> bbBody;
     bbBody.reserve(BasicBlock::MAX_SIZE);
 
-    constexpr const size_t maxBasicBlockBytesize = INSTRUCTION_BYTESIZE * BasicBlock::MAX_SIZE;
-
     PhysicalMemory &pmem = getPhysicalMemory();
     PhysAddr paddr = getPhysAddr<memory::MemoryType::IMem>(pc_);
 
+    constexpr const size_t maxBasicBlockBytesize = INSTRUCTION_BYTESIZE * BasicBlock::MAX_SIZE;
+    constexpr const uint32_t maxOffsetForFullBB = PAGE_BYTESIZE - maxBasicBlockBytesize;
+
     const uint32_t pageOffset = getPageOffset(paddr);
-    size_t readBytesize = PAGE_BYTESIZE - pageOffset;
+    size_t readBytesize = maxBasicBlockBytesize;
     size_t readInstructions = BasicBlock::MAX_SIZE;
 
-    if (LIKELY(readBytesize >= maxBasicBlockBytesize)) {
-        // Hooooot
-        readBytesize = maxBasicBlockBytesize;
-    } else {
+    if (UNLIKELY(pageOffset > maxOffsetForFullBB)) {
         // This is very rare
+        readBytesize = PAGE_BYTESIZE - pageOffset;
         readInstructions = readBytesize / INSTRUCTION_BYTESIZE;
     }
 
