@@ -37,7 +37,7 @@ int main(int argc, char **argv, char **envp) {
     }
 
     // Put command arguments and environment variable onto the stack
-    if (!osHelper->setupCmdArgs(CPU, argc, argv, envp)) {
+    if (!osHelper->setupCmdArgs(CPU, argc - 1, &argv[1], envp)) {
         // Fatal error
         std::cerr << redColor << "Error: could not initialize command line arguments" << defaultColor << std::endl;
         std::exit(EXIT_FAILURE);
