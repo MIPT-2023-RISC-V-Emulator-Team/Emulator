@@ -168,7 +168,7 @@ bool OSHelper::setupCmdArgs(Hart &hart, int argc, char **argv, char **envp) {
     PhysicalMemory &pmem = getPhysicalMemory();
     const MMU &translator = hart.getTranslator();
 
-    int uargc = argc - 1;
+    int uargc = argc;
     int uenvc = 0;
     while (envp[uenvc] != nullptr) {
         ++uenvc;
@@ -216,7 +216,7 @@ bool OSHelper::setupCmdArgs(Hart &hart, int argc, char **argv, char **envp) {
     uargv.resize(uargc);
     for (int i = uargc - 1; i >= 0; --i) {
         // Account for '\0'
-        size_t len = std::strlen(argv[i + 1]) + 1;
+        size_t len = std::strlen(argv[i]) + 1;
         virtSP -= len;
         virtSP -= virtSP & 7UL;
 
@@ -226,7 +226,7 @@ bool OSHelper::setupCmdArgs(Hart &hart, int argc, char **argv, char **envp) {
         // Whole string on the same page
         if (vpnStart == vpnEnd) {
             physSP = translator.getPhysAddrWithAllocation(virtSP);
-            pmem.write(physSP, len, argv[i + 1]);
+            pmem.write(physSP, len, argv[i]);
         } else {
             // String occupies two or more pages of memory
             uint32_t copyBytesize = PAGE_BYTESIZE - getPageOffset(virtSP);
@@ -234,7 +234,7 @@ bool OSHelper::setupCmdArgs(Hart &hart, int argc, char **argv, char **envp) {
             uint32_t copiedBytesize = 0;
 
             physSP = translator.getPhysAddrWithAllocation(virtSP);
-            pmem.write(physSP, copyBytesize, argv[i + 1]);
+            pmem.write(physSP, copyBytesize, argv[i]);
             leftBytesize -= copyBytesize;
             copiedBytesize += copyBytesize;
 
@@ -242,7 +242,7 @@ bool OSHelper::setupCmdArgs(Hart &hart, int argc, char **argv, char **envp) {
                 copyBytesize = std::min(PAGE_BYTESIZE, leftBytesize);
 
                 physSP = translator.getPhysAddrWithAllocation(vpnCurr * PAGE_BYTESIZE);
-                pmem.write(physSP, copyBytesize, argv[i + 1] + copiedBytesize);
+                pmem.write(physSP, copyBytesize, argv[i] + copiedBytesize);
                 leftBytesize -= copyBytesize;
                 copiedBytesize += copyBytesize;
             }
