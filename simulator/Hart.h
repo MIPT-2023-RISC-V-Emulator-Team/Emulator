@@ -18,37 +18,34 @@ class Hart final {
 public:
     static constexpr size_t BB_CACHE_CAPACITY = 1024;
 
-    using BBCache = LRUCache<BB_CACHE_CAPACITY, BasicBlock::Entrypoint, BasicBlock>;
-
     Hart();
     ~Hart();
 
-    RegValue getReg(const RegisterType id) const {
+    ALWAYS_INLINE RegValue getReg(const RegisterType id) const {
         return regs_[id];
     }
 
-    RegValue getCSRReg(const uint32_t id) const {
+    ALWAYS_INLINE RegValue getCSRReg(const uint32_t id) const {
         return csrRegs_[id];
     }
 
-    void setReg(const RegisterType id, const RegValue val) {
+    ALWAYS_INLINE void setReg(const RegisterType id, const RegValue val) {
         regs_[id] = val;
         regs_[RegisterType::ZERO] = 0;
     }
 
-    void incrementPC() {
+    ALWAYS_INLINE void incrementPC() {
         pc_ += INSTRUCTION_BYTESIZE;
     }
 
-    memory::VirtAddr getPC() const {
+    ALWAYS_INLINE memory::VirtAddr getPC() const {
         return pc_;
     }
 
-    void setPC(memory::VirtAddr newPC) {
+    ALWAYS_INLINE void setPC(memory::VirtAddr newPC) {
         pc_ = newPC;
     }
 
-    BasicBlock &getBasicBlock();
     void executeBasicBlock(BasicBlock &bb);
 
     ALWAYS_INLINE auto cacheBasicBlock(BasicBlock::Entrypoint entrypoint, BasicBlock bb) {
@@ -57,7 +54,17 @@ public:
         return bbCache_.insert(entrypoint, std::move(bb));
     }
 
-    void setBBEntry(BasicBlock::Entrypoint entrypoint, BasicBlock::CompiledEntry entry) {
+    ALWAYS_INLINE BasicBlock &getBasicBlock() {
+        auto bb = bbCache_.find(pc_);
+        if (LIKELY(bb != std::nullopt)) {
+            return *bb;
+        }
+        auto newBb = fetchBasicBlock();
+        auto bbRef = cacheBasicBlock(pc_, std::move(newBb));
+        return bbRef;
+    }
+
+    ALWAYS_INLINE void setBBEntry(BasicBlock::Entrypoint entrypoint, BasicBlock::CompiledEntry entry) {
         std::lock_guard holder(bb_cache_lock_);
         auto bb = bbCache_.find(entrypoint);
 
@@ -71,7 +78,7 @@ public:
         // bbRef.setCompilationStatus(CompilationStatus::COMPILED, std::memory_order_release);
     }
 
-    const memory::MMU &getTranslator() const {
+    ALWAYS_INLINE const memory::MMU &getTranslator() const {
         return mmu_;
     }
 
@@ -108,7 +115,7 @@ private:
     memory::TLB tlb_;
 
     std::mutex bb_cache_lock_;
-    BBCache bbCache_;
+    BBCache<BB_CACHE_CAPACITY> bbCache_;
 
     Decoder decoder_;
     Dispatcher dispatcher_;

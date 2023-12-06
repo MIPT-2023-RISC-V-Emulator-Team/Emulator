@@ -1,7 +1,6 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
@@ -12,7 +11,7 @@
 
 namespace RISCV::utils {
 
-bool startHostInstructionCount(int* fd) {
+bool startHostInstructionCount(int *fd) {
     perf_event_attr pe = {};
 
     pe.type = PERF_TYPE_HARDWARE;
@@ -31,7 +30,7 @@ bool startHostInstructionCount(int* fd) {
     return true;
 }
 
-bool endHostInstructionCount(int* fd, size_t* instructionCount) {
+bool endHostInstructionCount(int *fd, size_t *instructionCount) {
     ioctl(*fd, PERF_EVENT_IOC_DISABLE, 0);
     int rd = read(*fd, instructionCount, sizeof(size_t));
     bool result = true;
@@ -42,6 +41,6 @@ bool endHostInstructionCount(int* fd, size_t* instructionCount) {
     return result;
 }
 
-}   // namespace RISCV::utils
+}  // namespace RISCV::utils
 
 #endif  // UTILS_H

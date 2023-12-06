@@ -6,49 +6,34 @@
 #include <optional>
 #include <unordered_map>
 
+#include "BasicBlock.h"
 #include "utils/macros.h"
 
 namespace RISCV {
 
-template <size_t CAPACITY, typename keyType, typename valType, bool byRef = true>
-class LRUCache {
+template <size_t CAPACITY>
+class BBCache {
 public:
-    using Iter = typename std::list<std::pair<keyType, valType>>::iterator;
-    using Ref = typename std::reference_wrapper<valType>;
-    using RetType = std::conditional_t<byRef, Ref, valType>;
+    using RetType = typename std::reference_wrapper<BasicBlock>;
+    static constexpr const uint64_t checkBits = CAPACITY - 1;
 
-    std::optional<RetType> find(const keyType key) const {
-        auto item = selector_.find(key);
-        if (UNLIKELY(item == selector_.cend())) {
-            return std::nullopt;
+    std::optional<RetType> find(const BasicBlock::Entrypoint pc) {
+        std::pair<BasicBlock::Entrypoint, BasicBlock> &pc_bb = storage_[pc & checkBits];
+        if (LIKELY(pc_bb.first == pc)) {
+            return std::ref(pc_bb.second);
         }
-        return getRetType(item->second->second);
+        return std::nullopt;
     }
 
-    RetType insert(const keyType key, const valType val) {
-        ASSERT(selector_.find(key) == selector_.cend());
-        if (LIKELY(storage_.size() == CAPACITY)) {
-            auto &last = storage_.back();
-            selector_.erase(last.first);
-            storage_.pop_back();
-        }
-        ASSERT(storage_.size() < CAPACITY);
-        auto &inserted = storage_.emplace_front(key, std::move(val));
-        selector_.emplace(key, storage_.begin());
-        return getRetType(inserted.second);
+    RetType insert(const BasicBlock::Entrypoint pc, BasicBlock bb) {
+        const size_t idx = pc & checkBits;
+        storage_[idx].first = pc;
+        storage_[idx].second = std::move(bb);
+        return std::ref(storage_[idx].second);
     }
 
 private:
-    ALWAYS_INLINE RetType getRetType(valType &val) const {
-        if constexpr (byRef) {
-            return std::ref(val);
-        } else {
-            return val;
-        }
-    }
-
-    std::list<std::pair<keyType, valType>> storage_;
-    std::unordered_map<keyType, Iter> selector_;
+    std::pair<BasicBlock::Entrypoint, BasicBlock> storage_[CAPACITY];
 };
 
 }  // namespace RISCV
