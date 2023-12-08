@@ -46,7 +46,7 @@
 
 #define ALWAYS_INLINE
 
-#define DEBUG_INSTRUCTION(format, ...) printf(format, ##__VA_ARGS__)
+#define DEBUG_INSTRUCTION(format, ...)
 
 #define ASSERT_FAIL(expr) RISCV::debug::AssertionFail(expr, __FILE__, __LINE__, __FUNCTION__)
 

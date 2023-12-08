@@ -44,8 +44,8 @@ BasicBlock Hart::fetchBasicBlock() {
 }
 
 void Hart::executeBasicBlock(BasicBlock &bb) {
-    auto is_not_compiled = compiler_.decrementHotnessCounter(bb);
-    if (is_not_compiled) {
+    auto isNotCompiled = compiler_.decrementHotnessCounter(bb);
+    if (UNLIKELY(isNotCompiled)) {
         dispatcher_.dispatchExecute(bb.getBodyEntry());
         return;
     }
@@ -81,6 +81,27 @@ Hart::Hart() : dispatcher_(this), compiler_(this) {
 
 Hart::~Hart() {
     compiler_.FinalizeWorker();
+}
+
+void Hart::setBBEntry(BasicBlock::Entrypoint entrypoint, BasicBlock::CompiledEntry entry) {
+    std::lock_guard holder(bb_cache_lock_);
+    auto bb = bbCache_.find(entrypoint);
+
+    if (UNLIKELY(bb == std::nullopt)) {
+        return;
+    }
+
+    auto &bbRef = bb->get();
+    bbRef.setCompiledEntry(entry);
+    bbRef.setCompilationStatus(CompilationStatus::COMPILED, std::memory_order_seq_cst);
+}
+
+size_t Hart::getOffsetToRegs() {
+    return MEMBER_OFFSET(Hart, regs_);
+}
+
+size_t Hart::getOffsetToPc() {
+    return MEMBER_OFFSET(Hart, pc_);
 }
 
 }  // namespace RISCV

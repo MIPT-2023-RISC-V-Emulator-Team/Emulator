@@ -49,7 +49,6 @@ public:
     void executeBasicBlock(BasicBlock &bb);
 
     ALWAYS_INLINE auto cacheBasicBlock(BasicBlock::Entrypoint entrypoint, BasicBlock bb) {
-        // TODO(panferovi): find way to remove lock
         std::lock_guard holder(bb_cache_lock_);
         return bbCache_.insert(entrypoint, std::move(bb));
     }
@@ -64,19 +63,7 @@ public:
         return bbRef;
     }
 
-    ALWAYS_INLINE void setBBEntry(BasicBlock::Entrypoint entrypoint, BasicBlock::CompiledEntry entry) {
-        std::lock_guard holder(bb_cache_lock_);
-        auto bb = bbCache_.find(entrypoint);
-
-        if (UNLIKELY(bb == std::nullopt)) {
-            return;
-        }
-
-        auto &bbRef = bb->get();
-        bbRef.setCompiledEntry(entry);
-        // TODO(all): implement codegen and uncomment
-        // bbRef.setCompilationStatus(CompilationStatus::COMPILED, std::memory_order_release);
-    }
+    void setBBEntry(BasicBlock::Entrypoint entrypoint, BasicBlock::CompiledEntry entry);
 
     ALWAYS_INLINE const memory::MMU &getTranslator() const {
         return mmu_;
@@ -101,6 +88,9 @@ public:
 
         return paddr;
     }
+
+    static size_t getOffsetToRegs();
+    static size_t getOffsetToPc();
 
 private:
     BasicBlock fetchBasicBlock();

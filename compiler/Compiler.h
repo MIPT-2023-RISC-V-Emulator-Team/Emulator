@@ -1,6 +1,8 @@
 #ifndef INCLUDE_COMPILER_H_
 #define INCLUDE_COMPILER_H_
 
+#include <asmjit/asmjit.h>
+
 #include "compiler/CompilerWorker.h"
 #include "simulator/BasicBlock.h"
 
@@ -9,6 +11,8 @@ class Hart;
 }  // namespace RISCV
 
 namespace RISCV::compiler {
+
+class CodeGenerator;
 
 class Compiler {
 public:
@@ -26,11 +30,12 @@ public:
 
     bool decrementHotnessCounter(BasicBlock &bb);
     void compileBasicBlock(CompilerTask &&task);
-    void generateInstr(CompiledEntry *entry, const DecodedInstruction &instr);
+    void generateInstr(CodeGenerator &codegen, const DecodedInstruction &instr, size_t instr_offset);
 
 private:
     Hart *hart_;
     CompilerWorker worker_;
+    asmjit::JitRuntime runtime_;
 };
 
 }  // namespace RISCV::compiler

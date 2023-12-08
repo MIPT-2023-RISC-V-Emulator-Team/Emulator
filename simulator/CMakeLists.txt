@@ -43,3 +43,5 @@ target_include_directories(simulator
 )
 
 target_link_libraries(simulator PRIVATE ${LINK_OPT})
+
+target_compile_options(simulator PUBLIC -Wno-invalid-offsetof)
