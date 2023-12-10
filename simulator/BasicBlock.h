@@ -18,7 +18,7 @@ public:
     using Body = std::vector<DecodedInstruction>;
     using BodyEntry = Body::const_iterator;
     using Entrypoint = uint64_t;
-    using CompiledEntry = void (*)(Hart *);
+    using CompiledEntry = void (*)(Hart *, const DecodedInstruction *);
 
     // Fastest
     static constexpr size_t MAX_SIZE = 9;
@@ -72,7 +72,7 @@ public:
     }
 
     ALWAYS_INLINE void executeCompiled(Hart *hart) const {
-        compiled_entry_(hart);
+        compiled_entry_(hart, body_.data());
     }
 
     ALWAYS_INLINE CompilationStatus getCompilationStatus(std::memory_order memory_order) const {

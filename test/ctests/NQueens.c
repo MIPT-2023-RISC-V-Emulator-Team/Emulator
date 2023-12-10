@@ -5,13 +5,9 @@
 void printBoard(int board[N][N]) {
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
-            char cell[3] = ". ";
-            if (board[i][j] == 1) {
-                cell[0] = '@';
-            }
-            putchar(cell[0]);
-            putchar(cell[1]);
-            putchar(cell[2]);
+            char cell = board[i][j] == 1 ? '@' : '.';
+            putchar(cell);
+            putchar(' ');
         }
         putchar('\n');
     }
