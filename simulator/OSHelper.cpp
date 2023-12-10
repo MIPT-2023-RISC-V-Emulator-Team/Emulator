@@ -17,7 +17,7 @@ using namespace memory;
 
 OSHelper *OSHelper::instancePtr = nullptr;
 
-bool OSHelper::loadElfFile(Hart &hart, const std::string &filename) {
+bool OSHelper::loadElfFile(Hart &hart, const std::string &filename) const {
     int fd = open(filename.c_str(), O_RDONLY);
     if (fd == -1) {
         fprintf(stderr, "failed to open file \'%s\'\n", filename.c_str());
@@ -71,7 +71,6 @@ bool OSHelper::loadElfFile(Hart &hart, const std::string &filename) {
             continue;
 
         const MMU &translator = hart.getTranslator();
-        PhysicalMemory &pmem = getPhysicalMemory();
 
         const VirtAddr segmentStart = phdr.p_vaddr;
         const uint64_t segmentSize = phdr.p_memsz;
@@ -87,44 +86,14 @@ bool OSHelper::loadElfFile(Hart &hart, const std::string &filename) {
             request |= MemoryRequestBits::X;
         }
 
-        const PhysAddr paddrStart = translator.getPhysAddrWithAllocation(segmentStart, request);
-        const PhysAddr paddrEnd = translator.getPhysAddrWithAllocation(segmentStart + segmentSize - 1, request);
-
-        // If segment occupies only one page of memory
-        if (getPageNumber(paddrStart) == getPageNumber(paddrEnd)) {
-            // Use phdr.p_filesz because remaining information will be filled with zeros as supposed
-            // to be
-            if (!pmem.write(paddrStart, phdr.p_filesz, (uint8_t *)fileBuffer + phdr.p_offset)) {
-                munmap(fileBuffer, fileStat.st_size);
-                elf_end(elf);
-                close(fd);
-                return false;
-            }
-            continue;
+        // Explicitly allocate memory for those since we must take into account situation: p_memsze != p_filesz
+        uint64_t vpnStart = getPageNumber(segmentStart);
+        uint64_t vpnEnd = getPageNumber(segmentStart + segmentSize - 1);
+        for (uint64_t vpnCurr = vpnStart; vpnCurr <= vpnEnd; ++vpnCurr) {
+            translator.getPhysAddrWithAllocation(vpnCurr * PAGE_BYTESIZE, request);
         }
-
-        // If segment occupies two or more pages of memory
-        uint32_t copyBytesize = PAGE_BYTESIZE - getPageOffset(segmentStart);
-        uint32_t leftBytesize = phdr.p_filesz;
-        uint32_t fileOffset = phdr.p_offset;
-
-        size_t addressIncrementSize = copyBytesize;
-        for (VirtAddr currVirtAddr = segmentStart; currVirtAddr < segmentStart + segmentSize;) {
-            PhysAddr currPhysAddr = translator.getPhysAddrWithAllocation(currVirtAddr, request);
-            pmem.write(currPhysAddr, copyBytesize, (uint8_t *)fileBuffer + fileOffset);
-
-            fileOffset += copyBytesize;
-            leftBytesize -= copyBytesize;
-
-            copyBytesize = std::min((uint32_t)PAGE_BYTESIZE, leftBytesize);
-
-            /*
-             * Explicitly define loop ending since we need to add <PAGE_BYTESIZE -
-             * getPageOffset(segmentStart)> to virtual address only once and add <PAGE_BYTESIZE> all
-             * other times
-             */
-            currVirtAddr += addressIncrementSize;
-            addressIncrementSize = PAGE_BYTESIZE;
+        if (!writeMultipaged(translator, segmentStart, phdr.p_filesz, (uint8_t *)fileBuffer + phdr.p_offset)) {
+            return false;
         }
     }
 
@@ -136,7 +105,7 @@ bool OSHelper::loadElfFile(Hart &hart, const std::string &filename) {
     return true;
 }
 
-bool OSHelper::allocateStack(Hart &hart, const VirtAddr stackAddr, const size_t stackSize) {
+bool OSHelper::allocateStack(Hart &hart, const VirtAddr stackAddr, const size_t stackSize) const {
     const MMU &translator = hart.getTranslator();
     PhysicalMemory &pmem = getPhysicalMemory();
 
@@ -155,15 +124,12 @@ bool OSHelper::allocateStack(Hart &hart, const VirtAddr stackAddr, const size_t 
     return true;
 }
 
-bool OSHelper::setupCmdArgs(Hart &hart, int argc, char **argv, char **envp) {
+bool OSHelper::setupCmdArgs(Hart &hart, int argc, char **argv, char **envp) const {
     VirtAddr virtSP = hart.getReg(RegisterType::SP);
     PhysAddr physSP = 0;
 
-    std::vector<VirtAddr> uargv;
-    std::vector<VirtAddr> uenvp;
-
-    VirtAddr uargvStart = 0;
-    VirtAddr uenvpStart = 0;
+    std::vector<VirtAddr> uargvPtrs;
+    std::vector<VirtAddr> uenvpPtrs;
 
     PhysicalMemory &pmem = getPhysicalMemory();
     const MMU &translator = hart.getTranslator();
@@ -175,108 +141,39 @@ bool OSHelper::setupCmdArgs(Hart &hart, int argc, char **argv, char **envp) {
     }
 
     // Put envp on the stack
-    uenvp.resize(uenvc);
-    for (int i = uenvc - 1; i >= 0; --i) {
-        // Account for '\0'
-        size_t len = std::strlen(envp[i]) + 1;
-        virtSP -= len;
-        virtSP -= virtSP & 7UL;
-
-        uint64_t vpnStart = getPageNumber(virtSP);
-        uint64_t vpnEnd = getPageNumber(virtSP + len);
-
-        // Whole string on the same page
-        if (vpnStart == vpnEnd) {
-            physSP = translator.getPhysAddrWithAllocation(virtSP);
-            pmem.write(physSP, len, envp[i]);
-        } else {
-            // String occupies two or more pages of memory
-            uint32_t copyBytesize = PAGE_BYTESIZE - getPageOffset(virtSP);
-            uint32_t leftBytesize = len;
-            uint32_t copiedBytesize = 0;
-
-            physSP = translator.getPhysAddrWithAllocation(virtSP);
-            pmem.write(physSP, copyBytesize, envp[i]);
-            leftBytesize -= copyBytesize;
-            copiedBytesize += copyBytesize;
-
-            for (uint64_t vpnCurr = vpnStart + 1; vpnCurr <= vpnEnd; ++vpnCurr) {
-                copyBytesize = std::min(PAGE_BYTESIZE, leftBytesize);
-
-                physSP = translator.getPhysAddrWithAllocation(vpnCurr * PAGE_BYTESIZE);
-                pmem.write(physSP, copyBytesize, envp[i] + copiedBytesize);
-                leftBytesize -= copyBytesize;
-                copiedBytesize += copyBytesize;
-            }
-        }
-        uenvp[i] = virtSP;
+    if (!putArgsStr(translator, virtSP, uenvc, envp, uenvpPtrs)) {
+        return false;
     }
+    virtSP = uenvpPtrs[0];
 
     // Put argv on the stack
-    uargv.resize(uargc);
-    for (int i = uargc - 1; i >= 0; --i) {
-        // Account for '\0'
-        size_t len = std::strlen(argv[i]) + 1;
-        virtSP -= len;
-        virtSP -= virtSP & 7UL;
-
-        uint64_t vpnStart = getPageNumber(virtSP);
-        uint64_t vpnEnd = getPageNumber(virtSP + len);
-
-        // Whole string on the same page
-        if (vpnStart == vpnEnd) {
-            physSP = translator.getPhysAddrWithAllocation(virtSP);
-            pmem.write(physSP, len, argv[i]);
-        } else {
-            // String occupies two or more pages of memory
-            uint32_t copyBytesize = PAGE_BYTESIZE - getPageOffset(virtSP);
-            uint32_t leftBytesize = len;
-            uint32_t copiedBytesize = 0;
-
-            physSP = translator.getPhysAddrWithAllocation(virtSP);
-            pmem.write(physSP, copyBytesize, argv[i]);
-            leftBytesize -= copyBytesize;
-            copiedBytesize += copyBytesize;
-
-            for (uint64_t vpnCurr = vpnStart + 1; vpnCurr <= vpnEnd; ++vpnCurr) {
-                copyBytesize = std::min(PAGE_BYTESIZE, leftBytesize);
-
-                physSP = translator.getPhysAddrWithAllocation(vpnCurr * PAGE_BYTESIZE);
-                pmem.write(physSP, copyBytesize, argv[i] + copiedBytesize);
-                leftBytesize -= copyBytesize;
-                copiedBytesize += copyBytesize;
-            }
-        }
-        uargv[i] = virtSP;
+    if (!putArgsStr(translator, virtSP, uargc, argv, uargvPtrs)) {
+        return false;
     }
+    virtSP = uargvPtrs[0];
 
     // Put argc on the stack
     virtSP -= sizeof(int);
     virtSP -= virtSP & 7UL;
-    physSP = translator.getPhysAddrWithAllocation(virtSP);
+    physSP = translator.getPhysAddr<memory::MemoryType::WMem>(virtSP);
+    if (!physSP) {
+        return false;
+    }
     pmem.write(physSP, sizeof(uargc), &uargc);
 
     // Now put pointers for argv
-
-    // NULL at the end. Already zero-ed out
-    virtSP -= sizeof(VirtAddr);
-    for (int i = uargc - 1; i >= 0; --i) {
-        virtSP -= sizeof(VirtAddr);
-        physSP = translator.getPhysAddrWithAllocation(virtSP);
-        pmem.write(physSP, sizeof(uargv[i]), &uargv[i]);
+    if (!putArgsPtr(translator, virtSP, uargvPtrs)) {
+        return false;
     }
-    uargvStart = virtSP;
+    virtSP -= sizeof(VirtAddr) * (uargc + 1);
+    VirtAddr uargvStart = virtSP;
 
     // Now put pointers for envp
-
-    // NULL at the end. Already zero-ed out
-    virtSP -= sizeof(VirtAddr);
-    for (int i = uenvc - 1; i >= 0; --i) {
-        virtSP -= sizeof(VirtAddr);
-        physSP = translator.getPhysAddrWithAllocation(virtSP);
-        pmem.write(physSP, sizeof(uenvp[i]), &uenvp[i]);
+    if (!putArgsPtr(translator, virtSP, uenvpPtrs)) {
+        return false;
     }
-    uenvpStart = virtSP;
+    virtSP -= sizeof(VirtAddr) * (uenvc + 1);
+    VirtAddr uenvpStart = virtSP;
 
     virtSP -= virtSP & 0xFFF;
     hart.setReg(RegisterType::SP, virtSP);
@@ -284,6 +181,91 @@ bool OSHelper::setupCmdArgs(Hart &hart, int argc, char **argv, char **envp) {
     hart.setReg(RegisterType::A1, uargvStart);
     hart.setReg(RegisterType::A2, uenvpStart);
 
+    return true;
+}
+
+bool OSHelper::writeMultipaged(const MMU &translator,
+                               const VirtAddr vaddr,
+                               const size_t size,
+                               const uint8_t *data) const {
+    PhysicalMemory &pmem = getPhysicalMemory();
+
+    uint64_t vpnStart = getPageNumber(vaddr);
+    uint64_t vpnEnd = getPageNumber(vaddr + size - 1);
+
+    // Whole data on the same page
+    if (vpnStart == vpnEnd) {
+        PhysAddr paddr = translator.getPhysAddrWithAllocation(vaddr);
+        if (!paddr) {
+            return false;
+        }
+        pmem.write(paddr, size, data);
+    } else {
+        // Data occupies two or more pages of memory
+        uint32_t copyBytesize = PAGE_BYTESIZE - getPageOffset(vaddr);
+        uint32_t leftBytesize = size;
+        uint32_t copiedBytesize = 0;
+
+        PhysAddr paddr = translator.getPhysAddrWithAllocation(vaddr);
+        if (!paddr) {
+            return false;
+        }
+        pmem.write(paddr, copyBytesize, data);
+        leftBytesize -= copyBytesize;
+        copiedBytesize += copyBytesize;
+
+        for (uint64_t vpnCurr = vpnStart + 1; vpnCurr <= vpnEnd; ++vpnCurr) {
+            copyBytesize = std::min(PAGE_BYTESIZE, leftBytesize);
+
+            paddr = translator.getPhysAddrWithAllocation(vpnCurr * PAGE_BYTESIZE);
+            if (!paddr) {
+                return false;
+            }
+            pmem.write(paddr, copyBytesize, data + copiedBytesize);
+            leftBytesize -= copyBytesize;
+            copiedBytesize += copyBytesize;
+        }
+    }
+    return true;
+}
+
+bool OSHelper::putArgsStr(const MMU &translator,
+                          memory::VirtAddr virtSP,
+                          int argsCount,
+                          char **args,
+                          std::vector<memory::VirtAddr> &argsPtr) const {
+    PhysicalMemory &pmem = getPhysicalMemory();
+
+    argsPtr.resize(argsCount);
+    for (int i = argsCount - 1; i >= 0; --i) {
+        // Account for '\0'
+        size_t len = std::strlen(args[i]) + 1;
+        virtSP -= len;
+        virtSP -= virtSP & 7UL;
+
+        if (!writeMultipaged(translator, virtSP, len, (uint8_t *)args[i])) {
+            return false;
+        }
+        argsPtr[i] = virtSP;
+    }
+    return true;
+}
+
+bool OSHelper::putArgsPtr(const MMU &translator,
+                          memory::VirtAddr virtSP,
+                          const std::vector<memory::VirtAddr> &argsPtr) const {
+    PhysicalMemory &pmem = getPhysicalMemory();
+
+    // NULL at the end. Already zero-ed out
+    virtSP -= sizeof(VirtAddr);
+    for (int i = argsPtr.size() - 1; i >= 0; --i) {
+        virtSP -= sizeof(VirtAddr);
+        PhysAddr physSP = translator.getPhysAddr<memory::MemoryType::WMem>(virtSP);
+        if (!physSP) {
+            return false;
+        }
+        pmem.write(physSP, sizeof(argsPtr[i]), &argsPtr[i]);
+    }
     return true;
 }
 

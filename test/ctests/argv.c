@@ -1,4 +1,4 @@
-#include "clib.h"
+#include "stdlib/stdio.h"
 
 int main(int argc, char **argv, char **envp) {
     printf("argc = %d\n\n", argc);

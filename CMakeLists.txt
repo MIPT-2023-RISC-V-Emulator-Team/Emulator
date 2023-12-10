@@ -30,6 +30,13 @@ file(GLOB_RECURSE EMULATOR_FILES
     compiler/*.h
     utils/*.cpp
     utils/*.h
+
+    test/ctests/*.c
+    test/ctests/*.h
+    test/ctests/stdlib/*.h
+
+    test/mmu/*.cpp
+    test/mmu/*.h
 )
 
 

@@ -1,5 +1,4 @@
-#include "clib.h"
-
+#include "stdlib/stdio.h"
 
 int main() {
     puts("Hello, world!");

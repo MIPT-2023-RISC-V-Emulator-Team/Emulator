@@ -1,74 +1,15 @@
-#ifndef CTESTS_CLIB_H
-#define CTESTS_CLIB_H
+#ifndef STDLIB_STDIO_H
+#define STDLIB_STDIO_H
+
+#include "stdlib.h"
+#include "syscall.h"
 
 #pragma GCC system_header
 
-#define NULL (void*)0
-
-typedef __builtin_va_list va_list;
-#define va_start __builtin_va_start
-#define va_end __builtin_va_end
-#define va_copy __builtin_va_copy
-#define va_arg __builtin_va_arg
-
-
-#define STDIN_FILENO  0
+#define STDIN_FILENO 0
 #define STDOUT_FILENO 1
 #define STDERR_FILENO 2
 #define EOF (-1)
-
-#define SYSCALL_RV_SYS_READ  63
-#define SYSCALL_RV_SYS_WRITE 64
-#define SYSCALL_RV_SYS_EXIT  93
-
-
-static inline long __internal_syscall(
-    long n, long _a0, long _a1, long _a2, long _a3, long _a4, long _a5) {
-    register long a0 asm("a0") = _a0;
-    register long a1 asm("a1") = _a1;
-    register long a2 asm("a2") = _a2;
-    register long a3 asm("a3") = _a3;
-    register long a4 asm("a4") = _a4;
-    register long a5 asm("a5") = _a5;
-
-    register long syscall_id asm("a7") = n;
-
-    asm volatile("ecall" : "+r"(a0) : "r"(a1), "r"(a2), "r"(a3), "r"(a4), "r"(a5), "r"(syscall_id));
-
-    return a0;
-}
-
-int isdigit(int arg) {
-    return (arg >= '0' && arg <= '9');
-}
-
-char* itoa(int value, char *str, int base) {
-    char *r = str;
-    int t;
-    if (value < 0) {
-        value = -value;
-        *str++ = '-';
-    }
-
-    t = value;
-    do {
-        ++str;
-    } while (t /= base);
-    *str = '\0';
-    do {
-        *--str = '0' + value % base;
-    } while (value /= base);
-    return r;
-}
-
-int atoi(const char *str) {
-    int retVal = 0;
-    for (int i = 0; str[i] != '\0'; ++i) {
-        retVal = retVal * 10 + str[i] - '0';
-    }
-    return retVal;
-}
-
 
 int getchar() {
     long fileno = STDIN_FILENO;
@@ -130,7 +71,7 @@ int printf(const char *str, ...) {
 
     int i = 0;
     while (str[i] != '\0') {
-        if(str[i] == '%') {
+        if (str[i] == '%') {
             i++;
             switch (str[i]) {
                 case 'c': {
@@ -153,7 +94,7 @@ int printf(const char *str, ...) {
                     break;
                 }
                 case 's': {
-                    char *currC = (char*)va_arg(vl, char*);
+                    char *currC = (char *)va_arg(vl, char *);
                     while (*currC != '\0') {
                         if (putchar(*currC) == EOF) {
                             return EOF;
@@ -164,21 +105,19 @@ int printf(const char *str, ...) {
                     break;
                 }
             }
-        }
-        else {
+        } else {
             if (putchar(str[i]) == EOF) {
                 return EOF;
             }
             retVal++;
         }
         i++;
-	}
+    }
     va_end(vl);
     return retVal;
 }
 
-
-int scanf(char * str, ...) {
+int scanf(char *str, ...) {
     va_list vl;
     va_start(vl, str);
     int retVal = 0;
@@ -191,11 +130,11 @@ int scanf(char * str, ...) {
 
     int i = 0;
     while (str[i] != '\0') {
-        if (str[i] == '%')  {
+        if (str[i] == '%') {
             i++;
             switch (str[i]) {
                 case 'c': {
-                    *(char*)va_arg(vl, char*) = buf[retVal];
+                    *(char *)va_arg(vl, char *) = buf[retVal];
                     retVal++;
                     break;
                 }
@@ -208,11 +147,11 @@ int scanf(char * str, ...) {
                         retVal++;
                     }
                     tmp[j] = '\0';
-                    *(int*)va_arg(vl, int*) = atoi(tmp);
+                    *(int *)va_arg(vl, int *) = atoi(tmp);
                     break;
                 }
                 case 's': {
-                    char *outStr = (char*)va_arg(vl, char*);
+                    char *outStr = (char *)va_arg(vl, char *);
                     int j = 0;
                     while (buf[retVal] != '\0') {
                         outStr[j] = buf[retVal];
@@ -223,8 +162,7 @@ int scanf(char * str, ...) {
                     break;
                 }
             }
-        }
-        else {
+        } else {
             retVal++;
         }
         i++;
@@ -233,9 +171,4 @@ int scanf(char * str, ...) {
     return retVal;
 }
 
-
-void exit(int status) {
-    __internal_syscall(SYSCALL_RV_SYS_EXIT, status & 0xFF, 0, 0, 0, 0, 0);
-}
-
-#endif  // CTESTS_CLIB_H
+#endif  // STDLIB_STDIO_H
