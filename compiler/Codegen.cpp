@@ -15,58 +15,75 @@ void CodeGenerator::initialize() {
     entry_node->setArg(0, hart_p_);
     entry_node->setArg(1, instr_p_);
 
-    pc_p_ = compiler_.newGpq();
-    compiler_.mov(pc_p_, hart_p_);
-    compiler_.add(pc_p_, Hart::getOffsetToPc());
-
-    regs_p_ = compiler_.newGpq();
-    compiler_.mov(regs_p_, hart_p_);
-    compiler_.add(regs_p_, Hart::getOffsetToRegs());
+    pc_ = compiler_.newGpq();
+    compiler_.mov(pc_, x86::qword_ptr(hart_p_, Hart::getOffsetToPc()));
 }
 
 void CodeGenerator::finalize() {
+    generatePutRegsAndPCInMem();
     compiler_.endFunc();
     compiler_.finalize();
 }
 
 x86::Gp CodeGenerator::generateGetReg(size_t index) {
+    auto reg_iter = register_map_.find(index);
+    if (reg_iter != register_map_.cend()) {
+        return reg_iter->second;
+    }
+
     auto reg = compiler_.newGpq();
-    compiler_.mov(reg, x86::qword_ptr(regs_p_, sizeof(RegValue) * index));
+    compiler_.mov(reg, x86::qword_ptr(hart_p_, Hart::getOffsetToRegs() + sizeof(RegValue) * index));
+    register_map_.insert(std::pair(index, reg));
     return reg;
 }
 
 void CodeGenerator::generateSetReg(size_t index, uint64_t imm) {
-    if (index > 0) {
-        compiler_.mov(x86::qword_ptr(regs_p_, sizeof(RegValue) * index), imm);
+    auto reg_iter = register_map_.find(index);
+    if (reg_iter != register_map_.cend()) {
+        compiler_.mov(reg_iter->second, imm);
+    } else {
+        auto reg = compiler_.newGpq();
+        compiler_.mov(reg, imm);
+        register_map_.insert(std::pair(index, reg));
     }
 }
 
 void CodeGenerator::generateSetReg(size_t index, x86::Gp reg) {
-    if (index > 0) {
-        compiler_.mov(x86::qword_ptr(regs_p_, sizeof(RegValue) * index), reg);
-    }
+    register_map_[index] = reg;
 }
 
 x86::Gp CodeGenerator::generateGetPC() {
-    // TODO(panferovi): pin PC and hart->regs_ to registers
-    auto pc = compiler_.newGpq();
-    compiler_.mov(pc, x86::qword_ptr(pc_p_));
-    return pc;
+    return pc_;
 }
 
 void CodeGenerator::generateSetPC(uint64_t imm) {
-    compiler_.mov(x86::qword_ptr(pc_p_), imm);
+    compiler_.mov(pc_, imm);
 }
 
 void CodeGenerator::generateSetPC(x86::Gp pc) {
-    compiler_.mov(x86::qword_ptr(pc_p_), pc);
+    compiler_.mov(pc_, pc);
 }
 
 void CodeGenerator::generateIncrementPC() {
-    compiler_.add(x86::qword_ptr(pc_p_), INSTRUCTION_BYTESIZE);
+    compiler_.add(pc_, INSTRUCTION_BYTESIZE);
+}
+
+void CodeGenerator::generatePutRegsAndPCInMem() {
+    for (auto &&reg : register_map_) {
+        if (reg.first == 0) {
+            continue;
+        }
+        auto reg_offset = Hart::getOffsetToRegs() + sizeof(RegValue) * reg.first;
+        compiler_.mov(x86::qword_ptr(hart_p_, reg_offset), reg.second);
+    }
+    register_map_.clear();
+
+    // compiler_.mov(x86::qword_ptr(hart_p_, Hart::getOffsetToPc()), pc_);
 }
 
 void CodeGenerator::generateInvoke(Executor executor, size_t instr_offest) {
+    generatePutRegsAndPCInMem();
+
     auto instr = compiler_.newGpq();
     compiler_.mov(instr, instr_p_);
     compiler_.add(instr, sizeof(DecodedInstruction) * instr_offest);
@@ -76,6 +93,8 @@ void CodeGenerator::generateInvoke(Executor executor, size_t instr_offest) {
     compiler_.invoke(&invokeNode, executor, executor_signature);
     invokeNode->setArg(0, hart_p_);
     invokeNode->setArg(1, instr);
+
+    // compiler_.mov(pc_, x86::qword_ptr(hart_p_, Hart::getOffsetToPc()));
 }
 
 void ExecutorPrint(Hart *hart, const char *str, uint64_t reg) {

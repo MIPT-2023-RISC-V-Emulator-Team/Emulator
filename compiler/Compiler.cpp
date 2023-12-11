@@ -55,16 +55,16 @@ void Compiler::compileBasicBlock(CompilerTask &&task) {
 void Compiler::generateInstr(CodeGenerator &codegen, const DecodedInstruction &instr, size_t instr_offset) {
     switch (instr.type) {
         case InstructionType::LUI:
-            codegen.generateLUI(instr);
+            codegen.generateInvoke(ExecutorLUI, instr_offset);
             return;
         case InstructionType::AUIPC:
-            codegen.generateAUIPC(instr);
+            codegen.generateInvoke(ExecutorAUIPC, instr_offset);
             return;
         case InstructionType::JAL:
-            codegen.generateJAL(instr);
+            codegen.generateInvoke(ExecutorJAL, instr_offset);
             return;
         case InstructionType::JALR:
-            codegen.generateJALR(instr);
+            codegen.generateInvoke(ExecutorJALR, instr_offset);
             return;
         case InstructionType::BEQ:
             codegen.generateInvoke(ExecutorBEQ, instr_offset);

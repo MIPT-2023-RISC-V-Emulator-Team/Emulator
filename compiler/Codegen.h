@@ -1,6 +1,7 @@
 #ifndef CODEGEN_H
 #define CODEGEN_H
 
+#include <unordered_map>
 #include <asmjit/asmjit.h>
 
 #include "simulator/Executor.h"
@@ -35,11 +36,13 @@ private:
 
     void generatePrint(const char *str, asmjit::x86::Gp reg);
 
+    void generatePutRegsAndPCInMem();
+
     asmjit::x86::Compiler compiler_;
     asmjit::x86::Gp hart_p_;
-    asmjit::x86::Gp pc_p_;
-    asmjit::x86::Gp regs_p_;
+    asmjit::x86::Gp pc_;
     asmjit::x86::Gp instr_p_;
+    std::unordered_map<size_t, asmjit::x86::Gp> register_map_;
 };
 
 }  // namespace RISCV::compiler
