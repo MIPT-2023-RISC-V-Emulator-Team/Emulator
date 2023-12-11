@@ -128,4 +128,155 @@ void CodeGenerator::generateJALR(const DecodedInstruction &instr) {
     generateSetPC(nextPC);
 }
 
+void CodeGenerator::generateADDI(const DecodedInstruction &instr) {
+    auto op1 = generateGetReg(instr.rs1);
+    compiler_.add(op1, instr.imm);
+    generateSetReg(instr.rd, op1);
+    generateIncrementPC();
+}
+
+void CodeGenerator::generateSLLI(const DecodedInstruction &instr) {
+    auto op1 = generateGetReg(instr.rs1);
+    compiler_.shl(op1, instr.imm);
+    generateSetReg(instr.rd, op1);
+    generateIncrementPC();
+}
+
+void CodeGenerator::generateSLTI(const DecodedInstruction &instr) {
+    auto op1 = generateGetReg(instr.rs1);
+    // Signed comparison and Set Less (signed)
+    compiler_.cmp(op1, instr.imm);
+    compiler_.setl(op1);
+    generateSetReg(instr.rd, op1);
+    generateIncrementPC();
+}
+
+void CodeGenerator::generateSLTIU(const DecodedInstruction &instr) {
+    auto op1 = generateGetReg(instr.rs1);
+    // Unsigned comparison and Set Less (unsigned)
+    compiler_.cmp(op1, instr.imm);
+    compiler_.setb(op1);
+    generateSetReg(instr.rd, op1);
+    generateIncrementPC();
+}
+
+void CodeGenerator::generateXORI(const DecodedInstruction &instr) {
+    auto op1 = generateGetReg(instr.rs1);
+    compiler_.xor_(op1, instr.imm);
+    generateSetReg(instr.rd, op1);
+    generateIncrementPC();
+}
+
+void CodeGenerator::generateSRLI(const DecodedInstruction &instr) {
+    auto op1 = generateGetReg(instr.rs1);
+    compiler_.shr(op1, instr.imm);
+    generateSetReg(instr.rd, op1);
+    generateIncrementPC();
+}
+
+void CodeGenerator::generateSRAI(const DecodedInstruction &instr) {
+    auto op1 = generateGetReg(instr.rs1);
+    compiler_.sar(op1, instr.imm);
+    generateSetReg(instr.rd, op1);
+    generateIncrementPC();
+}
+
+void CodeGenerator::generateORI(const DecodedInstruction &instr) {
+    auto op1 = generateGetReg(instr.rs1);
+    compiler_.or_(op1, instr.imm);
+    generateSetReg(instr.rd, op1);
+    generateIncrementPC();
+}
+
+void CodeGenerator::generateANDI(const DecodedInstruction &instr) {
+    auto op1 = generateGetReg(instr.rs1);
+    compiler_.and_(op1, instr.imm);
+    generateSetReg(instr.rd, op1);
+    generateIncrementPC();
+}
+
+void CodeGenerator::generateADD(const DecodedInstruction &instr) {
+    auto op1 = generateGetReg(instr.rs1);
+    auto op2 = generateGetReg(instr.rs2);
+    compiler_.add(op1, op2);
+    generateSetReg(instr.rd, op1);
+    generateIncrementPC();
+}
+
+void CodeGenerator::generateSLL(const DecodedInstruction &instr) {
+    auto op1 = generateGetReg(instr.rs1);
+    auto op2 = generateGetReg(instr.rs2);
+    compiler_.shl(op1, op2);
+    generateSetReg(instr.rd, op1);
+    generateIncrementPC();
+}
+
+void CodeGenerator::generateSLT(const DecodedInstruction &instr) {
+    auto op1 = generateGetReg(instr.rs1);
+    auto op2 = generateGetReg(instr.rs2);
+    // Signed comparison and Set Less (signed)
+    compiler_.cmp(op1, op2);
+    compiler_.setl(op1);
+    generateSetReg(instr.rd, op1);
+    generateIncrementPC();
+}
+
+void CodeGenerator::generateSLTU(const DecodedInstruction &instr) {
+    auto op1 = generateGetReg(instr.rs1);
+    auto op2 = generateGetReg(instr.rs2);
+    // Unsigned comparison and Set Less (unsigned)
+    compiler_.cmp(op1, op2);
+    compiler_.setb(op1);
+    generateSetReg(instr.rd, op1);
+    generateIncrementPC();
+}
+
+void CodeGenerator::generateXOR(const DecodedInstruction &instr) {
+    auto op1 = generateGetReg(instr.rs1);
+    auto op2 = generateGetReg(instr.rs2);
+    compiler_.xor_(op1, op2);
+    generateSetReg(instr.rd, op1);
+    generateIncrementPC();
+}
+
+void CodeGenerator::generateSRL(const DecodedInstruction &instr) {
+    auto op1 = generateGetReg(instr.rs1);
+    auto op2 = generateGetReg(instr.rs2);
+    compiler_.shr(op1, op2);
+    generateSetReg(instr.rd, op1);
+    generateIncrementPC();
+}
+
+void CodeGenerator::generateOR(const DecodedInstruction &instr) {
+    auto op1 = generateGetReg(instr.rs1);
+    auto op2 = generateGetReg(instr.rs2);
+    compiler_.or_(op1, op2);
+    generateSetReg(instr.rd, op1);
+    generateIncrementPC();
+}
+
+void CodeGenerator::generateAND(const DecodedInstruction &instr) {
+    auto op1 = generateGetReg(instr.rs1);
+    auto op2 = generateGetReg(instr.rs2);
+    compiler_.and_(op1, op2);
+    generateSetReg(instr.rd, op1);
+    generateIncrementPC();
+}
+
+void CodeGenerator::generateSUB(const DecodedInstruction &instr) {
+    auto op1 = generateGetReg(instr.rs1);
+    auto op2 = generateGetReg(instr.rs2);
+    compiler_.sub(op1, op2);
+    generateSetReg(instr.rd, op1);
+    generateIncrementPC();
+}
+
+void CodeGenerator::generateSRA(const DecodedInstruction &instr) {
+    auto op1 = generateGetReg(instr.rs1);
+    auto op2 = generateGetReg(instr.rs2);
+    compiler_.sar(op1, op2);
+    generateSetReg(instr.rd, op1);
+    generateIncrementPC();
+}
+
 }  // namespace RISCV::compiler
