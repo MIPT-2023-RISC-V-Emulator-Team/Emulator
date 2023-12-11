@@ -64,7 +64,7 @@ void Compiler::generateInstr(CodeGenerator &codegen, const DecodedInstruction &i
             codegen.generateJAL(instr);
             return;
         case InstructionType::JALR:
-            codegen.generateInvoke(ExecutorJALR, instr_offset);
+            codegen.generateJALR(instr);
             return;
         case InstructionType::BEQ:
             codegen.generateInvoke(ExecutorBEQ, instr_offset);

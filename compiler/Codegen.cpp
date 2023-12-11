@@ -36,11 +36,15 @@ x86::Gp CodeGenerator::generateGetReg(size_t index) {
 }
 
 void CodeGenerator::generateSetReg(size_t index, uint64_t imm) {
-    compiler_.mov(x86::qword_ptr(regs_p_, sizeof(RegValue) * index), imm);
+    if (index > 0) {
+        compiler_.mov(x86::qword_ptr(regs_p_, sizeof(RegValue) * index), imm);
+    }
 }
 
 void CodeGenerator::generateSetReg(size_t index, x86::Gp reg) {
-    compiler_.mov(x86::qword_ptr(regs_p_, sizeof(RegValue) * index), reg);
+    if (index > 0) {
+        compiler_.mov(x86::qword_ptr(regs_p_, sizeof(RegValue) * index), reg);
+    }
 }
 
 x86::Gp CodeGenerator::generateGetPC() {
@@ -59,7 +63,7 @@ void CodeGenerator::generateSetPC(x86::Gp pc) {
 }
 
 void CodeGenerator::generateIncrementPC() {
-    compiler_.inc(x86::qword_ptr(pc_p_));
+    compiler_.add(x86::qword_ptr(pc_p_), INSTRUCTION_BYTESIZE);
 }
 
 void CodeGenerator::generateInvoke(Executor executor, size_t instr_offest) {
