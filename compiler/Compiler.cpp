@@ -118,31 +118,31 @@ void Compiler::generateInstr(CodeGenerator &codegen, const DecodedInstruction &i
             codegen.generateInvoke(ExecutorSD, instr_offset);
             return;
         case InstructionType::ADDI:
-            codegen.generateInvoke(ExecutorADDI, instr_offset);
+            codegen.generateADDI(instr);
             return;
         case InstructionType::SLLI:
-            codegen.generateInvoke(ExecutorSLLI, instr_offset);
+            codegen.generateSLLI(instr);
             return;
         case InstructionType::SLTI:
-            codegen.generateInvoke(ExecutorSLTI, instr_offset);
+            codegen.generateSLTI(instr);
             return;
         case InstructionType::SLTIU:
-            codegen.generateInvoke(ExecutorSLTIU, instr_offset);
+            codegen.generateSLTIU(instr);
             return;
         case InstructionType::XORI:
-            codegen.generateInvoke(ExecutorXORI, instr_offset);
+            codegen.generateXORI(instr);
             return;
         case InstructionType::SRLI:
-            codegen.generateInvoke(ExecutorSRLI, instr_offset);
+            codegen.generateSRLI(instr);
             return;
         case InstructionType::SRAI:
-            codegen.generateInvoke(ExecutorSRAI, instr_offset);
+            codegen.generateSRAI(instr);
             return;
         case InstructionType::ORI:
-            codegen.generateInvoke(ExecutorORI, instr_offset);
+            codegen.generateORI(instr);
             return;
         case InstructionType::ANDI:
-            codegen.generateInvoke(ExecutorANDI, instr_offset);
+            codegen.generateANDI(instr);
             return;
         case InstructionType::ADDIW:
             codegen.generateInvoke(ExecutorADDIW, instr_offset);
@@ -157,34 +157,34 @@ void Compiler::generateInstr(CodeGenerator &codegen, const DecodedInstruction &i
             codegen.generateInvoke(ExecutorSRAIW, instr_offset);
             return;
         case InstructionType::ADD:
-            codegen.generateInvoke(ExecutorADD, instr_offset);
+            codegen.generateADD(instr);
             return;
         case InstructionType::SLL:
-            codegen.generateInvoke(ExecutorSLL, instr_offset);
+            codegen.generateSLL(instr);
             return;
         case InstructionType::SLT:
-            codegen.generateInvoke(ExecutorSLT, instr_offset);
+            codegen.generateSLT(instr);
             return;
         case InstructionType::SLTU:
-            codegen.generateInvoke(ExecutorSLTU, instr_offset);
+            codegen.generateSLTU(instr);
             return;
         case InstructionType::XOR:
-            codegen.generateInvoke(ExecutorXOR, instr_offset);
+            codegen.generateXOR(instr);
             return;
         case InstructionType::SRL:
-            codegen.generateInvoke(ExecutorSRL, instr_offset);
+            codegen.generateSRL(instr);
             return;
         case InstructionType::OR:
-            codegen.generateInvoke(ExecutorOR, instr_offset);
+            codegen.generateOR(instr);
             return;
         case InstructionType::AND:
-            codegen.generateInvoke(ExecutorAND, instr_offset);
+            codegen.generateAND(instr);
             return;
         case InstructionType::SUB:
-            codegen.generateInvoke(ExecutorSUB, instr_offset);
+            codegen.generateSUB(instr);
             return;
         case InstructionType::SRA:
-            codegen.generateInvoke(ExecutorSRA, instr_offset);
+            codegen.generateSRA(instr);
             return;
         case InstructionType::ADDW:
             codegen.generateInvoke(ExecutorADDW, instr_offset);
