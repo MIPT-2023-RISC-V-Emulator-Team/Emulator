@@ -1030,7 +1030,7 @@ static ALWAYS_INLINE void ExecutorMULH(Hart *hart, const DecodedInstruction &ins
     uint64_t rs2_l = hart->getReg(instr.rs2) & 0xFFFFFFFF;
     int64_t rs2_h = (hart->getReg(instr.rs2) & ~0xFFFFFFFF) >> 32;
 
-    int64_t prod = rs1_h * rs2_h + (rs1_h * rs2_l + rs1_l * rs2_h) >> 32;
+    int64_t prod = (rs1_h * rs2_h + (rs1_h * rs2_l + rs1_l * rs2_h)) >> 32;
     hart->setReg(instr.rd, prod);
 
     hart->incrementPC();
@@ -1044,7 +1044,7 @@ static ALWAYS_INLINE void ExecutorMULHSU(Hart *hart, const DecodedInstruction &i
     uint64_t rs2_l = hart->getReg(instr.rs2) & 0xFFFFFFFF;
     uint64_t rs2_h = (hart->getReg(instr.rs2) & ~0xFFFFFFFF) >> 32;
 
-    int64_t prod = rs1_h * rs2_h + (rs1_h * rs2_l + rs1_l * rs2_h) >> 32;
+    int64_t prod = (rs1_h * rs2_h + (rs1_h * rs2_l + rs1_l * rs2_h)) >> 32;
     hart->setReg(instr.rd, prod);
 
     hart->incrementPC();
@@ -1058,7 +1058,7 @@ static ALWAYS_INLINE void ExecutorMULHU(Hart *hart, const DecodedInstruction &in
     uint64_t rs2_l = hart->getReg(instr.rs2) & 0xFFFFFFFF;
     uint64_t rs2_h = (hart->getReg(instr.rs2) & ~0xFFFFFFFF) >> 32;
 
-    uint64_t prod = rs1_h * rs2_h + (rs1_h * rs2_l + rs1_l * rs2_h) >> 32;
+    uint64_t prod = (rs1_h * rs2_h + (rs1_h * rs2_l + rs1_l * rs2_h)) >> 32;
     hart->setReg(instr.rd, prod);
 
     hart->incrementPC();
