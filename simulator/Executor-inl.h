@@ -41,7 +41,7 @@ static ALWAYS_INLINE void ExecutorJALR(Hart *hart, const DecodedInstruction &ins
     DEBUG_INSTRUCTION("jalr    x%d, x%d, %ld\n", instr.rd, instr.rs1, instr.imm);
 
     const memory::VirtAddr returnPC = hart->getPC() + INSTRUCTION_BYTESIZE;
-    const memory::VirtAddr nextPC = (hart->getReg(instr.rs1) + instr.imm) & ~1;
+    const memory::VirtAddr nextPC = (hart->getReg(instr.rs1) + instr.imm) & ~1ULL;
 
     hart->setReg(instr.rd, returnPC);
     hart->setPC(nextPC);
