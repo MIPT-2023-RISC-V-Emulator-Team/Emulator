@@ -60,6 +60,10 @@ PhysAddr MMU::getPhysAddrWithAllocation(const VirtAddr vaddr, const MemoryReques
             pte[3].setPPN(getPageNumber(rootTransTablePAddr_));
             break;
         }
+        default: {
+            std::cerr << "Error: unknown MMU translation mode" << std::endl;
+            return 0;
+        }
     }
 
     // Allow fallthrough to process every page walk step by step
@@ -171,6 +175,10 @@ PhysAddr MMU::getPhysAddrWithAllocation(const VirtAddr vaddr, const MemoryReques
             paddr = pte[0].getPPN() * PAGE_BYTESIZE;
             paddr += getPageOffset(vaddr);
             break;
+        }
+        default: {
+            std::cerr << "Error: unknown MMU translation mode" << std::endl;
+            return 0;
         }
     }
 

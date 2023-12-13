@@ -333,6 +333,10 @@ private:
                 }
                 return pageTableWalk<request, PTE_LEVELS_SV39>(rootTransTablePAddr_, vaddr);
             }
+            default: {
+                std::cerr << "Error: unknown MMU translation mode" << std::endl;
+                return 0;
+            }
         }
 
         return 0;

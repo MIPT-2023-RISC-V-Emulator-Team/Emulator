@@ -122,7 +122,7 @@ void CodeGenerator::generateJALR(const DecodedInstruction &instr) {
 
     auto nextPC = generateGetReg(instr.rs1);
     compiler_.add(nextPC, instr.imm);
-    compiler_.and_(nextPC, ~1U);
+    compiler_.and_(nextPC, ~1ULL);
 
     generateSetReg(instr.rd, returnPC);
     generateSetPC(nextPC);
