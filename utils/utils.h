@@ -11,12 +11,12 @@
 
 namespace RISCV::utils {
 
-bool startHostInstructionCount(int *fd) {
+bool startHostCount(int *fd, long long instr_flag) {
     perf_event_attr pe = {};
 
     pe.type = PERF_TYPE_HARDWARE;
     pe.size = sizeof(perf_event_attr);
-    pe.config = PERF_COUNT_HW_INSTRUCTIONS;
+    pe.config = instr_flag;
     pe.disabled = 1;
     pe.exclude_kernel = 1;
     pe.exclude_hv = 1;
@@ -30,9 +30,9 @@ bool startHostInstructionCount(int *fd) {
     return true;
 }
 
-bool endHostInstructionCount(int *fd, size_t *instructionCount) {
+bool endHostCount(int *fd, size_t *config_val) {
     ioctl(*fd, PERF_EVENT_IOC_DISABLE, 0);
-    int rd = read(*fd, instructionCount, sizeof(size_t));
+    int rd = read(*fd, config_val, sizeof(size_t));
     bool result = true;
     if (rd == -1) {
         result = false;

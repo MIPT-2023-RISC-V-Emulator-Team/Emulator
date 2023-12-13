@@ -47,11 +47,16 @@ int main(int argc, char **argv, char **envp) {
     // Everything OK. Run simulation
     std::cout << "===============================================================================" << std::endl;
 
-    int fd;
-    RISCV::utils::startHostInstructionCount(&fd);
+    int fd_instr;
+    int fd_cpu;
+    auto instr_flag = PERF_COUNT_HW_INSTRUCTIONS;
+    auto cpu_flag = PERF_COUNT_HW_CPU_CYCLES;
+    RISCV::utils::startHostCount(&fd_instr, instr_flag);
+    RISCV::utils::startHostCount(&fd_cpu, cpu_flag);
 
     size_t instrCount = 0;
     size_t hostInstructions = 0;
+    size_t hostCycles = 0;
     auto executeStart = std::chrono::high_resolution_clock::now();
 
     // Main simulation loop
@@ -64,8 +69,9 @@ int main(int argc, char **argv, char **envp) {
     auto executeEnd = std::chrono::high_resolution_clock::now() - executeStart;
     uint64_t microseconds = std::chrono::duration_cast<std::chrono::microseconds>(executeEnd).count();
 
-    if (fd != -1) {
-        RISCV::utils::endHostInstructionCount(&fd, &hostInstructions);
+    if (fd_instr != -1) {
+        RISCV::utils::endHostCount(&fd_instr, &hostInstructions);
+        RISCV::utils::endHostCount(&fd_cpu, &hostCycles);
     }
 
     std::cout << "===============================================================================" << std::endl;
@@ -76,12 +82,13 @@ int main(int argc, char **argv, char **envp) {
     std::cout << "Simulated instruction count: " << instrCount << std::endl;
     std::cout << "Average MIPS:                " << static_cast<float>(instrCount) / microseconds << std::endl;
 
-    if (fd != -1) {
+    if (fd_instr != -1) {
         std::cout << "Executed host instructions:  " << hostInstructions << std::endl;
-        std::cout << "Average host per simulated:  " << (float)hostInstructions / instrCount << std::endl;
+        std::cout << "Average host per simulated:  " << static_cast<float>(hostInstructions) / instrCount << std::endl;
+        std::cout << "Average simulated CPI:       " << static_cast<float>(hostCycles) / instrCount << std::endl;
     } else {
         // Unimportant warning
-        std::cerr << yellowColor << "Warning: unable to count host instructions" << defaultColor << std::endl;
+        std::cerr << yellowColor << "Warning: unable to count host instructions and cpu-cycles" << defaultColor << std::endl;
     }
 
     RISCV::OSHelper::destroy();
