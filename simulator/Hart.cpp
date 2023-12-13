@@ -4,6 +4,7 @@
 
 #include "compiler/Compiler.h"
 #include "utils/macros.h"
+#include "Hooker.h"
 
 namespace RISCV {
 
