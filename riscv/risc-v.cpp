@@ -14,7 +14,7 @@ int main(int argc, char **argv, char **envp) {
     }
 
     RISCV::Hart CPU;
-    RISCV::OSHelper* osHelper = RISCV::OSHelper::create();
+    RISCV::OSHelper* osHelper = RISCV::OSHelper::getInstance();
 
     const std::string redColor("\033[0;31m");
     const std::string greenColor("\033[0;32m");
@@ -91,7 +91,7 @@ int main(int argc, char **argv, char **envp) {
         std::cerr << yellowColor << "Warning: unable to count host instructions and cpu-cycles" << defaultColor << std::endl;
     }
 
-    RISCV::OSHelper::destroy();
+    RISCV::OSHelper::destroyInstance();
 
     return 0;
 }

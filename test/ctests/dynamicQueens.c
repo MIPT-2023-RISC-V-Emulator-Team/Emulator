@@ -1,10 +1,9 @@
 #include "stdlib/stdio.h"
 
-#define N 11
-
+int N = 0;
 int numberOfSolutions = 0;
 
-void printSolution(int board[N][N]) {
+void printSolution(int **board) {
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
             char cell = board[i][j] == 1 ? '@' : '.';
@@ -15,7 +14,7 @@ void printSolution(int board[N][N]) {
     }
 }
 
-int isSafe(int board[N][N], int row, int col) {
+int isSafe(int **board, int row, int col) {
     int i, j;
 
     for (i = 0; i < col; i++)
@@ -33,7 +32,7 @@ int isSafe(int board[N][N], int row, int col) {
     return 1;
 }
 
-int solveNQUtil(int board[N][N], int col, int depth) {
+int solveNQUtil(int **board, int col, int depth) {
     if (col >= N)
         return 1;
 
@@ -57,8 +56,27 @@ int solveNQUtil(int board[N][N], int col, int depth) {
     return 0;
 }
 
-int main() {
-    int board[N][N];
+int main(int argc, char **argv) {
+    if (argc < 2) {
+        printf("Usage: %s <num_queens>\n", argv[0]);
+        return 0;
+    }
+
+    N = atoi(argv[1]);
+
+    int **board = (int **)malloc(N * sizeof(int *));
+    for (int i = 0; i < N; i++) {
+        board[i] = (int *)malloc(N * sizeof(int));
+    }
+
     solveNQUtil(board, 0, 0);
+
+    printf("Total amount of solutions: %d\n", numberOfSolutions);
+
+    for (int i = 0; i < N; i++) {
+        free(board[i]);
+    }
+    free(board);
+
     return 0;
 }

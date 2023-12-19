@@ -142,7 +142,7 @@ int scanf(char *str, ...) {
                     char c;
                     int j = 0;
                     while (isdigit(buf[retVal])) {
-                        tmp[j] = c;
+                        tmp[j] = buf[retVal];
                         j++;
                         retVal++;
                     }
