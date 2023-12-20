@@ -44,8 +44,71 @@ int atoi(const char *str) {
     return retVal;
 }
 
+int abs(int x) {
+    if (x >= 0) {
+        return x;
+    }
+    return -x;
+}
+
 void exit(int status) {
     __internal_syscall(SYSCALL_RV_SYS_EXIT, status & 0xFF, 0, 0, 0, 0, 0);
+}
+
+void *sbrk(long incr) {
+    static unsigned long heap_end = 0;
+
+    if (heap_end == 0) {
+        long brk = __internal_syscall(SYSCALL_RV_SYS_BRK, 0, 0, 0, 0, 0, 0);
+        if (brk == -1) {
+            return (void *)(-1);
+        }
+        heap_end = brk;
+    }
+
+    if (__internal_syscall(SYSCALL_RV_SYS_BRK, heap_end + incr, 0, 0, 0, 0, 0) != heap_end + incr) {
+        return (void *)(-1);
+    }
+
+    heap_end += incr;
+    return (void *)(heap_end - incr);
+}
+
+struct meta_data {
+    unsigned long size;
+    unsigned long free;
+};
+
+void *malloc(unsigned long size) {
+    if (size == 0) {
+        return NULL;
+    }
+
+    char *p = sbrk(0);
+
+    // Store size and free flag
+    unsigned long totalSize = sizeof(struct meta_data) + size;
+    totalSize = totalSize + (sizeof(unsigned long) - totalSize & (sizeof(unsigned long) - 1));
+
+    void *request = sbrk(totalSize);
+    if (request == (void *)(-1)) {
+        return NULL;
+    } else {
+        struct meta_data *meta = p;
+        meta->size = size;
+        meta->free = 0;
+
+        return (void *)(p + sizeof(struct meta_data));
+    }
+}
+
+void free(void *p) {
+    if (p == NULL) {
+        return;
+    }
+
+    struct meta_data *meta = (char *)p - sizeof(struct meta_data);
+    meta->free = 1;
 }
 
 #endif  // STDLIB_STDLIB_H

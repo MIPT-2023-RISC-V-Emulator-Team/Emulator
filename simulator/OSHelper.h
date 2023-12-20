@@ -11,6 +11,8 @@ private:
     static OSHelper *instancePtr;
     OSHelper() = default;
 
+    memory::VirtAddr heapEnd_ = 0;
+
     bool writeMultipaged(const memory::MMU &translator,
                          const memory::VirtAddr vaddr,
                          const size_t size,
@@ -26,20 +28,22 @@ private:
                     const std::vector<memory::VirtAddr> &argsPtr) const;
 
 public:
-    bool loadElfFile(Hart &hart, const std::string &filename) const;
+    bool loadElfFile(Hart &hart, const std::string &filename);
     bool allocateStack(Hart &hart, const memory::VirtAddr stackAddr, const size_t stackSize) const;
     bool setupCmdArgs(Hart &hart, int argc, char **argv, char **envp) const;
 
+    void handleSyscall(Hart *hart, const DecodedInstruction &instr);
+
     OSHelper(const OSHelper &other) = delete;
 
-    static OSHelper *create() {
+    static OSHelper *getInstance() {
         if (!instancePtr)
             instancePtr = new OSHelper();
 
         return instancePtr;
     }
 
-    static void destroy() {
+    static void destroyInstance() {
         ASSERT(instancePtr != nullptr);
         delete instancePtr;
         instancePtr = nullptr;

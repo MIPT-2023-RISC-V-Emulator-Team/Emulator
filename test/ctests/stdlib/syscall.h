@@ -6,6 +6,7 @@
 #define SYSCALL_RV_SYS_READ 63
 #define SYSCALL_RV_SYS_WRITE 64
 #define SYSCALL_RV_SYS_EXIT 93
+#define SYSCALL_RV_SYS_BRK 214
 
 static inline long __internal_syscall(long n, long _a0, long _a1, long _a2, long _a3, long _a4, long _a5) {
     register long a0 asm("a0") = _a0;
