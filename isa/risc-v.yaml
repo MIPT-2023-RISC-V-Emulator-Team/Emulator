@@ -1831,9 +1831,39 @@ instructions:
   debug_hex_fixedmask: 600007f
   fixedvalue: 100663375
   debug_hex_fixedvalue: 600004f
+- &199
+  mnemonic: sim.put.pixel
+  format: I
+  fixedbits: [{msb: 6, lsb: 0, value: 43}]
+  fields: []
+  fixedmask: 4294967295
+  debug_hex_fixedmask: 600007f
+  fixedvalue: 43
+  debug_hex_fixedvalue: 600004f
+- &200
+  mnemonic: sim.flush
+  format: I
+  fixedbits: [{msb: 6, lsb: 0, value: 91}]
+  fields: []
+  fixedmask: 4294967295
+  debug_hex_fixedmask: 600007f
+  fixedvalue: 91
+  debug_hex_fixedvalue: 600004f
+- &201
+  mnemonic: sim.rand
+  format: I
+  fixedbits: [{msb: 6, lsb: 0, value: 123}]
+  fields: []
+  fixedmask: 4294967295
+  debug_hex_fixedmask: 600007f
+  fixedvalue: 123
+  debug_hex_fixedvalue: 600004f
 decodertree:
   range: {msb: 6, lsb: 0}
   nodes:
+    43: *199
+    91: *200
+    123: *201
     99:
       range: {msb: 14, lsb: 12}
       nodes:

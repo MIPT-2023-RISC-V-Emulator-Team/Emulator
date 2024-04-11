@@ -5,6 +5,7 @@
 #include "simulator/OSHelper.h"
 #include "simulator/Hart.h"
 #include "utils/utils.h"
+#include "llvm/sim.h"
 
 
 int main(int argc, char **argv, char **envp) {
@@ -43,6 +44,8 @@ int main(int argc, char **argv, char **envp) {
         std::exit(EXIT_FAILURE);
     }
 
+
+    simInit();
 
     // Everything OK. Run simulation
     std::cout << "===============================================================================" << std::endl;
@@ -93,5 +96,6 @@ int main(int argc, char **argv, char **envp) {
 
     RISCV::OSHelper::destroy();
 
+    simExit();
     return 0;
 }

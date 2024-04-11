@@ -7,6 +7,8 @@ set(COMPILE_OPT -std=c++17 -O3)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(BIN_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
+include_directories(${CMAKE_SOURCE_DIR}/asmjit/src)
+
 # Remove strings matching given regular expression from a list.
 # @param(in,out) aItems Reference of a list variable to filter.
 # @param aRegEx Value of regular expression to match.
@@ -52,13 +54,17 @@ add_custom_target(format
 )
 
 add_subdirectory(googletest)
+add_subdirectory(asmjit)
 add_subdirectory(simulator)
 add_subdirectory(compiler)
 add_subdirectory(test/mmu)
 
 add_library(utils utils/Debug.cpp)
 
-add_executable(risc-v riscv/risc-v.cpp)
+add_executable(risc-v
+    riscv/risc-v.cpp
+    llvm/sim.cpp
+)
 
 target_include_directories(risc-v
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
@@ -69,5 +75,7 @@ target_link_libraries(risc-v
     PUBLIC compiler
     PUBLIC utils
 )
+
+target_link_libraries(risc-v PUBLIC -lSDL2)
 
 add_compile_options(risc-v ${COMPILE_OPT})

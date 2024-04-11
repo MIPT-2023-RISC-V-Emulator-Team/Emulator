@@ -18,7 +18,7 @@ class Hart final {
 public:
     static constexpr size_t BB_CACHE_CAPACITY = 1024;
 
-    Hart();
+    Hart(bool useJIT = false);
     ~Hart();
 
     ALWAYS_INLINE RegValue getReg(const RegisterType id) const {
@@ -110,6 +110,8 @@ private:
     Decoder decoder_;
     Dispatcher dispatcher_;
     compiler::Compiler compiler_;
+
+    bool useJIT_ = false;
 };
 
 }  // namespace RISCV

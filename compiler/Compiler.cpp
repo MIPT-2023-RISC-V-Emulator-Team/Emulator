@@ -249,6 +249,15 @@ void Compiler::generateInstr(CodeGenerator &codegen, const DecodedInstruction &i
         case InstructionType::REMUW:
             codegen.generateInvoke(ExecutorREMUW, instr_offset);
             return;
+        case InstructionType::SIMPUTPIXEL:
+            codegen.generateInvoke(ExecutorSIMPUTPIXEL, instr_offset);
+            return;
+        case InstructionType::SIMFLUSH:
+            codegen.generateInvoke(ExecutorSIMFLUSH, instr_offset);
+            return;
+        case InstructionType::SIMRAND:
+            codegen.generateInvoke(ExecutorSIMRAND, instr_offset);
+            return;
         default:
             UNREACHABLE();
     }

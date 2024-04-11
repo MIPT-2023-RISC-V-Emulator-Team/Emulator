@@ -56,7 +56,7 @@ DecodedInstruction Hart::decode(const EncodedInstruction encInstr) const {
     return decoder_.decodeInstruction(encInstr);
 }
 
-Hart::Hart() : dispatcher_(this), compiler_(this) {
+Hart::Hart(bool useJIT) : dispatcher_(this), compiler_(this), useJIT_(useJIT) {
     PhysicalMemory &pmem = getPhysicalMemory();
 
     /*
@@ -76,11 +76,15 @@ Hart::Hart() : dispatcher_(this), compiler_(this) {
     mmu_.setSATPReg(csrRegs_[CSR_SATP_INDEX]);
     pmem.allocatePage(satpPPN);
 
-    compiler_.InitializeWorker();
+    if (useJIT_) {
+        compiler_.InitializeWorker();
+    }
 }
 
 Hart::~Hart() {
-    compiler_.FinalizeWorker();
+    if (useJIT_) {
+        compiler_.FinalizeWorker();
+    }
 }
 
 void Hart::setBBEntry(BasicBlock::Entrypoint entrypoint, BasicBlock::CompiledEntry entry) {

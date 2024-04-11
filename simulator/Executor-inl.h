@@ -7,6 +7,7 @@
 #include "simulator/Hart.h"
 #include "simulator/memory/Memory.h"
 #include "utils/macros.h"
+#include "llvm/sim.h"
 
 namespace RISCV {
 
@@ -457,8 +458,8 @@ static ALWAYS_INLINE void ExecutorADDIW(Hart *hart, const DecodedInstruction &in
 static ALWAYS_INLINE void ExecutorSLLIW(Hart *hart, const DecodedInstruction &instr) {
     DEBUG_INSTRUCTION("slliw   x%d, x%d, %d\n", instr.rd, instr.rs1, instr.shamt);
 
-    RegValue res = hart->getReg(instr.rs1) << instr.shamt;
-    uint32_t res32 = res;
+    uint32_t res32 = hart->getReg(instr.rs1);
+    res32 = res32 << instr.shamt;
 
     hart->setReg(instr.rd, sext<31>(res32));
     hart->incrementPC();
@@ -467,8 +468,8 @@ static ALWAYS_INLINE void ExecutorSLLIW(Hart *hart, const DecodedInstruction &in
 static ALWAYS_INLINE void ExecutorSRLIW(Hart *hart, const DecodedInstruction &instr) {
     DEBUG_INSTRUCTION("srliw   x%d, x%d, %d\n", instr.rd, instr.rs1, instr.shamt);
 
-    RegValue res = hart->getReg(instr.rs1) >> instr.shamt;
-    uint32_t res32 = res;
+    uint32_t res32 = hart->getReg(instr.rs1);
+    res32 = res32 >> instr.shamt;
 
     hart->setReg(instr.rd, sext<31>(res32));
     hart->incrementPC();
@@ -477,8 +478,14 @@ static ALWAYS_INLINE void ExecutorSRLIW(Hart *hart, const DecodedInstruction &in
 static ALWAYS_INLINE void ExecutorSRAIW(Hart *hart, const DecodedInstruction &instr) {
     DEBUG_INSTRUCTION("sraiw   x%d, x%d, %d\n", instr.rd, instr.rs1, instr.shamt);
 
-    int32_t rs1_signed32 = hart->getReg(instr.rs1);
-    int32_t res32 = static_cast<int32_t>(rs1_signed32 >> instr.imm);
+    int32_t res32 = hart->getReg(instr.rs1);
+
+    if (res32 < 0 && instr.shamt > 0) {
+        res32 = res32 >> instr.shamt | ~(~0U >> instr.shamt);
+    }
+    else {
+        res32 = res32 >> instr.shamt;
+    }
 
     hart->setReg(instr.rd, sext<31>(res32));
     hart->incrementPC();
@@ -1698,6 +1705,26 @@ static ALWAYS_INLINE void ExecutorFNMSUBQ(Hart *hart, const DecodedInstruction &
 
 static ALWAYS_INLINE void ExecutorFNMADDQ(Hart *hart, const DecodedInstruction &instr) {
     UNREACHABLE();
+}
+
+static ALWAYS_INLINE void ExecutorSIMPUTPIXEL(Hart *hart, const DecodedInstruction &instr) {
+    DEBUG_INSTRUCTION("sim.put.pixel\n");
+
+    simPutPixel(hart->getReg(RegisterType::A0), hart->getReg(RegisterType::A1), hart->getReg(RegisterType::A2));
+    hart->incrementPC();
+}
+
+static ALWAYS_INLINE void ExecutorSIMFLUSH(Hart *hart, const DecodedInstruction &instr) {
+    DEBUG_INSTRUCTION("sim.flush\n");
+    simFlush();
+    hart->incrementPC();
+}
+
+static ALWAYS_INLINE void ExecutorSIMRAND(Hart *hart, const DecodedInstruction &instr) {
+    DEBUG_INSTRUCTION("sim.rand was called!!!\n");
+    int rnd = simRand();
+    hart->setReg(RegisterType::A0, rnd);
+    hart->incrementPC();
 }
 
 }  // namespace RISCV

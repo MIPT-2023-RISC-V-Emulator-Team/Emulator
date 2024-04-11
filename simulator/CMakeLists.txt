@@ -33,6 +33,7 @@ set(SIMULATOR_SRC
     memory/MMU.cpp
     ${GEN_DIR}/Decoder.cpp
     ${GEN_DIR}/Dispatcher.cpp
+    ${CMAKE_SOURCE_DIR}/llvm/sim.cpp
 )
 
 add_library(simulator ${SIMULATOR_SRC})
