@@ -1835,7 +1835,7 @@ instructions:
   mnemonic: sim.put.pixel
   format: I
   fixedbits: [{msb: 6, lsb: 0, value: 43}]
-  fields: []
+  fields: [rd, rs1, rs2]
   fixedmask: 4294967295
   debug_hex_fixedmask: 600007f
   fixedvalue: 43
@@ -1853,7 +1853,7 @@ instructions:
   mnemonic: sim.rand
   format: I
   fixedbits: [{msb: 6, lsb: 0, value: 123}]
-  fields: []
+  fields: [rd]
   fixedmask: 4294967295
   debug_hex_fixedmask: 600007f
   fixedvalue: 123

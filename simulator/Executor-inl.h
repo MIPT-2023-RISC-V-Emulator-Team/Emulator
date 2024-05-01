@@ -1710,8 +1710,7 @@ static ALWAYS_INLINE void ExecutorFNMADDQ(Hart *hart, const DecodedInstruction &
 static ALWAYS_INLINE void ExecutorSIMPUTPIXEL(Hart *hart, const DecodedInstruction &instr) {
     DEBUG_INSTRUCTION("sim.put.pixel\n");
 
-    // Shuffled arguments order???
-    simPutPixel(hart->getReg(RegisterType::A3), hart->getReg(RegisterType::A1), hart->getReg(RegisterType::A2));
+    simPutPixel(hart->getReg(instr.rs1), hart->getReg(instr.rs2), hart->getReg(instr.rd));
     hart->incrementPC();
 }
 
@@ -1726,7 +1725,7 @@ static ALWAYS_INLINE void ExecutorSIMRAND(Hart *hart, const DecodedInstruction &
     DEBUG_INSTRUCTION("sim.rand\n");
 
     int rnd = simRand();
-    hart->setReg(RegisterType::A0, rnd);
+    hart->setReg(instr.rd, rnd);
     hart->incrementPC();
 }
 
