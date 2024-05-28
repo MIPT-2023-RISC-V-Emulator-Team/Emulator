@@ -7,6 +7,8 @@ set(COMPILE_OPT -std=c++17 -O3)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(BIN_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
+include_directories(${CMAKE_SOURCE_DIR}/asmjit/src)
+
 # Remove strings matching given regular expression from a list.
 # @param(in,out) aItems Reference of a list variable to filter.
 # @param aRegEx Value of regular expression to match.
