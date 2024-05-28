@@ -4,7 +4,7 @@
 #include <array>
 #include <mutex>
 
-#include "compiler/Compiler.h"
+// #include "compiler/Compiler.h"
 #include "simulator/BasicBlock.h"
 #include "simulator/Cache.h"
 #include "simulator/Common.h"
@@ -44,6 +44,18 @@ public:
 
     ALWAYS_INLINE void setPC(memory::VirtAddr newPC) {
         pc_ = newPC;
+    }
+
+    ALWAYS_INLINE void setPCEnd(memory::VirtAddr PCEnd) {
+        pcEnd_ = PCEnd;
+    }
+
+    ALWAYS_INLINE void dumpRegs() const {
+        printf("[EMU] [ PC: %lx, x0: 0", pc_);
+        for (int i = 1; i < regs_.size(); ++i) {
+            printf(", x%d: %lu", i, regs_[i]);
+        }
+        printf(" ]\n");
     }
 
     void executeBasicBlock(BasicBlock &bb);
@@ -98,6 +110,7 @@ private:
     DecodedInstruction decode(const EncodedInstruction encInstr) const;
 
     memory::VirtAddr pc_;
+    memory::VirtAddr pcEnd_;
     std::array<RegValue, RegisterType::REGISTER_COUNT> regs_ = {};
     std::array<RegValue, CSR_COUNT> csrRegs_ = {};
 
@@ -109,7 +122,7 @@ private:
 
     Decoder decoder_;
     Dispatcher dispatcher_;
-    compiler::Compiler compiler_;
+    // compiler::Compiler compiler_;
 };
 
 }  // namespace RISCV

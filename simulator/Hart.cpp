@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "compiler/Compiler.h"
+// #include "compiler/Compiler.h"
 #include "utils/macros.h"
 
 namespace RISCV {
@@ -32,9 +32,14 @@ BasicBlock Hart::fetchBasicBlock() {
 
     pmem.read(paddr, readBytesize, encInstr);
     for (size_t i = 0; i < readInstructions; ++i) {
-        auto &decInstr = bbBody.emplace_back(decode(encInstr[i]));
-        if (UNLIKELY(decInstr.isJumpInstruction())) {
-            break;
+        if (pc_ + i * INSTRUCTION_BYTESIZE <= pcEnd_) {
+            auto &decInstr = bbBody.emplace_back(decode(encInstr[i]));
+            if (UNLIKELY(decInstr.isJumpInstruction())) {
+                break;
+            }
+        }
+        else {
+            bbBody.emplace_back(DecodedInstruction{.type = JALR});  // Hack to execute global scope instructions without jalr at the end
         }
     }
 
@@ -44,19 +49,19 @@ BasicBlock Hart::fetchBasicBlock() {
 }
 
 void Hart::executeBasicBlock(BasicBlock &bb) {
-    auto isNotCompiled = compiler_.decrementHotnessCounter(bb);
-    if (UNLIKELY(isNotCompiled)) {
+    // auto isNotCompiled = compiler_.decrementHotnessCounter(bb);
+    // if (UNLIKELY(isNotCompiled)) {
         dispatcher_.dispatchExecute(bb.getBodyEntry());
-        return;
-    }
-    bb.executeCompiled(this);
+    //     return;
+    // }
+    // bb.executeCompiled(this);
 }
 
 DecodedInstruction Hart::decode(const EncodedInstruction encInstr) const {
     return decoder_.decodeInstruction(encInstr);
 }
 
-Hart::Hart() : dispatcher_(this), compiler_(this) {
+Hart::Hart() : dispatcher_(this)/*, compiler_(this)*/ {
     PhysicalMemory &pmem = getPhysicalMemory();
 
     /*
@@ -76,11 +81,11 @@ Hart::Hart() : dispatcher_(this), compiler_(this) {
     mmu_.setSATPReg(csrRegs_[CSR_SATP_INDEX]);
     pmem.allocatePage(satpPPN);
 
-    compiler_.InitializeWorker();
+    // compiler_.InitializeWorker();
 }
 
 Hart::~Hart() {
-    compiler_.FinalizeWorker();
+    // compiler_.FinalizeWorker();
 }
 
 void Hart::setBBEntry(BasicBlock::Entrypoint entrypoint, BasicBlock::CompiledEntry entry) {

@@ -21,7 +21,7 @@ public:
     using CompiledEntry = void (*)(Hart *, const DecodedInstruction *);
 
     // Fastest
-    static constexpr size_t MAX_SIZE = 9;
+    static constexpr size_t MAX_SIZE = 1;
     static constexpr uint32_t START_HOTNESS_COUNTER = 10;
 
     BasicBlock(Body body, Entrypoint entrypoint) : body_(std::move(body)), entrypoint_(entrypoint) {

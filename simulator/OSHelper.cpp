@@ -63,6 +63,8 @@ bool OSHelper::loadElfFile(Hart &hart, const std::string &filename) {
         return false;
     }
 
+    VirtAddr PCend = 0;
+
     for (size_t i = 0; i < ehdr.e_phnum; ++i) {
         GElf_Phdr phdr;
         gelf_getphdr(elf, i, &phdr);
@@ -86,6 +88,8 @@ bool OSHelper::loadElfFile(Hart &hart, const std::string &filename) {
         }
         if (phdr.p_flags & PF_X) {
             request |= MemoryRequestBits::X;
+            VirtAddr VAEnd = (segmentStart + segmentSize - 1);
+            PCend = std::max(PCend, VAEnd - VAEnd % 4);
         }
 
         // Explicitly allocate memory for those since we must take into account situation: p_memsze != p_filesz
@@ -105,6 +109,7 @@ bool OSHelper::loadElfFile(Hart &hart, const std::string &filename) {
 
     heapEnd_ = heapEnd_ + (sizeof(uint64_t) - heapEnd_ & (sizeof(uint64_t) - 1));
     hart.setPC(ehdr.e_entry);
+    hart.setPCEnd(PCend);
     return true;
 }
 
